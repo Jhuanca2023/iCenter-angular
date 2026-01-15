@@ -79,11 +79,11 @@
               (click)="selectColor(color)"
               class="w-6 h-6 rounded-full transition-all hover:scale-110 relative"
               [style.background-color]="color.hex"
-              [class.border-2]="selectedColor?.name === color.name"
-              [class.border-green-500]="selectedColor?.name === color.name"
-              [class.border]="selectedColor?.name !== color.name"
-              [class.border-gray-300]="selectedColor?.name !== color.name && color.hex === '#FFFFFF'"
-              [class.border-gray-200]="selectedColor?.name !== color.name && color.hex !== '#FFFFFF'"
+              [class.border-2]="selectedColor.name === color.name"
+              [class.border-green-500]="selectedColor.name === color.name"
+              [class.border]="selectedColor.name !== color.name"
+              [class.border-gray-300]="selectedColor.name !== color.name && color.hex === '#FFFFFF'"
+              [class.border-gray-200]="selectedColor.name !== color.name && color.hex !== '#FFFFFF'"
               [attr.aria-label]="'Color ' + color.name"
               [title]="color.name">
             </button>
