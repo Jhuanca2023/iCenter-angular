@@ -2,8 +2,6 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HeaderComponent } from '../../../../shared/components/header/header.component';
-import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 import { ProductSearchComponent } from '../../components/product-search/product-search.component';
 import { FilterBarComponent, FilterOptions } from '../../components/filter-bar/filter-bar.component';
@@ -28,8 +26,6 @@ interface Product {
     CommonModule,
     RouterModule,
     FormsModule,
-    HeaderComponent,
-    FooterComponent,
     ProductCardComponent,
     ProductSearchComponent,
     FilterBarComponent,

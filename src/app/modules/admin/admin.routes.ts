@@ -1,0 +1,80 @@
+import { Routes } from '@angular/router';
+
+export const adminRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.default)
+  },
+  {
+    path: 'productos',
+    loadComponent: () => import('./pages/productos/productos.component').then(m => m.default)
+  },
+  {
+    path: 'productos/create',
+    loadComponent: () => import('./pages/productos/product-create/product-create.component').then(m => m.default)
+  },
+  {
+    path: 'productos/edit/:id',
+    loadComponent: () => import('./pages/productos/product-edit/product-edit.component').then(m => m.default)
+  },
+  {
+    path: 'productos/detail/:id',
+    loadComponent: () => import('./pages/productos/product-detail/product-detail.component').then(m => m.default)
+  },
+  {
+    path: 'productos/delete/:id',
+    loadComponent: () => import('./pages/productos/product-delete/product-delete.component').then(m => m.default)
+  },
+  {
+    path: 'categories',
+    loadComponent: () => import('./pages/categories/categories.component').then(m => m.default)
+  },
+  {
+    path: 'categories/create',
+    loadComponent: () => import('./pages/categories/category-create/category-create.component').then(m => m.default)
+  },
+  {
+    path: 'categories/edit/:id',
+    loadComponent: () => import('./pages/categories/category-edit/category-edit.component').then(m => m.default)
+  },
+  {
+    path: 'categories/detail/:id',
+    loadComponent: () => import('./pages/categories/category-detail/category-detail.component').then(m => m.default)
+  },
+  {
+    path: 'categories/delete/:id',
+    loadComponent: () => import('./pages/categories/category-delete/category-delete.component').then(m => m.default)
+  },
+  {
+    path: 'marcas',
+    loadComponent: () => import('./pages/marcas/marcas.component').then(m => m.default)
+  },
+  {
+    path: 'marcas/create',
+    loadComponent: () => import('./pages/marcas/marca-create/marca-create.component').then(m => m.default)
+  },
+  {
+    path: 'marcas/edit/:id',
+    loadComponent: () => import('./pages/marcas/marca-edit/marca-edit.component').then(m => m.default)
+  },
+  {
+    path: 'marcas/detail/:id',
+    loadComponent: () => import('./pages/marcas/marca-detail/marca-detail.component').then(m => m.default)
+  },
+  {
+    path: 'marcas/delete/:id',
+    loadComponent: () => import('./pages/marcas/marca-delete/marca-delete.component').then(m => m.default)
+  },
+  {
+    path: 'users',
+    loadComponent: () => import('./pages/users/users.component').then(m => m.default)
+  },
+  {
+    path: 'orders',
+    loadComponent: () => import('./pages/orders/orders.component').then(m => m.default)
+  },
+  {
+    path: 'profiles',
+    loadComponent: () => import('./pages/profiles/profiles.component').then(m => m.default)
+  }
+];

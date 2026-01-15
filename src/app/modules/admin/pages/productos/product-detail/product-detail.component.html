@@ -1,0 +1,110 @@
+<div class="p-6">
+  <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
+  
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Detalle del Producto</h1>
+    <div class="flex gap-3">
+      <a
+        [routerLink]="['/admin/productos/edit', productId]"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+        Editar
+      </a>
+      <a
+        routerLink="/admin/productos"
+        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+        Volver
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="product" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div>
+        <div class="mb-4">
+          <img [src]="selectedImage" [alt]="product.name" class="w-full h-96 object-cover rounded-lg">
+        </div>
+        <div class="grid grid-cols-4 gap-2">
+          <img
+            *ngFor="let img of allImages"
+            [src]="img"
+            [alt]="product.name"
+            (click)="selectImage(img)"
+            class="w-full h-20 object-cover rounded cursor-pointer border-2 transition"
+            [class.border-indigo-500]="selectedImage === img"
+            [class.border-gray-200]="selectedImage !== img">
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ product.name }}</h2>
+        <div class="space-y-4 mb-6">
+          <div>
+            <span class="text-sm font-medium text-gray-500">Categoría:</span>
+            <span class="ml-2 text-gray-900">{{ product.category }}</span>
+          </div>
+          <div>
+            <span class="text-sm font-medium text-gray-500">Precio:</span>
+            <span class="ml-2 text-2xl font-bold text-gray-900">${{ product.price }}</span>
+          </div>
+          <div>
+            <span class="text-sm font-medium text-gray-500">Stock:</span>
+            <span class="ml-2 text-gray-900">{{ product.stock }} unidades</span>
+          </div>
+          <div>
+            <span class="text-sm font-medium text-gray-500">Estado:</span>
+            <span class="ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  [class.bg-green-100]="product.status === 'Activo'"
+                  [class.text-green-800]="product.status === 'Activo'"
+                  [class.bg-red-100]="product.status === 'Inactivo'"
+                  [class.text-red-800]="product.status === 'Inactivo'">
+              {{ product.status }}
+            </span>
+          </div>
+          <div>
+            <span class="text-sm font-medium text-gray-500">Visible:</span>
+            <span class="ml-2 text-gray-900">{{ product.visible ? 'Sí' : 'No' }}</span>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Descripción</h3>
+          <p class="text-gray-700">{{ product.description }}</p>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Colores Disponibles</h3>
+          <div class="flex gap-3 flex-wrap">
+            <button
+              *ngFor="let color of colors"
+              type="button"
+              (click)="selectColor(color)"
+              class="w-12 h-12 rounded-full border-2 transition-all hover:scale-110"
+              [style.background-color]="color.hex"
+              [class.border-indigo-500]="selectedColor === color"
+              [class.border-gray-300]="selectedColor !== color"
+              [title]="color.name">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-gray-200 pt-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Información Adicional</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div>
+          <span class="text-gray-500">ID:</span>
+          <span class="ml-2 text-gray-900">{{ product.id }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500">Creado:</span>
+          <span class="ml-2 text-gray-900">{{ product.createdAt }}</span>
+        </div>
+        <div>
+          <span class="text-gray-500">Actualizado:</span>
+          <span class="ml-2 text-gray-900">{{ product.updatedAt }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
