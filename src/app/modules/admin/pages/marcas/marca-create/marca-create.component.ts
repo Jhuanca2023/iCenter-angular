@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
-import { Marca } from '../../../interfaces/marca.interface';
+import { BrandsService } from '../../../../../core/services/brands.service';
+import { CategoriesService } from '../../../../../core/services/categories.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-marca-create',
@@ -18,10 +20,13 @@ import { Marca } from '../../../interfaces/marca.interface';
   templateUrl: './marca-create.component.html',
   styleUrl: './marca-create.component.css'
 })
-export default class MarcaCreateComponent {
+export default class MarcaCreateComponent implements OnInit, OnDestroy {
   marcaForm: FormGroup;
-  marcaLogo: string = '';
   selectedCategories: string[] = [];
+  availableCategories: any[] = [];
+  isLoading = false;
+  error: string | null = null;
+  private subscription?: Subscription;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -29,62 +34,78 @@ export default class MarcaCreateComponent {
     { label: 'Nueva marca' }
   ];
 
-  categories = [
-    'Laptops',
-    'Audio',
-    'Cámaras',
-    'Gaming',
-    'Smartphones',
-    'Wearables',
-    'Televisores',
-    'Impresoras'
-  ];
-
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private brandsService: BrandsService,
+    private categoriesService: CategoriesService,
+    private router: Router
+  ) {
     this.marcaForm = this.fb.group({
       name: ['', [Validators.required]],
-      description: ['', [Validators.required]],
+      description: [''],
       visible: [true]
     });
   }
 
-  toggleCategory(category: string): void {
-    const index = this.selectedCategories.indexOf(category);
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  loadCategories(): void {
+    this.subscription = this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.availableCategories = categories;
+      },
+      error: (err) => {
+        console.error('Error cargando categorías:', err);
+      }
+    });
+  }
+
+  toggleCategory(categoryId: string): void {
+    const index = this.selectedCategories.indexOf(categoryId);
     if (index > -1) {
       this.selectedCategories.splice(index, 1);
     } else {
-      this.selectedCategories.push(category);
+      this.selectedCategories.push(categoryId);
     }
   }
 
-  isCategorySelected(category: string): boolean {
-    return this.selectedCategories.includes(category);
-  }
-
-  onLogoChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.marcaLogo = e.target.result;
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
+  isCategorySelected(categoryId: string): boolean {
+    return this.selectedCategories.includes(categoryId);
   }
 
   onSubmit(): void {
-    if (this.marcaForm.valid && this.selectedCategories.length > 0 && this.marcaLogo) {
-      const marcaData: Marca = {
-        id: Date.now(),
+    if (this.marcaForm.valid) {
+      this.isLoading = true;
+      this.error = null;
+
+      const marcaData = {
         name: this.marcaForm.value.name,
-        description: this.marcaForm.value.description,
-        logo: this.marcaLogo,
-        categories: this.selectedCategories,
-        visible: this.marcaForm.value.visible ?? true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        description: this.marcaForm.value.description || undefined,
+        visible: this.marcaForm.value.visible ?? true
       };
-      console.log('Marca creada:', marcaData);
+
+      this.brandsService.create(marcaData).subscribe({
+        next: (marca) => {
+          this.isLoading = false;
+          // TODO: Asociar categorías si se implementa en el servicio
+          this.router.navigate(['/admin/marcas']);
+        },
+        error: (err) => {
+          console.error('Error creando marca:', err);
+          this.error = err.message || 'Error al crear la marca. Por favor, intenta nuevamente.';
+          this.isLoading = false;
+        }
+      });
+    } else {
+      this.marcaForm.markAllAsTouched();
     }
   }
 }

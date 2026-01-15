@@ -1,4 +1,4 @@
-<div class="p-6 bg-gray-50 min-h-screen">
+<div class="p-3 sm:p-6 bg-gray-50 min-h-screen">
   <!-- Breadcrumbs -->
   <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
 
@@ -75,38 +75,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Imágenes -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-2">Imágenes</h2>
-        <p class="text-sm text-gray-500 mb-4">Añade imágenes del producto (máximo 5)</p>
-        
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-          <div *ngFor="let img of productImages; let i = index" class="relative group">
-            <img [src]="img" alt="Product" class="w-full h-32 object-cover rounded-lg">
-            <button
-              type="button"
-              (click)="removeProductImage(i)"
-              class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-              ×
-            </button>
-          </div>
-          <div *ngIf="productImages.length < 5" 
-               class="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-32 cursor-pointer hover:border-purple-500 transition"
-               (click)="triggerFileInput('product-image-input')">
-            <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            <span class="text-sm text-gray-500">Añadir imagen</span>
-          </div>
-        </div>
-        <input
-          type="file"
-          id="product-image-input"
-          accept="image/*"
-          (change)="onProductImageChange($event)"
-          class="hidden">
       </div>
 
       <!-- Precios y stock -->
@@ -188,26 +156,27 @@
           <div *ngFor="let color of colors; let i = index" class="border-2 border-gray-200 rounded-lg p-6">
             <!-- Header del color -->
             <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full border-2 border-gray-300" [style.background-color]="color.hex"></div>
-                <div class="flex-1">
-                  <input
-                    type="text"
-                    [(ngModel)]="color.name"
-                    [ngModelOptions]="{standalone: true}"
-                    placeholder="Nombre del color (Ej: Negro, Azul)"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 mb-2">
-                  <input
-                    type="color"
-                    [(ngModel)]="color.hex"
-                    [ngModelOptions]="{standalone: true}"
-                    class="w-full h-10 rounded cursor-pointer">
-                </div>
+              <div class="flex items-center gap-3 flex-1">
+                <input
+                  type="color"
+                  [id]="'color-picker-' + i"
+                  [(ngModel)]="color.hex"
+                  [ngModelOptions]="{standalone: true}"
+                  class="color-picker-circle w-10 h-10 rounded-full border-2 border-gray-300 cursor-pointer hover:border-purple-500 transition flex-shrink-0"
+                  (change)="onColorChange(color, $event)"
+                  title="Haz clic para cambiar el color"
+                  [value]="color.hex">
+                <input
+                  type="text"
+                  [(ngModel)]="color.name"
+                  [ngModelOptions]="{standalone: true}"
+                  placeholder="Nombre del color (Ej: Negro, Azul)"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
               </div>
               <button
                 type="button"
                 (click)="removeColor(i)"
-                class="px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition">
+                class="px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition ml-4">
                 Eliminar
               </button>
             </div>
@@ -275,6 +244,81 @@
               </label>
             </div>
             <p class="text-xs text-gray-500">Habilita esta opción para mostrar el producto en el catálogo</p>
+          </div>
+
+          <!-- Opciones adicionales -->
+          <div class="border-t border-gray-200 pt-4 mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Opciones adicionales</label>
+            
+            <div class="grid grid-cols-1 gap-3">
+              <!-- Promoción -->
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                  <label class="text-sm font-medium text-gray-700">Aplicar promoción</label>
+                  <p class="text-xs text-gray-500 mt-0.5">Ofrece un descuento especial</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    formControlName="onSale"
+                    (change)="onPromotionToggle()"
+                    class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+
+              <!-- Destacados -->
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                  <label class="text-sm font-medium text-gray-700">Aplicar en destacados</label>
+                  <p class="text-xs text-gray-500 mt-0.5">Muestra el producto en la sección de destacados</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    formControlName="featured"
+                    class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+
+              <!-- Recomendados -->
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                  <label class="text-sm font-medium text-gray-700">Aplicar en recomendados</label>
+                  <p class="text-xs text-gray-500 mt-0.5">Muestra el producto en la sección de recomendados</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    formControlName="recommended"
+                    class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Campo de precio de promoción -->
+            <div *ngIf="productForm.get('onSale')?.value" class="mt-4 pt-4 border-t border-gray-200">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Precio de promoción</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">$</span>
+                <input
+                  type="number"
+                  formControlName="salePrice"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+              </div>
+              <div *ngIf="productForm.get('price')?.value && productForm.get('salePrice')?.value" class="mt-2 flex items-center gap-2 text-sm">
+                <span class="text-gray-600">Precio regular:</span>
+                <span class="line-through text-gray-400">${{ productForm.get('price')?.value | number:'1.2-2' }}</span>
+                <span class="text-red-600 font-semibold">
+                  {{ ((1 - (productForm.get('salePrice')?.value / productForm.get('price')?.value)) * 100).toFixed(0) }}% DESCUENTO
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

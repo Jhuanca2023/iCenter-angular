@@ -1,1 +1,38 @@
 /* Estilos específicos para product-create */
+.color-picker-circle {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  overflow: hidden;
+  padding: 0;
+}
+
+.color-picker-circle::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-circle::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.color-picker-circle::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+/* Animación para el campo de promoción */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}

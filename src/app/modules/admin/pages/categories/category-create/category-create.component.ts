@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
+import { Marca } from '../../../interfaces/marca.interface';
 
 @Component({
   selector: 'app-category-create',
@@ -21,10 +22,54 @@ export default class CategoryCreateComponent {
     { label: 'Nueva categoría' }
   ];
 
+  brands: Marca[] = [
+    { 
+      id: '1', 
+      name: 'Apple', 
+      categories: ['Smartphones', 'Laptops', 'Wearables'],
+      visible: true
+    },
+    { 
+      id: '2', 
+      name: 'Samsung', 
+      categories: ['Smartphones', 'Televisores', 'Audio'],
+      visible: true
+    },
+    { 
+      id: '3', 
+      name: 'Sony', 
+      categories: ['Audio', 'Cámaras', 'Gaming'],
+      visible: true
+    },
+    { 
+      id: '4', 
+      name: 'HP', 
+      categories: ['Laptops', 'Impresoras'],
+      visible: true
+    },
+    { 
+      id: '5', 
+      name: 'Lenovo', 
+      categories: ['Laptops', 'Gaming'],
+      visible: true
+    },
+    { 
+      id: '6', 
+      name: 'Dell', 
+      categories: ['Laptops', 'Gaming'],
+      visible: true
+    }
+  ];
+
+  get availableBrands(): Marca[] {
+    return this.brands.filter(brand => brand.visible);
+  }
+
   constructor(private fb: FormBuilder) {
     this.categoryForm = this.fb.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
+      brand: ['', [Validators.required]],
       visible: [true]
     });
   }
@@ -41,9 +86,14 @@ export default class CategoryCreateComponent {
   }
 
   onSubmit(): void {
-    if (this.categoryForm.valid) {
+    if (this.categoryForm.valid && this.categoryForm.value.brand) {
+      const selectedBrand = this.brands.find(b => b.id === this.categoryForm.value.brand);
       const categoryData = {
         ...this.categoryForm.value,
+        brand: selectedBrand ? {
+          id: selectedBrand.id,
+          name: selectedBrand.name
+        } : this.categoryForm.value.brand,
         image: this.categoryImage
       };
       console.log('Categoría creada:', categoryData);

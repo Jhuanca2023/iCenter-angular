@@ -27,7 +27,6 @@ export default class ProductEditComponent implements OnInit {
   productForm: FormGroup;
   colors: ProductColor[] = [];
   selectedCategories: string[] = [];
-  productImages: string[] = [];
   activeTab: 'precios' | 'inventario' = 'precios';
   productId: string | null = null;
   
@@ -75,7 +74,11 @@ export default class ProductEditComponent implements OnInit {
       stock: [0, [Validators.required, Validators.min(0)]],
       weight: ['', [Validators.required]],
       status: ['Activo', [Validators.required]],
-      visible: [true]
+      visible: [true],
+      onSale: [false],
+      salePrice: [0, [Validators.min(0)]],
+      featured: [false],
+      recommended: [false]
     });
   }
 
@@ -94,16 +97,14 @@ export default class ProductEditComponent implements OnInit {
       stock: 15,
       weight: '0.2',
       status: 'Activo',
-      visible: true
+      visible: true,
+      onSale: false,
+      salePrice: 0,
+      featured: false,
+      recommended: false
     });
 
     this.selectedCategories = ['Audio'];
-    this.productImages = [
-      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop',
-      'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=200&h=200&fit=crop',
-      'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop',
-      'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop'
-    ];
 
     this.colors = [
       {
@@ -111,7 +112,8 @@ export default class ProductEditComponent implements OnInit {
         hex: '#000000',
         images: [
           'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop',
-          'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=200&h=200&fit=crop'
+          'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=200&h=200&fit=crop',
+          'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop'
         ]
       }
     ];
@@ -162,25 +164,6 @@ export default class ProductEditComponent implements OnInit {
     color.images.splice(index, 1);
   }
 
-  onProductImageChange(event: Event, index?: number): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        if (index !== undefined) {
-          this.productImages[index] = e.target.result;
-        } else if (this.productImages.length < 5) {
-          this.productImages.push(e.target.result);
-        }
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  removeProductImage(index: number): void {
-    this.productImages.splice(index, 1);
-  }
-
   setActiveTab(tab: 'precios' | 'inventario'): void {
     this.activeTab = tab;
   }
@@ -192,25 +175,46 @@ export default class ProductEditComponent implements OnInit {
     }
   }
 
+  onPromotionToggle(): void {
+    const onSale = this.productForm.get('onSale')?.value;
+    if (!onSale) {
+      this.productForm.patchValue({ salePrice: 0 });
+    }
+  }
+
+
+  onColorChange(color: ProductColor, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input) {
+      color.hex = input.value;
+    }
+  }
+
   onSubmit(): void {
     if (this.productForm.valid && this.selectedCategories.length > 0) {
+      const formValue = this.productForm.value;
+      
+      // Guardar el precio regular como price y el precio con descuento como salePrice
       const productData = {
         id: this.productId,
-        ...this.productForm.value,
+        ...formValue,
+        price: formValue.price, // Precio regular siempre se mantiene
+        originalPrice: formValue.onSale && formValue.salePrice ? formValue.price : undefined, // Para mostrar tachado en la tarjeta
+        // salePrice ya está en formValue si onSale está activo
         categories: this.selectedCategories,
-        colors: this.colors,
-        images: this.productImages
+        colors: this.colors
       };
       console.log('Producto actualizado:', productData);
     }
   }
 
   getProductInfo(): any {
+    const totalImages = this.colors.reduce((sum, color) => sum + color.images.length, 0);
     return {
       id: this.productId,
       createdAt: '19/04/2025 15:33',
       category: this.selectedCategories[0] || 'N/A',
-      imagesActive: this.productImages.length,
+      imagesActive: totalImages,
       imagesNew: 0,
       imagesToDelete: 0
     };

@@ -1,0 +1,9 @@
+@media print {
+  .bg-gray-50 {
+    background: white !important;
+  }
+  
+  button {
+    display: none !important;
+  }
+}
