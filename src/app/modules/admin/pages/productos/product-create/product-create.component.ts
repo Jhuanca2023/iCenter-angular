@@ -49,84 +49,84 @@ export default class ProductCreateComponent {
 
   brands: Marca[] = [
     { 
-      id: 1, 
+      id: '1', 
       name: 'Apple', 
       description: 'Marca líder en tecnología',
       categories: ['Smartphones', 'Laptops', 'Wearables'],
       visible: true
     },
     { 
-      id: 2, 
+      id: '2', 
       name: 'Samsung', 
       description: 'Innovación tecnológica coreana',
       categories: ['Smartphones', 'Televisores', 'Audio'],
       visible: true
     },
     { 
-      id: 3, 
+      id: '3', 
       name: 'Sony', 
       description: 'Calidad premium en audio y tecnología',
       categories: ['Audio', 'Cámaras', 'Gaming'],
       visible: true
     },
     { 
-      id: 4, 
+      id: '4', 
       name: 'HP', 
       description: 'Soluciones empresariales y personales',
       categories: ['Laptops', 'Impresoras'],
       visible: true
     },
     { 
-      id: 5, 
+      id: '5', 
       name: 'Lenovo', 
       description: 'Computadoras y dispositivos inteligentes',
       categories: ['Laptops', 'Gaming'],
       visible: true
     },
     { 
-      id: 6, 
+      id: '6', 
       name: 'Dell', 
       description: 'Tecnología confiable para todos',
       categories: ['Laptops', 'Gaming'],
       visible: true
     },
     { 
-      id: 7, 
+      id: '7', 
       name: 'Asus', 
       description: 'Innovación en gaming y tecnología',
       categories: ['Laptops', 'Gaming'],
       visible: true
     },
     { 
-      id: 8, 
+      id: '8', 
       name: 'Xiaomi', 
       description: 'Tecnología accesible e innovadora',
       categories: ['Smartphones', 'Wearables'],
       visible: true
     },
     { 
-      id: 9, 
+      id: '9', 
       name: 'Huawei', 
       description: 'Tecnología avanzada en comunicaciones',
       categories: ['Smartphones', 'Wearables'],
       visible: true
     },
     { 
-      id: 10, 
+      id: '10', 
       name: 'LG', 
       description: 'Innovación en electrodomésticos y tecnología',
       categories: ['Televisores', 'Audio'],
       visible: true
     },
     { 
-      id: 11, 
+      id: '11', 
       name: 'Microsoft', 
       description: 'Soluciones de software y hardware',
       categories: ['Laptops', 'Gaming'],
       visible: true
     },
     { 
-      id: 12, 
+      id: '12', 
       name: 'Logitech', 
       description: 'Periféricos y accesorios tecnológicos',
       categories: ['Gaming', 'Audio'],

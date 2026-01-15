@@ -1,6 +1,7 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterOutlet, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -9,7 +10,7 @@ import { RouterModule, RouterOutlet, Router } from '@angular/router';
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.css'
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit {
   sidebarLinks = [
     { name: 'Dashboard', path: '/admin', icon: 'dashboard' },
     { name: 'Productos', path: '/admin/productos', icon: 'products' },
@@ -29,7 +30,21 @@ export class AdminLayoutComponent {
     email: 'admin@icenter.com'
   };
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe((user: any) => {
+      if (user) {
+        this.adminInfo = {
+          name: user.name || 'Admin',
+          email: user.email || 'admin@icenter.com'
+        };
+      }
+    });
+  }
 
   toggleUserMenu(): void {
     this.isUserMenuOpen = !this.isUserMenuOpen;
@@ -58,10 +73,16 @@ export class AdminLayoutComponent {
   }
 
   logout(): void {
-    // Lógica de logout
-    console.log('Cerrar sesión');
-    this.router.navigate(['/auth']);
-    this.closeUserMenu();
+    this.authService.logout().subscribe({
+      next: () => {
+        this.closeUserMenu();
+      },
+      error: (err: any) => {
+        console.error('Error al cerrar sesión:', err);
+        this.closeUserMenu();
+        this.router.navigate(['/auth']);
+      }
+    });
   }
 
   goToStore(): void {

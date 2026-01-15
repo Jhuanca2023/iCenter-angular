@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-admin-categories',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent, PaginationComponent],
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.css'
 })
@@ -18,6 +19,8 @@ export default class AdminCategoriesComponent {
   ];
   
   searchTerm = '';
+  currentPage = 1;
+  itemsPerPage = 10;
   
   categories = [
     { 
@@ -77,6 +80,20 @@ export default class AdminCategoriesComponent {
     return filtered;
   }
 
+  get paginatedCategories() {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.filteredCategories.slice(start, end);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredCategories.length / this.itemsPerPage);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+  }
+
   getInitials(name: string): string {
     return name.substring(0, 2).toUpperCase();
   }
@@ -97,5 +114,6 @@ export default class AdminCategoriesComponent {
 
   clearFilters(): void {
     this.searchTerm = '';
+    this.currentPage = 1;
   }
 }

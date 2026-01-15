@@ -14,9 +14,63 @@
         <a routerLink="/productos" routerLinkActive="text-slate-900 font-semibold" class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
           Productos
         </a>
-        <a routerLink="/categorias" routerLinkActive="text-slate-900 font-semibold" class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
-          Categorías
-        </a>
+        <div 
+          class="relative"
+          (mouseenter)="openCategoriesDropdown()"
+          (mouseleave)="closeCategoriesDropdown()">
+          <button 
+            type="button"
+            (click)="toggleCategoriesDropdown()"
+            [class.text-purple-600]="isCategoriesDropdownOpen"
+            [class.text-slate-900]="isCategoriesDropdownOpen"
+            class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide flex items-center gap-1">
+            Categorías
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              stroke-width="2" 
+              stroke-linecap="round" 
+              stroke-linejoin="round"
+              [class.rotate-180]="isCategoriesDropdownOpen"
+              class="transition-transform duration-200">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+          
+          <div 
+            *ngIf="isCategoriesDropdownOpen && categories.length > 0"
+            class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-[600px] bg-slate-900 rounded-lg shadow-xl p-6 z-50">
+            <div class="grid grid-cols-2 gap-6">
+              <div *ngFor="let category of categories; let i = index" class="cursor-pointer group">
+                <div 
+                  (click)="navigateToCategory(category.id)"
+                  class="hover:text-purple-400 transition-colors">
+                  <h3 class="font-semibold text-white mb-1 group-hover:text-purple-400">
+                    {{ category.name }}
+                  </h3>
+                  <p *ngIf="category.description" class="text-sm text-slate-300">
+                    {{ category.description }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-slate-700">
+              <a 
+                routerLink="/categorias"
+                (click)="closeCategoriesDropdown()"
+                class="text-purple-400 hover:text-purple-300 transition-colors text-sm font-medium inline-flex items-center gap-2">
+                Ver todas las categorías
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
         <a routerLink="/events" routerLinkActive="text-slate-900 font-semibold" class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
           Eventos
         </a>
@@ -52,9 +106,51 @@
   <a routerLink="/productos" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
     Productos
   </a>
-  <a routerLink="/categorias" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
-    Categorías
-  </a>
+  <div class="w-full px-8">
+    <button 
+      type="button"
+      (click)="toggleCategoriesDropdown()"
+      class="w-full flex items-center justify-between hover:text-slate-900 transition uppercase">
+      <span>Categorías</span>
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width="20" 
+        height="20" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        stroke-width="2" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        [class.rotate-180]="isCategoriesDropdownOpen"
+        class="transition-transform duration-200">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+    <div 
+      *ngIf="isCategoriesDropdownOpen && categories.length > 0"
+      class="mt-4 w-full bg-slate-50 rounded-lg p-4 max-h-[400px] overflow-y-auto">
+      <div class="space-y-3">
+        <div 
+          *ngFor="let category of categories"
+          (click)="navigateToCategory(category.id); closeMenu()"
+          class="cursor-pointer p-3 rounded hover:bg-slate-200 transition-colors">
+          <h3 class="font-semibold text-slate-900 mb-1">
+            {{ category.name }}
+          </h3>
+          <p *ngIf="category.description" class="text-sm text-slate-600">
+            {{ category.description }}
+          </p>
+        </div>
+      </div>
+      <a 
+        routerLink="/categorias"
+        (click)="closeMenu()"
+        class="mt-4 block text-center text-purple-600 hover:text-purple-700 transition-colors text-sm font-medium">
+        Ver todas las categorías
+      </a>
+    </div>
+  </div>
   <a routerLink="/events" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
     Eventos
   </a>

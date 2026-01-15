@@ -52,7 +52,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let category of filteredCategories" class="hover:bg-gray-50">
+          <tr *ngFor="let category of paginatedCategories" class="hover:bg-gray-50">
             <!-- Categoría -->
             <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
               <div class="flex items-center gap-3">
@@ -101,7 +101,7 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="filteredCategories.length === 0">
+          <tr *ngIf="paginatedCategories.length === 0 && filteredCategories.length === 0">
             <td colspan="5" class="px-6 py-8 text-center text-gray-500">No se encontraron categorías</td>
           </tr>
         </tbody>
@@ -111,7 +111,7 @@
 
   <!-- Cards Mobile -->
   <div class="md:hidden space-y-4">
-    <div *ngFor="let category of filteredCategories" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div *ngFor="let category of paginatedCategories" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div class="flex items-start justify-between mb-3">
         <div class="flex items-center gap-3 flex-1">
           <div [class]="'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ' + getAvatarColor(category.name)">
@@ -154,8 +154,19 @@
         </a>
       </div>
     </div>
-    <div *ngIf="filteredCategories.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+    <div *ngIf="paginatedCategories.length === 0 && filteredCategories.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
       No se encontraron categorías
     </div>
+  </div>
+
+  <!-- Paginación -->
+  <div *ngIf="totalPages > 1" class="flex justify-center mt-6">
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [itemsPerPage]="itemsPerPage"
+      [totalItems]="filteredCategories.length"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
   </div>
 </div>

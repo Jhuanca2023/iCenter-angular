@@ -24,37 +24,37 @@ export default class CategoryCreateComponent {
 
   brands: Marca[] = [
     { 
-      id: 1, 
+      id: '1', 
       name: 'Apple', 
       categories: ['Smartphones', 'Laptops', 'Wearables'],
       visible: true
     },
     { 
-      id: 2, 
+      id: '2', 
       name: 'Samsung', 
       categories: ['Smartphones', 'Televisores', 'Audio'],
       visible: true
     },
     { 
-      id: 3, 
+      id: '3', 
       name: 'Sony', 
       categories: ['Audio', 'Cámaras', 'Gaming'],
       visible: true
     },
     { 
-      id: 4, 
+      id: '4', 
       name: 'HP', 
       categories: ['Laptops', 'Impresoras'],
       visible: true
     },
     { 
-      id: 5, 
+      id: '5', 
       name: 'Lenovo', 
       categories: ['Laptops', 'Gaming'],
       visible: true
     },
     { 
-      id: 6, 
+      id: '6', 
       name: 'Dell', 
       categories: ['Laptops', 'Gaming'],
       visible: true
@@ -87,7 +87,7 @@ export default class CategoryCreateComponent {
 
   onSubmit(): void {
     if (this.categoryForm.valid && this.categoryForm.value.brand) {
-      const selectedBrand = this.brands.find(b => b.id.toString() === this.categoryForm.value.brand);
+      const selectedBrand = this.brands.find(b => b.id === this.categoryForm.value.brand);
       const categoryData = {
         ...this.categoryForm.value,
         brand: selectedBrand ? {

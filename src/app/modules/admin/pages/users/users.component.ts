@@ -3,17 +3,20 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { User } from '../../interfaces/user.interface';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent, PaginationComponent],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
 export default class AdminUsersComponent {
   searchTerm = '';
+  currentPage = 1;
+  itemsPerPage = 10;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -50,6 +53,20 @@ export default class AdminUsersComponent {
     }
 
     return filtered;
+  }
+
+  get paginatedUsers(): User[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.filteredUsers.slice(start, end);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredUsers.length / this.itemsPerPage);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
   }
 
   get activeCount(): number {
@@ -100,5 +117,6 @@ export default class AdminUsersComponent {
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedFilter = 'todos';
+    this.currentPage = 1;
   }
 }

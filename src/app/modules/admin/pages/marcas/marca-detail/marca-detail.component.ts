@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
+import { BrandsService } from '../../../../../core/services/brands.service';
+import { Marca } from '../../../interfaces/marca.interface';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-marca-detail',
@@ -10,9 +13,12 @@ import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/comp
   templateUrl: './marca-detail.component.html',
   styleUrl: './marca-detail.component.css'
 })
-export default class MarcaDetailComponent implements OnInit {
+export default class MarcaDetailComponent implements OnInit, OnDestroy {
   marcaId: string | null = null;
-  marca: any = null;
+  marca: Marca | null = null;
+  isLoading = false;
+  error: string | null = null;
+  private subscription?: Subscription;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -20,25 +26,43 @@ export default class MarcaDetailComponent implements OnInit {
     { label: 'Detalle' }
   ];
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private brandsService: BrandsService
+  ) {}
 
   ngOnInit(): void {
-    this.marcaId = this.route.snapshot.paramMap.get('id');
-    this.loadMarcaData();
+    this.route.paramMap.subscribe(params => {
+      this.marcaId = params.get('id');
+      if (this.marcaId) {
+        this.loadMarcaData();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   loadMarcaData(): void {
-    // Mock data
-    this.marca = {
-      id: parseInt(this.marcaId || '1'),
-      name: 'Apple',
-      description: 'Marca líder en tecnología y dispositivos electrónicos',
-      productCount: 12,
-      categories: ['Smartphones', 'Laptops', 'Wearables'],
-      visible: true,
-      createdAt: new Date('2024-01-15'),
-      updatedAt: new Date('2024-01-20')
-    };
+    if (!this.marcaId) return;
+    
+    this.isLoading = true;
+    this.error = null;
+
+    this.subscription = this.brandsService.getById(this.marcaId).subscribe({
+      next: (marca) => {
+        this.marca = marca;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando marca:', err);
+        this.error = 'Error al cargar la marca. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
   }
 
   getInitials(name: string): string {

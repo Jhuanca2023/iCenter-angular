@@ -108,7 +108,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let user of filteredUsers" class="hover:bg-gray-50">
+          <tr *ngFor="let user of paginatedUsers" class="hover:bg-gray-50">
             <!-- Usuario -->
             <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
               <div class="flex items-center gap-3">
@@ -166,7 +166,7 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="filteredUsers.length === 0">
+          <tr *ngIf="paginatedUsers.length === 0 && filteredUsers.length === 0">
             <td colspan="6" class="px-6 py-8 text-center text-gray-500">
               No se encontraron usuarios
             </td>
@@ -178,7 +178,7 @@
 
   <!-- Users Cards Mobile -->
   <div class="md:hidden space-y-4">
-    <div *ngFor="let user of filteredUsers" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div *ngFor="let user of paginatedUsers" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div class="flex items-start justify-between mb-3">
         <div class="flex items-center gap-3 flex-1 min-w-0">
           <div [class]="'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ' + getAvatarColor(user.name)">
@@ -223,8 +223,19 @@
         </a>
       </div>
     </div>
-    <div *ngIf="filteredUsers.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+    <div *ngIf="paginatedUsers.length === 0 && filteredUsers.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
       No se encontraron usuarios
     </div>
+  </div>
+
+  <!-- Paginación -->
+  <div *ngIf="totalPages > 1" class="flex justify-center mt-6">
+    <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      [itemsPerPage]="itemsPerPage"
+      [totalItems]="filteredUsers.length"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
   </div>
 </div>
