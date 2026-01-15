@@ -1,0 +1,69 @@
+<div class="p-6">
+  <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
+  
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <p class="text-sm text-gray-500 mt-1">{{ getCurrentDate() }}</p>
+    </div>
+  </div>
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div *ngFor="let stat of stats" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-medium text-gray-600">{{ stat.title }}</h3>
+      </div>
+      <p class="text-3xl font-bold text-gray-900 mb-2">{{ stat.value }}</p>
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-medium" [class.text-green-600]="stat.trend === 'up'" [class.text-gray-600]="stat.trend === 'neutral'">{{ stat.change }}</span>
+        <span class="text-xs text-gray-500">{{ stat.subtitle }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Productos con bajo stock</h2>
+      <div class="h-80">
+        <canvas #barChart></canvas>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Distribución de productos por categoría</h2>
+      <div class="h-80">
+        <canvas #doughnutChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Productos con bajo stock</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let product of lowStockProducts">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ product.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.stock }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
+                    [class.bg-red-100]="product.status === 'Sin stock' || product.status === 'Crítico'"
+                    [class.text-red-800]="product.status === 'Sin stock' || product.status === 'Crítico'"
+                    [class.bg-yellow-100]="product.status === 'Bajo'"
+                    [class.text-yellow-800]="product.status === 'Bajo'">
+                {{ product.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

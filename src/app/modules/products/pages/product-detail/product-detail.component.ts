@@ -1,8 +1,7 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
-import { HeaderComponent } from '../../../../shared/components/header/header.component';
-import { FooterComponent } from '../../../../shared/components/footer/footer.component';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 
 interface Product {
@@ -29,12 +28,11 @@ interface ProductColor {
   imports: [
     CommonModule,
     RouterModule,
-    HeaderComponent,
-    FooterComponent,
+    FormsModule,
     ProductCardComponent
   ],
   templateUrl: './product-detail.component.html',
-  changeDetection: ChangeDetectionStrategy.Default
+  styleUrl: './product-detail.component.css'
 })
 
 export default class ProductDetailComponent {

@@ -1,6 +1,4 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { HeaderComponent } from '../../shared/components/header/header.component';
-import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { HeroComponent } from '../../shared/components/hero/hero.component';
 import { CategoriesCarouselComponent } from '../../shared/components/categories-carousel/categories-carousel.component';
 import { NewArrivalsComponent } from '../../shared/components/new-arrivals/new-arrivals.component';
@@ -13,8 +11,6 @@ import { PromotionModalComponent } from '../../shared/components/promotion-modal
   selector: 'app-home',
   standalone: true,
   imports: [
-    HeaderComponent,
-    FooterComponent,
     HeroComponent,
     CategoriesCarouselComponent,
     NewArrivalsComponent,
