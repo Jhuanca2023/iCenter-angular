@@ -1,8 +1,7 @@
 export interface Marca {
   id: number;
   name: string;
-  description: string;
-  logo: string;
+  description?: string;
   categories: string[];
   visible: boolean;
   productCount?: number;

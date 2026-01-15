@@ -1,4 +1,9 @@
 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden relative w-full h-full flex flex-col">
+  <!-- Badge de descuento -->
+  <div *ngIf="hasDiscount" class="absolute top-3 left-3 z-10 bg-red-500 text-white px-2.5 py-1 rounded-full text-xs font-bold shadow-lg">
+    -{{ discountPercentage }}%
+  </div>
+
   <!-- Imagen del producto -->
   <div class="relative w-full aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
     <img 
@@ -11,10 +16,17 @@
   
   <!-- Contenido -->
   <div class="p-4 flex flex-col flex-grow">
-    <!-- Nombre y precio en la misma línea -->
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-lg font-bold text-gray-900 flex-1">{{ product.name }}</h3>
-      <p class="text-lg font-bold text-gray-900 ml-2">${{ product.price }}</p>
+    <!-- Nombre -->
+    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ product.name }}</h3>
+
+    <!-- Precio con descuento -->
+    <div class="flex items-center gap-2 mb-2">
+      <div class="flex flex-col">
+        <div class="flex items-center gap-2">
+          <p class="text-xl font-bold text-gray-900">${{ finalPrice | number:'1.2-2' }}</p>
+          <p *ngIf="hasDiscount" class="text-sm text-gray-400 line-through">${{ originalPrice | number:'1.2-2' }}</p>
+        </div>
+      </div>
     </div>
 
     <!-- Descripción -->

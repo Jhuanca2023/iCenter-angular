@@ -30,15 +30,32 @@ export default class MarcaDetailComponent implements OnInit {
   loadMarcaData(): void {
     // Mock data
     this.marca = {
-      id: this.marcaId,
+      id: parseInt(this.marcaId || '1'),
       name: 'Apple',
       description: 'Marca líder en tecnología y dispositivos electrónicos',
       productCount: 12,
-      logo: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400&h=400&fit=crop',
       categories: ['Smartphones', 'Laptops', 'Wearables'],
       visible: true,
-      createdAt: '2024-01-15',
-      updatedAt: '2024-01-20'
+      createdAt: new Date('2024-01-15'),
+      updatedAt: new Date('2024-01-20')
     };
+  }
+
+  getInitials(name: string): string {
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  getAvatarColor(name: string): string {
+    const colors = [
+      'bg-red-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-yellow-500',
+      'bg-green-500',
+      'bg-blue-500',
+      'bg-indigo-500'
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
   }
 }

@@ -20,7 +20,6 @@ import { Marca } from '../../../interfaces/marca.interface';
 })
 export default class MarcaCreateComponent {
   marcaForm: FormGroup;
-  marcaLogo: string = '';
   selectedCategories: string[] = [];
 
   breadcrumbs: BreadcrumbItem[] = [
@@ -43,7 +42,7 @@ export default class MarcaCreateComponent {
   constructor(private fb: FormBuilder) {
     this.marcaForm = this.fb.group({
       name: ['', [Validators.required]],
-      description: ['', [Validators.required]],
+      description: [''],
       visible: [true]
     });
   }
@@ -61,24 +60,12 @@ export default class MarcaCreateComponent {
     return this.selectedCategories.includes(category);
   }
 
-  onLogoChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.marcaLogo = e.target.result;
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
   onSubmit(): void {
-    if (this.marcaForm.valid && this.selectedCategories.length > 0 && this.marcaLogo) {
+    if (this.marcaForm.valid && this.selectedCategories.length > 0) {
       const marcaData: Marca = {
         id: Date.now(),
         name: this.marcaForm.value.name,
-        description: this.marcaForm.value.description,
-        logo: this.marcaLogo,
+        description: this.marcaForm.value.description || undefined,
         categories: this.selectedCategories,
         visible: this.marcaForm.value.visible ?? true,
         createdAt: new Date(),

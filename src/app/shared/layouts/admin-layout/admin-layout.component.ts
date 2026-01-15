@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, RouterOutlet } from '@angular/router';
+import { RouterModule, RouterOutlet, Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-layout',
@@ -21,4 +21,79 @@ export class AdminLayoutComponent {
   ];
 
   activeLink = this.sidebarLinks[0].path;
+  isUserMenuOpen = false;
+  isSidebarOpen = false;
+  
+  adminInfo = {
+    name: 'Admin',
+    email: 'admin@icenter.com'
+  };
+
+  constructor(private router: Router) {}
+
+  toggleUserMenu(): void {
+    this.isUserMenuOpen = !this.isUserMenuOpen;
+  }
+
+  closeUserMenu(): void {
+    this.isUserMenuOpen = false;
+  }
+
+  getInitials(name: string): string {
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  getAvatarColor(name: string): string {
+    const colors = [
+      'bg-red-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-yellow-500',
+      'bg-green-500',
+      'bg-blue-500',
+      'bg-indigo-500'
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  }
+
+  logout(): void {
+    // Lógica de logout
+    console.log('Cerrar sesión');
+    this.router.navigate(['/auth']);
+    this.closeUserMenu();
+  }
+
+  goToStore(): void {
+    this.router.navigate(['/']);
+    this.closeUserMenu();
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  closeSidebar(): void {
+    this.isSidebarOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.user-menu-container')) {
+      this.closeUserMenu();
+    }
+    if (!target.closest('.sidebar-container') && !target.closest('.sidebar-toggle')) {
+      if (window.innerWidth < 768) {
+        this.closeSidebar();
+      }
+    }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(): void {
+    if (window.innerWidth >= 768) {
+      this.isSidebarOpen = false;
+    }
+  }
 }

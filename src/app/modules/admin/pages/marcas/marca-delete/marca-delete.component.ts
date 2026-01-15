@@ -34,10 +34,12 @@ export default class MarcaDeleteComponent implements OnInit {
   loadMarcaData(): void {
     // Mock data
     this.marca = {
-      id: this.marcaId,
+      id: parseInt(this.marcaId || '1'),
       name: 'Apple',
       description: 'Marca líder en tecnología',
-      productCount: 12
+      categories: ['Smartphones', 'Laptops'],
+      productCount: 12,
+      visible: true
     };
   }
 

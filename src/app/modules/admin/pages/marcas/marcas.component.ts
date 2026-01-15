@@ -27,10 +27,8 @@ export default class AdminMarcasComponent {
     { 
       id: 1, 
       name: 'Apple', 
-      description: 'Marca líder en tecnología',
       categories: ['Smartphones', 'Laptops', 'Wearables'],
       productCount: 12,
-      logo: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=100&h=100&fit=crop',
       visible: true,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -38,10 +36,8 @@ export default class AdminMarcasComponent {
     { 
       id: 2, 
       name: 'Samsung', 
-      description: 'Innovación tecnológica coreana',
       categories: ['Smartphones', 'Televisores', 'Audio'],
       productCount: 15,
-      logo: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=100&h=100&fit=crop',
       visible: true,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -49,10 +45,8 @@ export default class AdminMarcasComponent {
     { 
       id: 3, 
       name: 'Sony', 
-      description: 'Calidad premium en audio y tecnología',
       categories: ['Audio', 'Cámaras', 'Gaming'],
       productCount: 8,
-      logo: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=100&h=100&fit=crop',
       visible: true,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -60,10 +54,8 @@ export default class AdminMarcasComponent {
     { 
       id: 4, 
       name: 'HP', 
-      description: 'Soluciones empresariales y personales',
       categories: ['Laptops', 'Impresoras'],
       productCount: 10,
-      logo: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=100&h=100&fit=crop',
       visible: true,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -71,10 +63,8 @@ export default class AdminMarcasComponent {
     { 
       id: 5, 
       name: 'Lenovo', 
-      description: 'Computadoras y dispositivos inteligentes',
       categories: ['Laptops', 'Gaming'],
       productCount: 7,
-      logo: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=100&h=100&fit=crop',
       visible: true,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -82,15 +72,31 @@ export default class AdminMarcasComponent {
     { 
       id: 6, 
       name: 'Dell', 
-      description: 'Tecnología confiable para todos',
       categories: ['Laptops', 'Gaming'],
       productCount: 9,
-      logo: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=100&h=100&fit=crop',
       visible: true,
       createdAt: new Date(),
       updatedAt: new Date()
     }
   ];
+
+  getInitials(name: string): string {
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  getAvatarColor(name: string): string {
+    const colors = [
+      'bg-red-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-yellow-500',
+      'bg-green-500',
+      'bg-blue-500',
+      'bg-indigo-500'
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  }
 
   get filteredBrands() {
     let filtered = [...this.brands];
@@ -99,7 +105,7 @@ export default class AdminMarcasComponent {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(b => 
         b.name.toLowerCase().includes(term) ||
-        b.description.toLowerCase().includes(term) ||
+        (b.description && b.description.toLowerCase().includes(term)) ||
         b.categories.some(cat => cat.toLowerCase().includes(term))
       );
     }

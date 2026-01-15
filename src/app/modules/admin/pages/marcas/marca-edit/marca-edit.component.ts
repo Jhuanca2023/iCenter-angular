@@ -20,7 +20,6 @@ import { Subscription } from 'rxjs';
 })
 export default class MarcaEditComponent implements OnInit, OnDestroy {
   marcaForm: FormGroup;
-  marcaLogo: string = '';
   marcaId: string | null = null;
   selectedCategories: string[] = [];
   private routeSubscription?: Subscription;
@@ -48,7 +47,7 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
   ) {
     this.marcaForm = this.fb.group({
       name: ['', [Validators.required]],
-      description: ['', [Validators.required]],
+      description: [''],
       visible: [true]
     });
   }
@@ -74,7 +73,6 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
       visible: true
     });
     this.selectedCategories = ['Smartphones', 'Laptops', 'Wearables'];
-    this.marcaLogo = 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=200&h=200&fit=crop';
   }
 
   toggleCategory(category: string): void {
@@ -90,24 +88,13 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
     return this.selectedCategories.includes(category);
   }
 
-  onLogoChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.marcaLogo = e.target.result;
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
   onSubmit(): void {
     if (this.marcaForm.valid && this.selectedCategories.length > 0) {
       const marcaData = {
         id: this.marcaId,
         ...this.marcaForm.value,
-        categories: this.selectedCategories,
-        logo: this.marcaLogo
+        description: this.marcaForm.value.description || undefined,
+        categories: this.selectedCategories
       };
       console.log('Marca actualizada:', marcaData);
     }
