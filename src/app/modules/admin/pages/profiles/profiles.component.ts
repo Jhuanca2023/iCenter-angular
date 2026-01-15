@@ -15,4 +15,8 @@ export default class AdminProfilesComponent {
     email: 'admin@sphere.com',
     role: 'Administrador'
   };
+
+  onSubmit(): void {
+    console.log('Perfil actualizado:', this.profile);
+  }
 }

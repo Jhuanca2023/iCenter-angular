@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
@@ -12,7 +12,7 @@ Chart.register(...registerables);
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export default class DashboardComponent implements OnInit, AfterViewInit {
+export default class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
     { label: 'Dashboard' }
@@ -170,5 +170,16 @@ export default class DashboardComponent implements OnInit, AfterViewInit {
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
+
+  ngOnDestroy(): void {
+    if (this.barChart) {
+      this.barChart.destroy();
+      this.barChart = null;
+    }
+    if (this.doughnutChart) {
+      this.doughnutChart.destroy();
+      this.doughnutChart = null;
+    }
   }
 }
