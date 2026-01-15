@@ -66,6 +66,12 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngOnDestroy(): void {
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
+  }
+
   loadMarcaData(): void {
     // Mock data
     this.marcaForm.patchValue({
