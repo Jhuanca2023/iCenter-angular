@@ -1,0 +1,41 @@
+<section class="w-full bg-white py-8 sm:py-12 px-4 sm:px-6 md:px-16 lg:px-24 xl:px-32">
+  <div class="max-w-7xl mx-auto">
+    <!-- Título con elementos decorativos -->
+    <div class="relative flex items-center justify-center mb-8 sm:mb-12">
+      <!-- Elementos decorativos izquierda -->
+      <div class="absolute left-0 top-0 flex items-center gap-1 sm:gap-2 hidden sm:flex">
+        <svg width="30" height="6" class="sm:w-40 sm:h-8" viewBox="0 0 40 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 4C10 4 15 0 20 4C25 8 30 4 40 4" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 transform rotate-45"></div>
+      </div>
+
+      <!-- Título -->
+      <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 px-4 sm:px-0 text-center sm:text-left">
+        Oferta flash de <span class="text-purple-600">mejores</span> vendidos
+      </h2>
+
+      <!-- Elementos decorativos derecha -->
+      <div class="absolute right-0 top-0 flex items-center gap-1 sm:gap-2 hidden sm:flex">
+        <div class="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 transform rotate-45"></div>
+        <svg width="30" height="6" class="sm:w-40 sm:h-8" viewBox="0 0 40 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 4C10 4 15 0 20 4C25 8 30 4 40 4" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Grid de productos -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <app-product-card *ngFor="let product of products" [product]="{
+        id: product.id,
+        name: product.name,
+        category: 'Ofertas',
+        price: product.currentPrice,
+        originalPrice: product.originalPrice,
+        rating: product.rating,
+        reviews: product.reviews,
+        image: product.image
+      }"></app-product-card>
+    </div>
+  </div>
+</section>

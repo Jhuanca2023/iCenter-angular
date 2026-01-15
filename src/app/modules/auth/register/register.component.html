@@ -1,0 +1,181 @@
+<app-header />
+<main class="min-h-screen bg-slate-100">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-200px)]">
+      <!-- Logo Section - Left -->
+      <div class="hidden lg:flex flex-col items-start justify-center">
+        <a routerLink="/" class="inline-flex items-center mb-8">
+          <span class="text-5xl font-bold text-slate-900 uppercase">SPHERE</span>
+          <span class="w-3 h-3 bg-purple-600 rounded-full ml-2"></span>
+        </a>
+        <p class="text-xl text-slate-600">Join SPHERE today</p>
+      </div>
+
+      <!-- Register Form - Right -->
+      <div class="w-full max-w-md mx-auto lg:mx-0">
+        <div class="text-center lg:text-left mb-6 sm:mb-8">
+          <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Create account</h2>
+          <p class="text-sm sm:text-base text-slate-600">Sign up to get started</p>
+        </div>
+
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg p-6 sm:p-8">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="block text-sm font-medium text-slate-900 mb-2">
+              First name
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              formControlName="firstName"
+              [class.border-red-500]="firstName?.invalid && firstName?.touched"
+              [class.border-purple-600]="firstName?.valid && firstName?.touched"
+              class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-slate-900 placeholder-slate-400"
+              placeholder="John"
+              autocomplete="given-name">
+            <p *ngIf="firstName?.hasError('required') && firstName?.touched" class="mt-1 text-xs text-red-500">
+              First name is required
+            </p>
+          </div>
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-slate-900 mb-2">
+              Last name
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              [class.border-red-500]="lastName?.invalid && lastName?.touched"
+              [class.border-purple-600]="lastName?.valid && lastName?.touched"
+              class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-slate-900 placeholder-slate-400"
+              placeholder="Doe"
+              autocomplete="family-name">
+            <p *ngIf="lastName?.hasError('required') && lastName?.touched" class="mt-1 text-xs text-red-500">
+              Last name is required
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-slate-900 mb-2">
+            Email address
+          </label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            [class.border-red-500]="email?.invalid && email?.touched"
+            [class.border-purple-600]="email?.valid && email?.touched"
+            class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-slate-900 placeholder-slate-400"
+            placeholder="you@example.com"
+            autocomplete="email">
+          <p *ngIf="email?.hasError('required') && email?.touched" class="mt-1 text-sm text-red-500">
+            Email is required
+          </p>
+          <p *ngIf="email?.hasError('email') && email?.touched" class="mt-1 text-sm text-red-500">
+            Please enter a valid email
+          </p>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-slate-900 mb-2">
+            Password
+          </label>
+          <div class="relative">
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              [class.border-red-500]="password?.invalid && password?.touched"
+              [class.border-purple-600]="password?.valid && password?.touched"
+              class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-slate-900 placeholder-slate-400 pr-12"
+              placeholder="Enter your password"
+              autocomplete="new-password">
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-900 transition-colors"
+              tabindex="-1">
+              <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+          <p *ngIf="password?.hasError('required') && password?.touched" class="mt-1 text-sm text-red-500">
+            Password is required
+          </p>
+          <p *ngIf="password?.hasError('minlength') && password?.touched" class="mt-1 text-sm text-red-500">
+            Password must be at least 6 characters
+          </p>
+        </div>
+
+        <div>
+          <label for="confirmPassword" class="block text-sm font-medium text-slate-900 mb-2">
+            Confirm password
+          </label>
+          <div class="relative">
+            <input
+              id="confirmPassword"
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              [class.border-red-500]="(confirmPassword?.invalid || registerForm.hasError('passwordMismatch')) && confirmPassword?.touched"
+              [class.border-purple-600]="confirmPassword?.valid && !registerForm.hasError('passwordMismatch') && confirmPassword?.touched"
+              class="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-slate-900 placeholder-slate-400 pr-12"
+              placeholder="Confirm your password"
+              autocomplete="new-password">
+            <button
+              type="button"
+              (click)="toggleConfirmPasswordVisibility()"
+              class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-900 transition-colors"
+              tabindex="-1">
+              <svg *ngIf="!showConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showConfirmPassword" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+          <p *ngIf="confirmPassword?.hasError('required') && confirmPassword?.touched" class="mt-1 text-sm text-red-500">
+            Please confirm your password
+          </p>
+          <p *ngIf="registerForm.hasError('passwordMismatch') && confirmPassword?.touched" class="mt-1 text-sm text-red-500">
+            Passwords do not match
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || isLoading"
+          class="w-full bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 flex items-center justify-center gap-2">
+          <span *ngIf="!isLoading">Sign up</span>
+          <span *ngIf="isLoading" class="flex items-center gap-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Creating account...
+          </span>
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-slate-600">
+        Already have an account?
+        <a routerLink="/auth" class="font-medium text-purple-600 hover:text-purple-700 transition-colors">
+          Sign in
+        </a>
+      </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<app-footer />

@@ -1,0 +1,46 @@
+<section class="w-full py-16 px-6 md:px-16 lg:px-24 xl:px-32 relative">
+  <div class="max-w-7xl mx-auto rounded-3xl relative overflow-hidden" style="background-color: #1A242B;">
+    <!-- Borde superior simple -->
+    <div class="absolute top-0 left-0 right-0 h-20 bg-white rounded-t-3xl -z-10"></div>
+    
+    <div class="relative z-10 pt-12 px-6 md:px-12 lg:px-16 xl:px-20 pb-12">
+      <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
+        <!-- Lado izquierdo: Título y logo -->
+        <div class="flex-1 text-center lg:text-left">
+          <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
+            Gateway to a world<br>
+            of innovation with<br>
+            <span class="uppercase">SPHERE</span><span class="w-2 h-2 bg-purple-600 rounded-full inline-block ml-1 align-top"></span>
+          </h2>
+          <!-- Diamante verde debajo del texto, ligeramente a la derecha -->
+          <div class="w-3 h-3 transform rotate-45 mt-4 ml-auto lg:ml-0" style="background-color: #99D63F;"></div>
+        </div>
+
+        <!-- Lado derecho: Barra de búsqueda -->
+        <div class="flex-1 w-full max-w-md">
+          <div class="rounded-lg p-4" style="background-color: #EBEBEB;">
+            <div class="flex items-center gap-3 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #666666;">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input 
+                type="text" 
+                [(ngModel)]="searchQuery"
+                placeholder="Search for electronic"
+                class="flex-1 bg-transparent border-none outline-none"
+                style="color: #333333;">
+            </div>
+            <button 
+              type="button"
+              (click)="onSearch()"
+              class="w-full text-white px-6 py-3 rounded-lg hover:opacity-90 active:scale-95 transition-all font-medium"
+              style="background-color: #99D63F;">
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

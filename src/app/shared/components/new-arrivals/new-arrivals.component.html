@@ -1,0 +1,49 @@
+<section class="w-full bg-white py-8 sm:py-12 px-4 sm:px-6 md:px-16 lg:px-24 xl:px-32">
+  <div class="max-w-7xl mx-auto">
+    <!-- Título -->
+    <div class="mb-6 sm:mb-8">
+      <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900">
+        Nuevos <span class="text-purple-600">lanzamientos</span> para ti
+      </h2>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6 sm:gap-8">
+      <!-- Sidebar de categorías -->
+      <aside class="w-full lg:w-64 flex-shrink-0 relative">
+        <div 
+          #categoriesContainer
+          class="flex flex-row lg:flex-col gap-2 sm:gap-4 max-h-[120px] lg:max-h-[400px] overflow-x-auto lg:overflow-y-auto lg:overflow-x-hidden scrollbar-hide lg:pl-4 relative pb-2 lg:pb-0"
+          (scroll)="onContainerScroll()">
+          <!-- Línea gris vertical (solo en desktop) -->
+          <div class="hidden lg:block absolute left-0 top-0 w-0.5 bg-slate-200" style="height: calc(5 * 56px);"></div>
+          
+          <!-- Barra morada fija en la línea gris (solo en desktop) -->
+          <div 
+            #scrollbar
+            class="hidden lg:block absolute left-0 w-1 bg-purple-600 cursor-grab active:cursor-grabbing z-10"
+            [style.top]="scrollbarTop + 'px'"
+            style="height: 40px;"
+            (mousedown)="onScrollbarMouseDown($event)">
+          </div>
+          
+          <div 
+            *ngFor="let category of categories" 
+            class="relative flex items-center justify-between py-2 lg:py-3 px-3 lg:px-0 cursor-pointer hover:text-slate-900 transition-colors whitespace-nowrap lg:whitespace-normal bg-slate-50 lg:bg-transparent rounded-lg lg:rounded-none flex-shrink-0 lg:flex-shrink"
+            (click)="onCategoryClick(category)">
+            <span class="text-slate-900 font-medium text-sm sm:text-base">{{ category.name }}</span>
+            <span [class]="category.color + ' text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ml-2 lg:ml-0'">
+              {{ category.count }}
+            </span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Grid de productos -->
+      <div class="flex-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+          <app-product-card *ngFor="let product of products" [product]="product" class="h-full"></app-product-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

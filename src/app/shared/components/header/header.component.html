@@ -1,0 +1,77 @@
+<nav class="z-50 w-full py-1 px-6 md:px-16 lg:px-24 xl:px-32">
+    <div class="flex items-center justify-between">
+      <div class="flex-shrink-0">
+        <a routerLink="/" class="flex items-center">
+          <span class="text-xl font-bold text-slate-900 uppercase">SPHERE</span>
+          <span class="w-2 h-2 bg-purple-600 rounded-full ml-1"></span>
+        </a>
+      </div>
+
+      <div class="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
+        <a routerLink="/" routerLinkActive="text-slate-900 font-semibold" class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
+          Inicio
+        </a>
+        <a routerLink="/productos" routerLinkActive="text-slate-900 font-semibold" class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
+          Productos
+        </a>
+        <a routerLink="/categorias" routerLinkActive="text-slate-900 font-semibold" class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
+          Categorías
+        </a>
+        <a routerLink="/events" routerLinkActive="text-slate-900 font-semibold" class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
+          Eventos
+        </a>
+        <a routerLink="/auth" routerLinkActive="text-slate-900 font-semibold" class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
+          Iniciar Sesión
+        </a>
+      </div>
+
+      <div class="flex-shrink-0">
+        <a routerLink="/auth/register" class="hidden md:flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white hover:bg-slate-800 active:scale-95 transition-all rounded-full text-sm font-medium">
+          <span>Registrarse</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
+
+        <button type="button" (click)="toggleMenu()" class="md:hidden active:scale-90 transition" aria-label="Abrir menú">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5h16"/>
+            <path d="M4 12h16"/>
+            <path d="M4 19h16"/>
+          </svg>
+        </button>
+    </div>
+  </div>
+</nav>
+
+<div [class]="'fixed inset-0 z-[100] bg-white text-slate-800 flex flex-col items-center justify-center text-lg gap-8 md:hidden transition-transform duration-300 ' + (isMenuOpen ? 'translate-x-0' : '-translate-x-full')">
+  <a routerLink="/" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
+    Inicio
+  </a>
+  <a routerLink="/productos" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
+    Productos
+  </a>
+  <a routerLink="/categorias" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
+    Categorías
+  </a>
+  <a routerLink="/events" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
+    Eventos
+  </a>
+  <a routerLink="/auth" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
+    Iniciar Sesión
+  </a>
+  <a routerLink="/auth/register" (click)="closeMenu()" class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white hover:bg-slate-800 active:scale-95 transition-all rounded-full text-sm font-medium mt-4">
+    <span>Registrarse</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14"/>
+      <path d="m12 5 7 7-7 7"/>
+    </svg>
+  </a>
+  <button type="button" (click)="closeMenu()" class="absolute top-4 right-4 aspect-square size-10 p-1 items-center justify-center bg-slate-100 hover:bg-slate-200 transition text-black rounded-md flex" aria-label="Cerrar menú">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6 6 18"/>
+      <path d="m6 6 12 12"/>
+    </svg>
+  </button>
+</div>

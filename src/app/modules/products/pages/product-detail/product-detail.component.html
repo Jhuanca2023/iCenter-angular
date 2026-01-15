@@ -1,0 +1,120 @@
+<app-header />
+<main class="min-h-screen bg-white py-4 sm:py-8">
+  <div class="max-w-6xl w-full px-4 sm:px-6 mx-auto">
+    <p class="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-0">
+      <a routerLink="/" class="hover:text-indigo-500">Inicio</a> /
+      <a routerLink="/productos" class="hover:text-indigo-500"> Productos</a> /
+      <span> Sports</span> /
+      <span class="text-indigo-500"> Casual Shoes</span>
+    </p>
+
+    <div class="flex flex-col md:flex-row gap-6 md:gap-16 mt-4">
+      <!-- Galería de imágenes -->
+      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <!-- Thumbnails - ocultos en mobile, visibles en desktop -->
+        <div class="hidden sm:flex flex-col gap-3 flex-shrink-0">
+          <div 
+            *ngFor="let img of images" 
+            (click)="selectImage(img)"
+            [class.border-indigo-500]="selectedImage === img"
+            class="border w-20 h-20 sm:w-24 sm:h-24 border-gray-500/30 rounded overflow-hidden cursor-pointer hover:border-indigo-500 transition">
+            <img [src]="img" [alt]="'Thumbnail ' + img" class="w-full h-full object-cover">
+          </div>
+        </div>
+
+        <!-- Imagen principal -->
+        <div class="border border-gray-500/30 w-full sm:flex-1 rounded overflow-hidden">
+          <img [src]="selectedImage" alt="Selected product" class="w-full h-auto">
+        </div>
+
+        <!-- Thumbnails móvil - debajo de la imagen principal -->
+        <div class="flex sm:hidden gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+          <div 
+            *ngFor="let img of images" 
+            (click)="selectImage(img)"
+            [class.border-indigo-500]="selectedImage === img"
+            class="border w-16 h-16 flex-shrink-0 border-gray-500/30 rounded overflow-hidden cursor-pointer hover:border-indigo-500 transition">
+            <img [src]="img" [alt]="'Thumbnail ' + img" class="w-full h-full object-cover">
+          </div>
+        </div>
+      </div>
+
+      <div class="text-sm w-full md:w-1/2">
+        <h1 class="text-2xl sm:text-3xl font-medium">Casual Shoes</h1>
+
+        <div class="flex items-center gap-0.5 mt-1">
+          <svg 
+            *ngFor="let star of getStarsArray(4); let i = index"
+            width="14" 
+            height="13" 
+            viewBox="0 0 18 17" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg">
+            <path 
+              *ngIf="star === 1"
+              d="M8.049.927c.3-.921 1.603-.921 1.902 0l1.294 3.983a1 1 0 0 0 .951.69h4.188c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 0 0-.364 1.118l1.295 3.983c.299.921-.756 1.688-1.54 1.118L9.589 13.63a1 1 0 0 0-1.176 0l-3.389 2.46c-.783.57-1.838-.197-1.539-1.118L4.78 10.99a1 1 0 0 0-.363-1.118L1.028 7.41c-.783-.57-.38-1.81.588-1.81h4.188a1 1 0 0 0 .95-.69z" 
+              fill="#615fff" />
+            <path 
+              *ngIf="star === 0"
+              d="M8.04894 0.927049C8.3483 0.00573802 9.6517 0.00574017 9.95106 0.927051L11.2451 4.90983C11.379 5.32185 11.763 5.60081 12.1962 5.60081H16.3839C17.3527 5.60081 17.7554 6.84043 16.9717 7.40983L13.5838 9.87132C13.2333 10.126 13.0866 10.5773 13.2205 10.9894L14.5146 14.9721C14.8139 15.8934 13.7595 16.6596 12.9757 16.0902L9.58778 13.6287C9.2373 13.374 8.7627 13.374 8.41221 13.6287L5.02426 16.0902C4.24054 16.6596 3.18607 15.8934 3.48542 14.9721L4.7795 10.9894C4.91338 10.5773 4.76672 10.126 4.41623 9.87132L1.02827 7.40983C0.244561 6.84043 0.647338 5.60081 1.61606 5.60081H5.8038C6.23703 5.60081 6.62099 5.32185 6.75486 4.90983L8.04894 0.927049Z" 
+              fill="#615fff" 
+              fill-opacity="0.35" />
+          </svg>
+          <p class="text-base ml-2">(4)</p>
+        </div>
+
+        <div class="mt-6">
+          <p class="text-gray-500/70 line-through">Precio: $100</p>
+          <p class="text-2xl font-medium">Precio: $80</p>
+          <span class="text-gray-500/70">(incluye todos los impuestos)</span>
+        </div>
+
+        <!-- Selector de colores -->
+        <div class="mt-6">
+          <p class="text-sm font-medium text-gray-900 mb-3">Selecciona el color</p>
+          <div class="flex gap-3 flex-wrap">
+            <button
+              *ngFor="let color of colors"
+              type="button"
+              (click)="selectColor(color)"
+              class="w-6 h-6 rounded-full transition-all hover:scale-110 relative"
+              [style.background-color]="color.hex"
+              [class.border-2]="selectedColor?.name === color.name"
+              [class.border-green-500]="selectedColor?.name === color.name"
+              [class.border]="selectedColor?.name !== color.name"
+              [class.border-gray-300]="selectedColor?.name !== color.name && color.hex === '#FFFFFF'"
+              [class.border-gray-200]="selectedColor?.name !== color.name && color.hex !== '#FFFFFF'"
+              [attr.aria-label]="'Color ' + color.name"
+              [title]="color.name">
+            </button>
+          </div>
+        </div>
+
+        <p class="text-base font-medium mt-6">Acerca del Producto</p>
+        <ul class="list-disc ml-4 text-gray-500/70">
+          <li>Material de alta calidad</li>
+          <li>Cómodo para uso diario</li>
+          <li>Disponible en diferentes tallas</li>
+        </ul>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center mt-6 sm:mt-10 gap-3 sm:gap-4 text-sm sm:text-base">
+          <button class="w-full py-3 sm:py-3.5 font-medium bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition cursor-pointer rounded-lg">
+            Agregar al Carrito
+          </button>
+          <button class="w-full py-3 sm:py-3.5 font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition cursor-pointer rounded-lg">
+            Comprar Ahora
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Productos relacionados -->
+    <div class="mt-8 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200">
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Productos Relacionados</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <app-product-card *ngFor="let product of relatedProducts" [product]="product" class="h-full"></app-product-card>
+      </div>
+    </div>
+  </div>
+</main>
+<app-footer />
