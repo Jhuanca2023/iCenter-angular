@@ -1,50 +1,41 @@
-language: typescript
-review_status: true
-path_filters:
-  - "!*.md"
-  - "!*.json"
-  - "!node_modules/**"
-  - "!dist/**"
-  - "!coverage/**"
-  - "!.angular/**"
-  - "!.git/**"
-  - "src/**/*.ts"
-  - "src/**/*.html"
-  - "src/**/*.css"
-review:
-  collapse_deleted_lines: true
+language: "en-US"
+enable_free_tier: true
+
+reviews:
+  profile: "chill"
   request_changes_workflow: false
   high_level_summary: true
-  poem: false
-  review_simple_changes: true
-  disable_reviews_for_tests: false
-agents:
-  language_model: "gpt-4o-mini"
+  review_status: true
+  commit_status: true
+  fail_commit_status: false
+  changed_files_summary: true
+  suggested_reviewers: true
+
+  path_filters:
+    - "!*.md"
+    - "!*.json"
+    - "!node_modules/**"
+    - "!dist/**"
+    - "!coverage/**"
+    - "!.angular/**"
+    - "!.git/**"
+    - "src/**/*.ts"
+    - "src/**/*.html"
+    - "src/**/*.css"
+
   auto_review:
     enabled: true
     base_branches:
       - "main"
       - "master"
       - "dev"
-    draft: false
-  auto_apply_patch_suggestions:
-    enabled: false
-    base_branches:
-      - "main"
-      - "master"
-    draft: false
-language:
-  typescript:
-    rules:
-      - "code-quality"
-      - "best-practices"
-      - "performance"
-      - "security"
-      - "angular"
-    include_directories:
-      - "src"
-    exclude_directories:
-      - "node_modules"
-      - "dist"
-      - "coverage"
-      - ".angular"
+    drafts: false
+
+  finishing_touches:
+    docstrings:
+      enabled: true
+    unit_tests:
+      enabled: true
+
+chat:
+  auto_reply: true

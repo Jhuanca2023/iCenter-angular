@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-marca-edit',
@@ -17,11 +18,12 @@ import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/comp
   templateUrl: './marca-edit.component.html',
   styleUrl: './marca-edit.component.css'
 })
-export default class MarcaEditComponent implements OnInit {
+export default class MarcaEditComponent implements OnInit, OnDestroy {
   marcaForm: FormGroup;
   marcaLogo: string = '';
   marcaId: string | null = null;
   selectedCategories: string[] = [];
+  private routeSubscription?: Subscription;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -52,8 +54,16 @@ export default class MarcaEditComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.marcaId = this.route.snapshot.paramMap.get('id');
-    this.loadMarcaData();
+    this.routeSubscription = this.route.paramMap.subscribe(params => {
+      this.marcaId = params.get('id');
+      this.loadMarcaData();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
   }
 
   loadMarcaData(): void {
