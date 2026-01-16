@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import AUTH_ROUTES from './modules/auth/auth.routes';
 import { productsRoutes } from './modules/products/products.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
-//import { adminGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -16,6 +16,14 @@ export const routes: Routes = [
       {
         path: 'productos',
         children: productsRoutes
+      },
+      {
+        path: 'perfil',
+        loadChildren: () => import('./modules/user/profile/profile.routes').then(m => m.profileRoutes)
+      },
+      {
+        path: 'pedidos',
+        loadChildren: () => import('./modules/user/orders/orders.routes').then(m => m.ordersRoutes)
       }
     ]
   },
@@ -26,7 +34,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     loadComponent: () => import('./shared/layouts/admin-layout/admin-layout.component').then(m => m.AdminLayoutComponent),
-    //canActivate: [adminGuard],
+    canActivate: [adminGuard],
     children: adminRoutes
   },
   {

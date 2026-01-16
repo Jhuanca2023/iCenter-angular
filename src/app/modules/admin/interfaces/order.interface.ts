@@ -1,9 +1,10 @@
 export interface Order {
   id: string;
+  orderNumber?: string;
   customer: string;
   customerEmail?: string;
   total: number;
-  status: 'Pendiente' | 'Completado' | 'Cancelado' | 'En proceso';
+  status: 'Pendiente' | 'Completado' | 'Cancelado' | 'En proceso' | 'Confirmado' | 'En preparación' | 'En camino' | 'Entregado';
   date: string;
   userId?: string;
   items?: OrderItem[];

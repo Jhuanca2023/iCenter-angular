@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
@@ -14,7 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './login.component.css',
   encapsulation: ViewEncapsulation.None
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   showPassword = false;
   isLoading = false;
@@ -37,14 +37,35 @@ export class LoginComponent {
     this.showPassword = !this.showPassword;
   }
 
+  ngOnInit(): void {
+    // Cargar email guardado si existe
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      this.loginForm.patchValue({
+        email: savedEmail,
+        rememberMe: true
+      });
+    }
+  }
+
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.error = null;
 
+      const rememberMe = this.loginForm.value.rememberMe;
+
+      // Guardar o eliminar email según rememberMe
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', this.loginForm.value.email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       this.authService.login(
         this.loginForm.value.email,
-        this.loginForm.value.password
+        this.loginForm.value.password,
+        rememberMe
       ).subscribe({
         next: (user) => {
           this.isLoading = false;
@@ -68,5 +89,21 @@ export class LoginComponent {
 
   get password() {
     return this.loginForm.get('password');
+  }
+
+  signInWithGoogle(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.authService.signInWithGoogle().subscribe({
+      next: () => {
+        // La redirección será manejada por Supabase
+      },
+      error: (err) => {
+        console.error('Error en login con Google:', err);
+        this.error = err.message || 'Error al iniciar sesión con Google';
+        this.isLoading = false;
+      }
+    });
   }
 }

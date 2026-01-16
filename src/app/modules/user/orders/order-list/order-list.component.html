@@ -1,0 +1,64 @@
+<div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Mis Pedidos</h1>
+      <p class="text-slate-600">Revisa el estado de tus pedidos</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && orders.length === 0" class="bg-white rounded-xl shadow-lg p-12 text-center">
+      <svg class="mx-auto h-16 w-16 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+      <h3 class="text-xl font-semibold text-slate-900 mb-2">No tienes pedidos aún</h3>
+      <p class="text-slate-600 mb-6">Cuando realices tu primer pedido, aparecerá aquí</p>
+      <a routerLink="/productos" class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-all">
+        <span>Ver productos</span>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Orders List -->
+    <div *ngIf="!isLoading && orders.length > 0" class="space-y-4">
+      <div *ngFor="let order of orders" class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+              <h3 class="text-lg font-semibold text-slate-900">Pedido #{{ order.orderNumber || order.id.substring(0, 8).toUpperCase() }}</h3>
+              <span [class]="'px-3 py-1 rounded-full text-xs font-medium ' + getStatusColor(order.status)">
+                {{ order.status }}
+              </span>
+            </div>
+            <p class="text-sm text-slate-600 mb-1">
+              Fecha: {{ formatDate(order.createdAt) }}
+            </p>
+            <p class="text-sm text-slate-600">
+              {{ order.items?.length || 0 }} producto(s)
+            </p>
+          </div>
+          <div class="flex flex-col sm:items-end gap-2">
+            <p class="text-xl font-bold text-slate-900">
+              {{ formatCurrency(order.total) }}
+            </p>
+            <a 
+              [routerLink]="['/pedidos', order.id]"
+              class="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1">
+              Ver detalles
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -25,7 +25,10 @@
           <p class="text-sm font-medium">Hi! Admin</p>
           <p class="text-xs text-gray-400 hidden md:block">{{ adminInfo.email }}</p>
         </div>
-        <div [class]="'w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm ' + getAvatarColor(adminInfo.name)">
+        <div *ngIf="adminInfo.avatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-gray-200">
+          <img [src]="adminInfo.avatar" [alt]="adminInfo.name" class="w-full h-full object-cover">
+        </div>
+        <div *ngIf="!adminInfo.avatar" [class]="'w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm ' + getAvatarColor(adminInfo.name)">
           {{ getInitials(adminInfo.name) }}
         </div>
         <svg

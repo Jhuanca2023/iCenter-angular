@@ -1,25 +1,26 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './login/login.component';
-import { RegisterComponent } from './register/register.component';
-import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
-import { GoogleCallbackComponent } from './google-callback/google-callback.component';
 
 const AUTH_ROUTES: Routes = [
   {
     path: '',
-    component: LoginComponent
+    redirectTo: 'login',
+    pathMatch: 'full'
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
   },
   {
     path: 'register',
-    component: RegisterComponent
+    loadComponent: () => import('./register/register.component').then(m => m.RegisterComponent)
   },
   {
     path: 'forgot',
-    component: ForgotPasswordComponent
+    loadComponent: () => import('./forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
   },
   {
-    path: 'google-callback',
-    component: GoogleCallbackComponent
+    path: 'callback',
+    loadComponent: () => import('./auth-callback/auth-callback.component').then(m => m.AuthCallbackComponent)
   }
 ];
 

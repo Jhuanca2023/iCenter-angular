@@ -1,15 +1,67 @@
 -- ============================================
 -- POLÍTICAS RLS (Row Level Security) - iCenter
 -- ============================================
+-- IMPORTANTE: Si ya ejecutaste el schema.sql, algunas políticas básicas ya existen
+-- Este script las elimina y recrea todas las políticas correctamente
 
--- Deshabilitar RLS temporalmente para desarrollo
--- (Habilitar después de configurar políticas de seguridad)
+-- ============================================
+-- ELIMINAR TODAS LAS POLÍTICAS EXISTENTES
+-- ============================================
 
--- ALTER TABLE users DISABLE ROW LEVEL SECURITY;
--- ALTER TABLE brands DISABLE ROW LEVEL SECURITY;
--- ALTER TABLE categories DISABLE ROW LEVEL SECURITY;
--- ALTER TABLE products DISABLE ROW LEVEL SECURITY;
--- ALTER TABLE orders DISABLE ROW LEVEL SECURITY;
+-- Eliminar políticas de products
+DO $$ 
+BEGIN
+  DROP POLICY IF EXISTS "Productos públicos visibles" ON products;
+  DROP POLICY IF EXISTS "Admins full access products" ON products;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Eliminar políticas de brands
+DO $$ 
+BEGIN
+  DROP POLICY IF EXISTS "Marcas públicas visibles" ON brands;
+  DROP POLICY IF EXISTS "Admins full access brands" ON brands;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Eliminar políticas de categories
+DO $$ 
+BEGIN
+  DROP POLICY IF EXISTS "Categorías públicas visibles" ON categories;
+  DROP POLICY IF EXISTS "Admins full access categories" ON categories;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Eliminar políticas de users
+DO $$ 
+BEGIN
+  DROP POLICY IF EXISTS "Users can read own data" ON users;
+  DROP POLICY IF EXISTS "Admins can read all users" ON users;
+  DROP POLICY IF EXISTS "Admins can insert users" ON users;
+  DROP POLICY IF EXISTS "Admins can update users" ON users;
+  DROP POLICY IF EXISTS "Admins can delete users" ON users;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Eliminar políticas de orders
+DO $$ 
+BEGIN
+  DROP POLICY IF EXISTS "Users can read own orders" ON orders;
+  DROP POLICY IF EXISTS "Admins can read all orders" ON orders;
+  DROP POLICY IF EXISTS "Users can create own orders" ON orders;
+  DROP POLICY IF EXISTS "Admins can update orders" ON orders;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- Eliminar políticas de storage
+DO $$ 
+BEGIN
+  DROP POLICY IF EXISTS "Public Access Product Images" ON storage.objects;
+  DROP POLICY IF EXISTS "Public Access Category Images" ON storage.objects;
+  DROP POLICY IF EXISTS "Authenticated users can upload product images" ON storage.objects;
+  DROP POLICY IF EXISTS "Authenticated users can upload category images" ON storage.objects;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
 
 -- ============================================
 -- POLÍTICAS PÚBLICAS (Lectura)
@@ -34,17 +86,76 @@ CREATE POLICY "Categorías públicas visibles"
 -- POLÍTICAS ADMINISTRADOR (CRUD Completo)
 -- ============================================
 
--- TODO: Implementar políticas basadas en rol del usuario
--- Ejemplo:
--- CREATE POLICY "Admin full access products"
---   ON products FOR ALL
---   USING (
---     EXISTS (
---       SELECT 1 FROM users
---       WHERE users.id = auth.uid()
---       AND users.role = 'Administrador'
---     )
---   );
+-- Función helper para verificar si el usuario es administrador
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM users
+    WHERE id = auth.uid()
+    AND role = 'Administrador'
+    AND status = 'Activo'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- Políticas para Users
+CREATE POLICY "Users can read own data"
+  ON users FOR SELECT
+  USING (auth.uid() = id);
+
+CREATE POLICY "Admins can read all users"
+  ON users FOR SELECT
+  USING (is_admin());
+
+CREATE POLICY "Admins can insert users"
+  ON users FOR INSERT
+  WITH CHECK (is_admin());
+
+CREATE POLICY "Admins can update users"
+  ON users FOR UPDATE
+  USING (is_admin());
+
+CREATE POLICY "Admins can delete users"
+  ON users FOR DELETE
+  USING (is_admin());
+
+-- Políticas para Products
+CREATE POLICY "Admins full access products"
+  ON products FOR ALL
+  USING (is_admin())
+  WITH CHECK (is_admin());
+
+-- Políticas para Brands
+CREATE POLICY "Admins full access brands"
+  ON brands FOR ALL
+  USING (is_admin())
+  WITH CHECK (is_admin());
+
+-- Políticas para Categories
+CREATE POLICY "Admins full access categories"
+  ON categories FOR ALL
+  USING (is_admin())
+  WITH CHECK (is_admin());
+
+-- Políticas para Orders
+CREATE POLICY "Users can read own orders"
+  ON orders FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins can read all orders"
+  ON orders FOR SELECT
+  USING (is_admin());
+
+CREATE POLICY "Users can create own orders"
+  ON orders FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Admins can update orders"
+  ON orders FOR UPDATE
+  USING (is_admin())
+  WITH CHECK (is_admin());
 
 -- ============================================
 -- POLÍTICAS STORAGE

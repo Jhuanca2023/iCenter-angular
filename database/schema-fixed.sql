@@ -1,6 +1,7 @@
 -- ============================================
--- ESQUEMA SQL PARA SUPABASE - iCenter
+-- ESQUEMA SQL PARA SUPABASE - iCenter (ORDEN CORREGIDO)
 -- ============================================
+-- Ejecuta este script completo en Supabase SQL Editor
 
 -- 1. TABLA: users
 -- ============================================
@@ -52,7 +53,7 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE INDEX IF NOT EXISTS idx_categories_brand ON categories(brand_id);
 CREATE INDEX IF NOT EXISTS idx_categories_visible ON categories(visible);
 
--- Tabla intermedia: brand_categories (marcas - categorías)
+-- 4. Tabla intermedia: brand_categories (marcas - categorías)
 -- DEBE CREARSE DESPUÉS DE categories
 CREATE TABLE IF NOT EXISTS brand_categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -66,7 +67,7 @@ CREATE TABLE IF NOT EXISTS brand_categories (
 CREATE INDEX IF NOT EXISTS idx_brand_categories_brand ON brand_categories(brand_id);
 CREATE INDEX IF NOT EXISTS idx_brand_categories_category ON brand_categories(category_id);
 
--- 4. TABLA: products
+-- 5. TABLA: products
 -- ============================================
 CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -82,6 +83,7 @@ CREATE TABLE IF NOT EXISTS products (
   visible BOOLEAN DEFAULT true,
   featured BOOLEAN DEFAULT false,
   recommended BOOLEAN DEFAULT false,
+  image TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -95,7 +97,7 @@ CREATE TABLE IF NOT EXISTS product_categories (
   UNIQUE(product_id, category_id)
 );
 
--- 5. TABLA: product_colors
+-- 6. TABLA: product_colors
 -- ============================================
 CREATE TABLE IF NOT EXISTS product_colors (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -106,7 +108,7 @@ CREATE TABLE IF NOT EXISTS product_colors (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. TABLA: product_color_images
+-- 7. TABLA: product_color_images
 -- ============================================
 CREATE TABLE IF NOT EXISTS product_color_images (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -128,7 +130,7 @@ CREATE INDEX IF NOT EXISTS idx_product_categories_category ON product_categories
 CREATE INDEX IF NOT EXISTS idx_product_colors_product ON product_colors(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_color_images_color ON product_color_images(product_color_id);
 
--- 7. TABLA: orders
+-- 8. TABLA: orders
 -- ============================================
 CREATE TABLE IF NOT EXISTS orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -141,7 +143,7 @@ CREATE TABLE IF NOT EXISTS orders (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. TABLA: order_items
+-- 9. TABLA: order_items
 -- ============================================
 CREATE TABLE IF NOT EXISTS order_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -208,36 +210,12 @@ ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE brand_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_categories ENABLE ROW LEVEL SECURITY;
 
--- Políticas básicas (ajustar según necesidades de seguridad)
--- Por ahora, permitir lectura pública para productos visibles
+-- Políticas básicas (las políticas completas están en POLICIES.sql)
 CREATE POLICY "Productos públicos visibles" ON products
   FOR SELECT USING (visible = true AND status = 'Activo');
 
--- Los administradores pueden hacer todo (ajustar con auth)
--- CREATE POLICY "Admin full access" ON products
---   FOR ALL USING (auth.role() = 'administrator');
+CREATE POLICY "Marcas públicas visibles" ON brands
+  FOR SELECT USING (visible = true);
 
--- ============================================
--- VISTAS ÚTILES
--- ============================================
-
--- Vista: products_with_details
-CREATE OR REPLACE VIEW products_with_details AS
-SELECT 
-  p.*,
-  b.name as brand_name,
-  COUNT(DISTINCT pc.id) as color_count,
-  COUNT(DISTINCT pci.id) as total_images
-FROM products p
-LEFT JOIN brands b ON p.brand_id = b.id
-LEFT JOIN product_colors pc ON pc.product_id = p.id
-LEFT JOIN product_color_images pci ON pci.product_color_id = pc.id
-GROUP BY p.id, b.name;
-
--- Vista: categories_with_brand
-CREATE OR REPLACE VIEW categories_with_brand AS
-SELECT 
-  c.*,
-  b.name as brand_name
-FROM categories c
-LEFT JOIN brands b ON c.brand_id = b.id;
+CREATE POLICY "Categorías públicas visibles" ON categories
+  FOR SELECT USING (visible = true);

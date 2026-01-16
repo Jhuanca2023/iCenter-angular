@@ -27,7 +27,8 @@ export class AdminLayoutComponent implements OnInit {
   
   adminInfo = {
     name: 'Admin',
-    email: 'admin@icenter.com'
+    email: 'admin@icenter.com',
+    avatar: undefined as string | undefined
   };
 
   constructor(
@@ -40,7 +41,8 @@ export class AdminLayoutComponent implements OnInit {
       if (user) {
         this.adminInfo = {
           name: user.name || 'Admin',
-          email: user.email || 'admin@icenter.com'
+          email: user.email || 'admin@icenter.com',
+          avatar: user.avatar
         };
       }
     });

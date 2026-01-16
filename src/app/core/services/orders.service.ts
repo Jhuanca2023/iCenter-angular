@@ -104,6 +104,21 @@ export class OrdersService {
     );
   }
 
+  getByUserId(userId: string): Observable<Order[]> {
+    return from(
+      this.supabase
+        .from('orders')
+        .select('*, order_items(*, products(*))')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return this.mapToOrders(response.data || []);
+      })
+    );
+  }
+
   delete(id: string): Observable<void> {
     return from(
       this.supabase
@@ -120,11 +135,13 @@ export class OrdersService {
   private mapToOrder(data: any): Order {
     return {
       id: data.id,
+      orderNumber: data.order_number || data.id.substring(0, 8).toUpperCase(),
       customer: data.customer_name,
       customerEmail: data.customer_email,
       total: parseFloat(data.total),
       status: data.status,
       date: data.created_at ? new Date(data.created_at).toLocaleDateString('es-PE') : '',
+      createdAt: data.created_at ? new Date(data.created_at) : new Date(),
       userId: data.user_id,
       items: (data.order_items || []).map((item: any) => ({
         productId: item.product_id,

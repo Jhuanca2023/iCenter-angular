@@ -1,0 +1,30 @@
+<div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Mi Perfil</h1>
+      <p class="text-slate-600">Gestiona tu información personal</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
+      <!-- Profile Header -->
+      <app-profile-header></app-profile-header>
+
+      <!-- Navigation Tabs -->
+      <div class="flex flex-wrap gap-4 border-b border-gray-200">
+        <a routerLink="/perfil/editar" routerLinkActive="border-purple-600 text-purple-600" [routerLinkActiveOptions]="{exact: false}" class="px-4 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition font-medium">
+          Editar Perfil
+        </a>
+        <a routerLink="/perfil/seguridad" routerLinkActive="border-purple-600 text-purple-600" class="px-4 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition font-medium">
+          Seguridad
+        </a>
+      </div>
+
+      <!-- Router Outlet for child components -->
+      <div class="mt-6">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </div>
+</div>
