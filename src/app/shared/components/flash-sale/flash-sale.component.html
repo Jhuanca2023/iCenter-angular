@@ -29,8 +29,8 @@
       <app-product-card *ngFor="let product of products" [product]="{
         id: product.id,
         name: product.name,
-        category: 'Ofertas',
-        price: product.currentPrice,
+        category: product.category,
+        price: product.price,
         originalPrice: product.originalPrice,
         rating: product.rating,
         reviews: product.reviews,

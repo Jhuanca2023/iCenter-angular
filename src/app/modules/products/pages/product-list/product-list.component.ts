@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,8 @@ import { ProductCardComponent } from '../../components/product-card/product-card
 import { ProductSearchComponent } from '../../components/product-search/product-search.component';
 import { FilterBarComponent, FilterOptions } from '../../components/filter-bar/filter-bar.component';
 import { ProductSortComponent, SortOption } from '../../components/product-sort/product-sort.component';
+import { ProductsService } from '../../../../core/services/products.service';
+import { Subscription } from 'rxjs';
 
 interface Product {
   id: number;
@@ -34,133 +36,68 @@ interface Product {
   templateUrl: './product-list.component.html',
   changeDetection: ChangeDetectionStrategy.Default
 })
-export default class ProductListComponent {
-  allProducts: Product[] = [
-    {
-      id: 1,
-      name: 'AirPods Pro Ultra 2',
-      category: 'Audífonos',
-      price: 149,
-      originalPrice: 249,
-      rating: 4,
-      reviews: 125,
-      image: 'https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImageWithoutBg.png',
-      description: 'Audífonos inalámbricos avanzados diseñados para ofrecer una experiencia de audio excepcional'
-    },
-    {
-      id: 2,
-      name: 'Sony WH-1000XM5',
-      category: 'Audífonos',
-      price: 299,
-      originalPrice: 399,
-      rating: 5,
-      reviews: 89,
-      image: 'https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImageWithoutBg.png',
-      description: 'Cancelación de ruido líder en la industria con calidad de sonido premium'
-    },
-    {
-      id: 3,
-      name: 'Bose QuietComfort 45',
-      category: 'Audífonos',
-      price: 279,
-      originalPrice: 329,
-      rating: 4,
-      reviews: 156,
-      image: 'https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImageWithoutBg.png',
-      description: 'Comodidad excepcional con cancelación de ruido activa'
-    },
-    {
-      id: 4,
-      name: 'Samsung Galaxy Buds2 Pro',
-      category: 'Audífonos',
-      price: 199,
-      originalPrice: 229,
-      rating: 4,
-      reviews: 203,
-      image: 'https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImageWithoutBg.png',
-      description: 'Audífonos true wireless con calidad de audio 360'
-    },
-    {
-      id: 5,
-      name: 'JBL Tune 760NC',
-      category: 'Audífonos',
-      price: 99,
-      originalPrice: 149,
-      rating: 4,
-      reviews: 78,
-      image: 'https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImageWithoutBg.png',
-      description: 'Sonido JBL Pure Bass con cancelación de ruido'
-    },
-    {
-      id: 6,
-      name: 'Casual Shoes',
-      category: 'Sports',
-      price: 28,
-      originalPrice: 40,
-      rating: 4,
-      reviews: 4,
-      image: 'https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImageWithoutBg.png',
-      description: 'Zapatos casuales cómodos para uso diario'
-    },
-    {
-      id: 7,
-      name: 'Running Shoes',
-      category: 'Sports',
-      price: 35,
-      originalPrice: 50,
-      rating: 4,
-      reviews: 8,
-      image: 'https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImageWithoutBg.png',
-      description: 'Zapatos deportivos ideales para correr'
-    },
-    {
-      id: 8,
-      name: 'Basketball Shoes',
-      category: 'Sports',
-      price: 45,
-      originalPrice: 60,
-      rating: 4,
-      reviews: 12,
-      image: 'https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/card/productImageWithoutBg.png',
-      description: 'Zapatos de baloncesto con máximo agarre'
-    },
-    {
-      id: 9,
-      name: 'Xiphone 14 Pro Maxe',
-      category: 'Smartphones',
-      price: 175,
-      originalPrice: 200,
-      rating: 4,
-      reviews: 121,
-      image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=300&h=300&fit=crop',
-      description: 'Smartphone de última generación con pantalla ProMotion'
-    },
-    {
-      id: 10,
-      name: 'Samsonge Galaxy S24',
-      category: 'Smartphones',
-      price: 299,
-      originalPrice: 399,
-      rating: 5,
-      reviews: 234,
-      image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop',
-      description: 'Smartphone premium con cámara avanzada y pantalla AMOLED'
-    }
-  ];
-
-  filteredProducts: Product[] = [...this.allProducts];
+export default class ProductListComponent implements OnInit, OnDestroy {
+  allProducts: Product[] = [];
+  filteredProducts: Product[] = [];
+  isLoading = false;
+  error: string | null = null;
+  private subscription?: Subscription;
   searchTerm = '';
   currentFilters: FilterOptions = {};
   currentSort: SortOption = 'relevance';
   isFilterModalOpen = false;
 
-  categories = ['Audífonos', 'Sports', 'Smartphones', 'Laptops', 'Tablets'];
-  brands = ['Apple', 'Samsung', 'Sony', 'Bose', 'JBL', 'Nike', 'Adidas'];
+  categories: string[] = [];
+  brands: string[] = [];
   
   // Estado temporal para el modal
   tempSelectedCategories: string[] = [];
   tempSelectedBrands: string[] = [];
   tempPriceRange = { min: 0, max: 5000 };
+
+  constructor(private productsService: ProductsService) {}
+
+  ngOnInit(): void {
+    this.loadProducts();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  loadProducts(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.subscription = this.productsService.searchProducts().subscribe({
+      next: (response) => {
+        this.allProducts = response.products;
+        this.filteredProducts = [...this.allProducts];
+        this.extractCategoriesAndBrands();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando productos:', err);
+        this.error = 'Error al cargar los productos. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private extractCategoriesAndBrands(): void {
+    const uniqueCategories = new Set<string>();
+    const uniqueBrands = new Set<string>();
+    
+    this.allProducts.forEach(product => {
+      if (product.category) uniqueCategories.add(product.category);
+      if ((product as any).brand) uniqueBrands.add((product as any).brand);
+    });
+    
+    this.categories = Array.from(uniqueCategories).sort();
+    this.brands = Array.from(uniqueBrands).sort();
+  }
 
   onSearchChange(term: string): void {
     this.searchTerm = term;

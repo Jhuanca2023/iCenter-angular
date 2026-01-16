@@ -4,6 +4,43 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Observable, from, forkJoin } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
+export interface ProductSearchParams {
+  query?: string;
+  filters?: {
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    brand?: string;
+    rating?: number;
+    inStock?: boolean;
+  };
+  sort?: 'relevance' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc' | 'rating';
+  page?: number;
+  limit?: number;
+}
+
+export interface ProductListResponse {
+  products: ClientProduct[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ClientProduct {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  originalPrice?: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  description?: string;
+  stock?: number;
+  brand?: string;
+}
+
 export interface ProductColor {
   id?: string;
   name: string;
@@ -177,6 +214,117 @@ export class ProductsService {
     );
   }
 
+  searchProducts(params?: ProductSearchParams): Observable<ProductListResponse> {
+    return this.getAll().pipe(
+      map(products => {
+        let filtered = [...products];
+
+        if (params?.query) {
+          const term = params.query.toLowerCase();
+          filtered = filtered.filter(p =>
+            p.name.toLowerCase().includes(term) ||
+            (p.description && p.description.toLowerCase().includes(term)) ||
+            (Array.isArray(p.categories) && p.categories.some((cat: string) => cat.toLowerCase().includes(term)))
+          );
+        }
+
+        if (params?.filters) {
+          const filters = params.filters;
+          if (filters.category) {
+            filtered = filtered.filter(p => 
+              Array.isArray(p.categories) && p.categories.includes(filters.category!)
+            );
+          }
+          if (filters.minPrice !== undefined) {
+            filtered = filtered.filter(p => p.price >= filters.minPrice!);
+          }
+          if (filters.maxPrice !== undefined) {
+            filtered = filtered.filter(p => p.price <= filters.maxPrice!);
+          }
+          if (filters.brand) {
+            filtered = filtered.filter(p => p.brand === filters.brand);
+          }
+          if (filters.inStock !== undefined) {
+            filtered = filtered.filter(p => (p.stock || 0) > 0);
+          }
+        }
+
+        if (params?.sort) {
+          filtered = this.sortProducts(filtered, params.sort);
+        }
+
+        const page = params?.page || 1;
+        const limit = params?.limit || 10;
+        const total = filtered.length;
+        const totalPages = Math.ceil(total / limit);
+        const startIndex = (page - 1) * limit;
+        const paginatedProducts = filtered.slice(startIndex, startIndex + limit);
+
+        return {
+          products: this.mapToClientProducts(paginatedProducts),
+          total,
+          page,
+          limit,
+          totalPages
+        };
+      })
+    );
+  }
+
+  getProductByIdForClient(id: number | string): Observable<ClientProduct | undefined> {
+    return this.getById(String(id)).pipe(
+      map(product => product ? this.mapToClientProduct(product) : undefined)
+    );
+  }
+
+  private mapToClientProducts(products: Product[]): ClientProduct[] {
+    return products.map(p => this.mapToClientProduct(p));
+  }
+
+  private mapToClientProduct(product: Product): ClientProduct {
+    return {
+      id: Number(product.id) || 0,
+      name: product.name,
+      category: Array.isArray(product.categories) && product.categories.length > 0 
+        ? product.categories[0] 
+        : 'Sin categoría',
+      price: product.on_sale && product.sale_price ? product.sale_price : product.price,
+      originalPrice: product.on_sale && product.sale_price ? product.price : undefined,
+      rating: 4,
+      reviews: 0,
+      image: product.image || (product.colors && product.colors[0]?.images?.[0]) || '',
+      description: product.description,
+      stock: product.stock || 0,
+      brand: product.brand || ''
+    };
+  }
+
+  private sortProducts(products: Product[], sort: string): Product[] {
+    const sorted = [...products];
+    switch (sort) {
+      case 'price-asc':
+        return sorted.sort((a, b) => {
+          const priceA = a.on_sale && a.sale_price ? a.sale_price : a.price;
+          const priceB = b.on_sale && b.sale_price ? b.sale_price : b.price;
+          return priceA - priceB;
+        });
+      case 'price-desc':
+        return sorted.sort((a, b) => {
+          const priceA = a.on_sale && a.sale_price ? a.sale_price : a.price;
+          const priceB = b.on_sale && b.sale_price ? b.sale_price : b.price;
+          return priceB - priceA;
+        });
+      case 'name-asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name-desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      case 'rating':
+        return sorted;
+      default:
+        return sorted;
+    }
+  }
+
   private saveProductColor(productId: string, color: ProductColor): Observable<any> {
     return from(
       this.supabase
@@ -279,7 +427,7 @@ export class ProductsService {
               visible: productData.visible,
               featured: productData.featured,
               recommended: productData.recommended,
-              categories,
+              categories: Array.isArray(categories) ? categories as string[] : [],
               colors,
               image: colors[0]?.images[0] || null,
               created_at: productData.created_at,

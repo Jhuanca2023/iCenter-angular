@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { User } from '../../../interfaces/user.interface';
+import { UsersService } from '../../../../../core/services/users.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -16,7 +17,10 @@ export default class UserDeleteComponent implements OnInit, OnDestroy {
   userId: string | null = null;
   user: User | null = null;
   showConfirmModal = true;
+  isLoading = false;
+  error: string | null = null;
   private routeSubscription?: Subscription;
+  private dataSubscription?: Subscription;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -26,13 +30,16 @@ export default class UserDeleteComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private usersService: UsersService
   ) {}
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap.subscribe(params => {
       this.userId = params.get('id');
-      this.loadUserData();
+      if (this.userId) {
+        this.loadUserData();
+      }
     });
   }
 
@@ -40,22 +47,47 @@ export default class UserDeleteComponent implements OnInit, OnDestroy {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+    if (this.dataSubscription) {
+      this.dataSubscription.unsubscribe();
+    }
   }
 
   loadUserData(): void {
-    // Mock data
-    this.user = {
-      id: parseInt(this.userId || '1'),
-      name: 'Juan Pérez',
-      email: 'juan@example.com',
-      role: 'Usuario',
-      status: 'Activo'
-    };
+    if (!this.userId) return;
+    
+    this.isLoading = true;
+    this.error = null;
+    
+    this.dataSubscription = this.usersService.getById(this.userId).subscribe({
+      next: (user) => {
+        this.user = user;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando usuario:', err);
+        this.error = 'Error al cargar el usuario. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
   }
 
   confirmDelete(): void {
-    console.log('Usuario eliminado:', this.userId);
-    this.router.navigate(['/admin/users']);
+    if (!this.userId) return;
+    
+    this.isLoading = true;
+    this.error = null;
+    
+    this.usersService.delete(this.userId).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.router.navigate(['/admin/users']);
+      },
+      error: (err) => {
+        console.error('Error eliminando usuario:', err);
+        this.error = 'Error al eliminar el usuario. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
   }
 
   cancelDelete(): void {

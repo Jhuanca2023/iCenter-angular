@@ -9,7 +9,7 @@ export function getSupabaseClient(): SupabaseClient {
     const supabaseAnonKey = environment.supabaseAnonKey;
     
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.warn('⚠️ Supabase URL o Anon Key no configurados. Usando valores vacíos.');
+      console.warn('Supabase URL o Anon Key no configurados. Usando valores vacíos.');
       supabaseClient = createClient(
         supabaseUrl || 'https://placeholder.supabase.co',
         supabaseAnonKey || 'placeholder-key'

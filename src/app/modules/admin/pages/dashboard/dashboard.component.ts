@@ -2,6 +2,10 @@ import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef } fr
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
+import { UsersService } from '../../../../core/services/users.service';
+import { ProductsService } from '../../../../core/services/products.service';
+import { CategoriesService } from '../../../../core/services/categories.service';
+import { forkJoin, Subscription } from 'rxjs';
 
 Chart.register(...registerables);
 
@@ -26,65 +30,124 @@ export default class DashboardComponent implements OnInit, AfterViewInit, OnDest
   stats = [
     { 
       title: 'Usuarios activos', 
-      value: '7', 
-      change: '+46.7%', 
-      subtitle: '15 nuevos esta semana',
+      value: '0', 
+      change: '0%', 
+      subtitle: 'Cargando...',
       icon: 'users',
-      trend: 'up'
+      trend: 'neutral' as 'up' | 'down' | 'neutral'
     },
     { 
       title: 'Productos totales', 
-      value: '45', 
-      change: '+100%', 
-      subtitle: '10 productos con poco stock',
+      value: '0', 
+      change: '0%', 
+      subtitle: 'Cargando...',
       icon: 'products',
-      trend: 'up'
+      trend: 'neutral' as 'up' | 'down' | 'neutral'
     },
     { 
       title: 'Categorías', 
-      value: '8', 
-      change: '+0%', 
-      subtitle: '5 categorías activas',
+      value: '0', 
+      change: '0%', 
+      subtitle: 'Cargando...',
       icon: 'categories',
-      trend: 'neutral'
+      trend: 'neutral' as 'up' | 'down' | 'neutral'
     },
     { 
       title: 'Usuarios totales', 
-      value: '15', 
-      change: '+100%', 
-      subtitle: '47% activos actualmente',
+      value: '0', 
+      change: '0%', 
+      subtitle: 'Cargando...',
       icon: 'total-users',
-      trend: 'up'
+      trend: 'neutral' as 'up' | 'down' | 'neutral'
     }
   ];
 
-  lowStockProducts = [
-    { name: 'CELULAR XIAOMI REDMI 14C', stock: 0, status: 'Sin stock' },
-    { name: 'CELULAR HONOR MAGIC7 LITE', stock: 1, status: 'Crítico' },
-    { name: 'TELEVISOR SMART TV SAMSUNG', stock: 1, status: 'Crítico' },
-    { name: 'SMARTPHONE SAMSUNG GALAXY', stock: 2, status: 'Crítico' },
-    { name: 'LAPTOP LENOVO LOQ INTEL C', stock: 2, status: 'Crítico' },
-    { name: 'CONSOLA DE 10MIL JUEGOS', stock: 3, status: 'Bajo' },
-    { name: 'AUDÍFONOS SONY TRUE WIRELESS', stock: 3, status: 'Bajo' },
-    { name: 'IMPRESORA MULTIFUNCIONAL HP', stock: 3, status: 'Bajo' }
-  ];
+  lowStockProducts: Array<{ name: string; stock: number; status: string }> = [];
+  categoryDistribution: Array<{ category: string; products: number; percentage: number; color: string }> = [];
+  isLoading = false;
+  private subscription?: Subscription;
 
-  categoryDistribution = [
-    { category: 'Gaming', products: 8, percentage: 18, color: '#6366f1' },
-    { category: 'Laptops', products: 7, percentage: 16, color: '#ec4899' },
-    { category: 'Smartphones', products: 7, percentage: 16, color: '#22c55e' },
-    { category: 'Audio', products: 5, percentage: 11, color: '#fb923c' },
-    { category: 'Wearables', products: 5, percentage: 11, color: '#a855f7' }
-  ];
+  constructor(
+    private usersService: UsersService,
+    private productsService: ProductsService,
+    private categoriesService: CategoriesService
+  ) {}
 
   ngOnInit(): void {
+    this.loadDashboardData();
+  }
+
+  loadDashboardData(): void {
+    this.isLoading = true;
+    
+    this.subscription = forkJoin({
+      users: this.usersService.getAll(),
+      products: this.productsService.getAll(),
+      categories: this.categoriesService.getAll()
+    }).subscribe({
+      next: ({ users, products, categories }) => {
+        const activeUsers = users.filter(u => u.status === 'Activo').length;
+        const totalUsers = users.length;
+        const totalProducts = products.length;
+        const lowStock = products.filter(p => p.stock <= 3).slice(0, 8);
+        const totalCategories = categories.length;
+        
+        this.stats[0].value = activeUsers.toString();
+        this.stats[0].subtitle = `${activeUsers} usuarios activos`;
+        this.stats[1].value = totalProducts.toString();
+        this.stats[1].subtitle = `${lowStock.length} productos con poco stock`;
+        this.stats[2].value = totalCategories.toString();
+        this.stats[2].subtitle = `${categories.filter(c => c.visible).length} categorías activas`;
+        this.stats[3].value = totalUsers.toString();
+        this.stats[3].subtitle = `${Math.round((activeUsers / totalUsers) * 100) || 0}% activos actualmente`;
+        
+        this.lowStockProducts = lowStock.map(p => ({
+          name: p.name,
+          stock: p.stock,
+          status: p.stock === 0 ? 'Sin stock' : p.stock <= 2 ? 'Crítico' : 'Bajo'
+        }));
+        
+        const categoryMap = new Map<string, number>();
+        products.forEach(p => {
+          if (p.categories) {
+            p.categories.forEach(cat => {
+              categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
+            });
+          }
+        });
+        
+        const colors = ['#6366f1', '#ec4899', '#22c55e', '#fb923c', '#a855f7', '#3b82f6', '#f59e0b'];
+        const total = products.length;
+        this.categoryDistribution = Array.from(categoryMap.entries())
+          .map(([category, count], index) => ({
+            category,
+            products: count,
+            percentage: Math.round((count / total) * 100),
+            color: colors[index % colors.length]
+          }))
+          .sort((a, b) => b.products - a.products)
+          .slice(0, 5);
+        
+        this.isLoading = false;
+        setTimeout(() => {
+          this.initBarChart();
+          this.initDoughnutChart();
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Error cargando datos del dashboard:', err);
+        this.isLoading = false;
+      }
+    });
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initBarChart();
-      this.initDoughnutChart();
-    }, 100);
+    if (!this.isLoading) {
+      setTimeout(() => {
+        this.initBarChart();
+        this.initDoughnutChart();
+      }, 100);
+    }
   }
 
   initBarChart(): void {
