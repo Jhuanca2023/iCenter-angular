@@ -59,11 +59,14 @@ export class StorageService {
   }
 
   getPublicUrl(bucket: string, path: string): Observable<string> {
-    const { data } = this.supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
-
-    return from([data.publicUrl]);
+    return new Observable(observer => {
+      const { data } = this.supabase.storage
+        .from(bucket)
+        .getPublicUrl(path);
+      
+      observer.next(data.publicUrl);
+      observer.complete();
+    });
   }
 
   deleteMultipleImages(bucket: string, paths: string[]): Observable<void> {

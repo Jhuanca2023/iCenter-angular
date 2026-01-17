@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { User } from '../../interfaces/user.interface';
+import { UsersService } from '../../../../core/services/users.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-users',
@@ -13,7 +15,7 @@ import { User } from '../../interfaces/user.interface';
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
-export default class AdminUsersComponent {
+export default class AdminUsersComponent implements OnInit, OnDestroy {
   searchTerm = '';
   currentPage = 1;
   itemsPerPage = 10;
@@ -23,15 +25,39 @@ export default class AdminUsersComponent {
     { label: 'Usuarios' }
   ];
 
-  users: User[] = [
-    { id: 1, name: 'Juan Pérez', email: 'juan@example.com', role: 'Usuario', status: 'Activo', lastAccess: '4 may 2025', createdAt: new Date('2025-05-03') },
-    { id: 2, name: 'María García', email: 'maria@example.com', role: 'Usuario', status: 'Activo', lastAccess: '3 may 2025', createdAt: new Date('2025-05-02') },
-    { id: 3, name: 'Carlos Rodríguez', email: 'carlos@example.com', role: 'Usuario', status: 'Activo', lastAccess: '4 may 2025', createdAt: new Date('2025-05-01') },
-    { id: 4, name: 'Ana Martínez', email: 'ana@example.com', role: 'Administrador', status: 'Activo', lastAccess: '4 may 2025', createdAt: new Date('2025-04-28') },
-    { id: 5, name: 'Luis González', email: 'luis@example.com', role: 'Usuario', status: 'Inactivo', lastAccess: 'Nunca', createdAt: new Date('2025-04-25') },
-    { id: 6, name: 'Laura Sánchez', email: 'laura@example.com', role: 'Usuario', status: 'Activo', lastAccess: '3 may 2025', createdAt: new Date('2025-04-20') },
-    { id: 7, name: 'Pedro López', email: 'pedro@example.com', role: 'Usuario', status: 'Activo', lastAccess: '4 may 2025', createdAt: new Date('2025-04-15') }
-  ];
+  users: User[] = [];
+  isLoading = false;
+  error: string | null = null;
+  private subscription?: Subscription;
+
+  constructor(private usersService: UsersService) {}
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  loadUsers(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.subscription = this.usersService.getAll().subscribe({
+      next: (users) => {
+        this.users = users;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando usuarios:', err);
+        this.error = 'Error al cargar los usuarios. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
+  }
 
   selectedFilter: 'todos' | 'activos' | 'inactivos' = 'todos';
 
@@ -108,6 +134,16 @@ export default class AdminUsersComponent {
     const d = new Date(date);
     const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  getAuthProviderLabel(user: User): string {
+    return user.authProvider === 'google' ? 'Google' : 'Email';
+  }
+
+  getAuthProviderBadgeClass(user: User): string {
+    return user.authProvider === 'google' 
+      ? 'px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800'
+      : 'px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800';
   }
 
   setFilter(filter: 'todos' | 'activos' | 'inactivos'): void {

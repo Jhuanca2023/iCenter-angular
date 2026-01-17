@@ -12,6 +12,14 @@ CREATE TABLE IF NOT EXISTS users (
   status TEXT NOT NULL DEFAULT 'Activo' CHECK (status IN ('Activo', 'Inactivo')),
   last_access TIMESTAMPTZ,
   avatar TEXT,
+  auth_provider TEXT DEFAULT 'email' CHECK (auth_provider IN ('email', 'google')),
+  phone TEXT,
+  address TEXT,
+  city TEXT,
+  country TEXT,
+  postal_code TEXT,
+  first_name TEXT,
+  last_name TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -32,21 +40,10 @@ CREATE TABLE IF NOT EXISTS brands (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Tabla intermedia: brand_categories (marcas - categorías)
-CREATE TABLE IF NOT EXISTS brand_categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  brand_id UUID REFERENCES brands(id) ON DELETE CASCADE,
-  category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(brand_id, category_id)
-);
-
 -- Índices para brands
 CREATE INDEX IF NOT EXISTS idx_brands_visible ON brands(visible);
-CREATE INDEX IF NOT EXISTS idx_brand_categories_brand ON brand_categories(brand_id);
-CREATE INDEX IF NOT EXISTS idx_brand_categories_category ON brand_categories(category_id);
 
--- 3. TABLA: categories
+-- 3. TABLA: categories (DEBE CREARSE ANTES DE brand_categories)
 -- ============================================
 CREATE TABLE IF NOT EXISTS categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -62,6 +59,20 @@ CREATE TABLE IF NOT EXISTS categories (
 -- Índices para categories
 CREATE INDEX IF NOT EXISTS idx_categories_brand ON categories(brand_id);
 CREATE INDEX IF NOT EXISTS idx_categories_visible ON categories(visible);
+
+-- Tabla intermedia: brand_categories (marcas - categorías)
+-- DEBE CREARSE DESPUÉS DE categories
+CREATE TABLE IF NOT EXISTS brand_categories (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand_id UUID REFERENCES brands(id) ON DELETE CASCADE,
+  category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(brand_id, category_id)
+);
+
+-- Índices para brand_categories
+CREATE INDEX IF NOT EXISTS idx_brand_categories_brand ON brand_categories(brand_id);
+CREATE INDEX IF NOT EXISTS idx_brand_categories_category ON brand_categories(category_id);
 
 -- 4. TABLA: products
 -- ============================================

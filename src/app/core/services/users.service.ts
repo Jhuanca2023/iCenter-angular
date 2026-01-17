@@ -31,10 +31,16 @@ export class UsersService {
         .from('users')
         .select('*')
         .eq('id', id)
-        .single()
+        .maybeSingle()
     ).pipe(
       map(response => {
-        if (response.error) throw response.error;
+        if (response.error) {
+          // Si es error PGRST116 (no encontrado), retornar null
+          if (response.error.code === 'PGRST116') {
+            return null;
+          }
+          throw response.error;
+        }
         return response.data ? this.mapToUser(response.data) : null;
       })
     );
@@ -70,6 +76,15 @@ export class UsersService {
     if (user.role) userData.role = user.role;
     if (user.status) userData.status = user.status;
     if (user.avatar !== undefined) userData.avatar = user.avatar;
+    
+    // Campos adicionales del perfil
+    if ((user as any).phone !== undefined) userData.phone = (user as any).phone;
+    if ((user as any).address !== undefined) userData.address = (user as any).address;
+    if ((user as any).city !== undefined) userData.city = (user as any).city;
+    if ((user as any).country !== undefined) userData.country = (user as any).country;
+    if ((user as any).postal_code !== undefined) userData.postal_code = (user as any).postal_code;
+    if ((user as any).first_name !== undefined) userData.first_name = (user as any).first_name;
+    if ((user as any).last_name !== undefined) userData.last_name = (user as any).last_name;
 
     return from(
       this.supabase
@@ -100,17 +115,43 @@ export class UsersService {
   }
 
   private mapToUser(data: any): User {
-    return {
-      id: data.id,
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      status: data.status,
+    // Convertir UUID a número hash para compatibilidad con la interfaz User
+    let numericId = 0;
+    const originalUuid = data.id; // Guardar UUID original
+    if (data.id) {
+      if (typeof data.id === 'string' && data.id.includes('-')) {
+        // Es un UUID, convertir a número hash
+        const idHash = data.id.split('-').join('').substring(0, 15);
+        numericId = parseInt(idHash, 16) || 0;
+      } else if (typeof data.id === 'number') {
+        numericId = data.id;
+      }
+    }
+    
+    const user: any = {
+      id: numericId,
+      uuid: originalUuid, // Guardar UUID original para búsquedas
+      name: data.name || '',
+      email: data.email || '',
+      role: data.role || 'Usuario',
+      status: data.status || 'Activo',
       lastAccess: data.last_access ? new Date(data.last_access).toLocaleDateString('es-PE') : undefined,
       avatar: data.avatar,
       createdAt: data.created_at ? new Date(data.created_at) : undefined,
-      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined
+      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined,
+      authProvider: data.auth_provider || 'email'
     };
+    
+    // Campos adicionales del perfil
+    if (data.phone) user.phone = data.phone;
+    if (data.address) user.address = data.address;
+    if (data.city) user.city = data.city;
+    if (data.country) user.country = data.country;
+    if (data.postal_code) user.postal_code = data.postal_code;
+    if (data.first_name) user.first_name = data.first_name;
+    if (data.last_name) user.last_name = data.last_name;
+    
+    return user;
   }
 
   private mapToUsers(data: any[]): User[] {

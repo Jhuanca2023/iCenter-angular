@@ -19,6 +19,7 @@ export interface FilterOptions {
 })
 export class FilterBarComponent {
   @Input() categories: string[] = [];
+  @Input() brands: string[] = [];
   @Input() minPrice = 0;
   @Input() maxPrice = 5000;
   @Output() filtersChange = new EventEmitter<FilterOptions>();
@@ -27,7 +28,6 @@ export class FilterBarComponent {
   selectedCategories: string[] = [];
   selectedBrands: string[] = [];
   priceRange = { min: 0, max: 5000 };
-  brands = ['Apple', 'Samsung', 'Sony', 'Bose', 'JBL', 'Nike', 'Adidas'];
 
   ngOnInit(): void {
     this.priceRange = { min: this.minPrice, max: this.maxPrice };

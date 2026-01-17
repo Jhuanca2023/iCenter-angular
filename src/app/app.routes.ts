@@ -16,6 +16,14 @@ export const routes: Routes = [
       {
         path: 'productos',
         children: productsRoutes
+      },
+      {
+        path: 'perfil',
+        loadChildren: () => import('./modules/user/profile/profile.routes').then(m => m.profileRoutes)
+      },
+      {
+        path: 'pedidos',
+        loadChildren: () => import('./modules/user/orders/orders.routes').then(m => m.ordersRoutes)
       }
     ]
   },

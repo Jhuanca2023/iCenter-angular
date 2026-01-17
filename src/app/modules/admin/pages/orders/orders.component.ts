@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { Order } from '../../interfaces/order.interface';
+import { OrdersService } from '../../../../core/services/orders.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-orders',
@@ -12,7 +14,7 @@ import { Order } from '../../interfaces/order.interface';
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
-export default class AdminOrdersComponent {
+export default class AdminOrdersComponent implements OnInit, OnDestroy {
   searchTerm = '';
   selectedStatus = '';
 
@@ -21,14 +23,39 @@ export default class AdminOrdersComponent {
     { label: 'Pedidos' }
   ];
 
-  orders: Order[] = [
-    { id: '1', customer: 'Juan Pérez', total: 150, status: 'Pendiente', date: '2024-01-15' },
-    { id: '2', customer: 'María García', total: 250, status: 'Completado', date: '2024-01-14' },
-    { id: '3', customer: 'Carlos Rodríguez', total: 89.99, status: 'Completado', date: '2024-01-13' },
-    { id: '4', customer: 'Ana Martínez', total: 1299.99, status: 'Pendiente', date: '2024-01-12' },
-    { id: '5', customer: 'Luis González', total: 349.99, status: 'Completado', date: '2024-01-11' },
-    { id: '6', customer: 'Laura Sánchez', total: 199.99, status: 'Pendiente', date: '2024-01-10' }
-  ];
+  orders: Order[] = [];
+  isLoading = false;
+  error: string | null = null;
+  private subscription?: Subscription;
+
+  constructor(private ordersService: OrdersService) {}
+
+  ngOnInit(): void {
+    this.loadOrders();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  loadOrders(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.subscription = this.ordersService.getAll().subscribe({
+      next: (orders) => {
+        this.orders = orders;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando pedidos:', err);
+        this.error = 'Error al cargar los pedidos. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
+  }
 
   statuses = ['Todos', 'Pendiente', 'Completado', 'Cancelado', 'En Proceso'];
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { User } from '../../../interfaces/user.interface';
+import { UsersService } from '../../../../../core/services/users.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -15,7 +16,10 @@ import { Subscription } from 'rxjs';
 export default class UserDetailComponent implements OnInit, OnDestroy {
   userId: string | null = null;
   user: User | null = null;
+  isLoading = false;
+  error: string | null = null;
   private routeSubscription?: Subscription;
+  private dataSubscription?: Subscription;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -23,12 +27,17 @@ export default class UserDetailComponent implements OnInit, OnDestroy {
     { label: 'Detalle' }
   ];
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private usersService: UsersService
+  ) {}
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap.subscribe(params => {
       this.userId = params.get('id');
-      this.loadUserData();
+      if (this.userId) {
+        this.loadUserData();
+      }
     });
   }
 
@@ -36,20 +45,28 @@ export default class UserDetailComponent implements OnInit, OnDestroy {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+    if (this.dataSubscription) {
+      this.dataSubscription.unsubscribe();
+    }
   }
 
   loadUserData(): void {
-    // Mock data
-    this.user = {
-      id: parseInt(this.userId || '1'),
-      name: 'Juan Pérez',
-      email: 'juan@example.com',
-      role: 'Usuario',
-      status: 'Activo',
-      lastAccess: '4 may 2025',
-      createdAt: new Date('2025-05-03'),
-      updatedAt: new Date('2025-05-04')
-    };
+    if (!this.userId) return;
+    
+    this.isLoading = true;
+    this.error = null;
+    
+    this.dataSubscription = this.usersService.getById(this.userId).subscribe({
+      next: (user) => {
+        this.user = user;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando usuario:', err);
+        this.error = 'Error al cargar el usuario. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
   }
 
   getInitials(name: string): string {
@@ -79,5 +96,17 @@ export default class UserDetailComponent implements OnInit, OnDestroy {
     const d = new Date(date);
     const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  getAuthProviderLabel(): string {
+    if (!this.user) return '';
+    return this.user.authProvider === 'google' ? 'Google' : 'Email/Contraseña';
+  }
+
+  getAuthProviderBadgeClass(): string {
+    if (!this.user) return '';
+    return this.user.authProvider === 'google' 
+      ? 'px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800'
+      : 'px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-800';
   }
 }

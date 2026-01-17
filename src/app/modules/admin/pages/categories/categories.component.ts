@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { CategoriesService, Category } from '../../../../core/services/categories.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-categories',
@@ -12,7 +14,7 @@ import { PaginationComponent } from '../../../../shared/components/pagination/pa
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.css'
 })
-export default class AdminCategoriesComponent {
+export default class AdminCategoriesComponent implements OnInit, OnDestroy {
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
     { label: 'Categorías' }
@@ -22,48 +24,39 @@ export default class AdminCategoriesComponent {
   currentPage = 1;
   itemsPerPage = 10;
   
-  categories = [
-    { 
-      id: 1, 
-      name: 'Gaming', 
-      description: 'Dispositivos de gaming',
-      brand: 'Sony',
-      productCount: 8,
-      visible: true
-    },
-    { 
-      id: 2, 
-      name: 'Laptops', 
-      description: 'Computadoras portátiles',
-      brand: 'HP',
-      productCount: 7,
-      visible: true
-    },
-    { 
-      id: 3, 
-      name: 'Smartphones', 
-      description: 'Teléfonos inteligentes',
-      brand: 'Apple',
-      productCount: 7,
-      visible: true
-    },
-    { 
-      id: 4, 
-      name: 'Audio', 
-      description: 'Audífonos y altavoces',
-      brand: 'Sony',
-      productCount: 5,
-      visible: true
-    },
-    { 
-      id: 5, 
-      name: 'Wearables', 
-      description: 'Dispositivos portátiles',
-      brand: 'Apple',
-      productCount: 5,
-      visible: true
+  categories: Category[] = [];
+  isLoading = false;
+  error: string | null = null;
+  private subscription?: Subscription;
+
+  constructor(private categoriesService: CategoriesService) {}
+
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
     }
-  ];
+  }
+
+  loadCategories(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.subscription = this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando categorías:', err);
+        this.error = 'Error al cargar las categorías. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
+  }
 
   get filteredCategories() {
     let filtered = [...this.categories];

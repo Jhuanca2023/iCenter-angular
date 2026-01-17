@@ -1,14 +1,22 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
-import { Marca } from '../../../interfaces/marca.interface';
+import { ProductsService, Product, ProductColor } from '../../../../../core/services/products.service';
+import { StorageService } from '../../../../../core/services/storage.service';
+import { CategoriesService } from '../../../../../core/services/categories.service';
+import { BrandsService } from '../../../../../core/services/brands.service';
+import { forkJoin, Observable, of } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
 
-interface ProductColor {
-  name: string;
-  hex: string;
-  images: string[];
+interface ImageFile {
+  file: File | null;
+  preview: string;
+}
+
+interface ColorWithFiles extends ProductColor {
+  imageFiles: File[];
 }
 
 @Component({
@@ -25,10 +33,14 @@ interface ProductColor {
   styleUrl: './product-create.component.css'
 })
 export default class ProductCreateComponent {
-  productForm: FormGroup;
-  colors: ProductColor[] = [];
+  productForm!: FormGroup;
+  colors: ColorWithFiles[] = [];
   selectedCategories: string[] = [];
   activeTab: 'precios' | 'inventario' = 'precios';
+  imageType: 'unique' | 'withColor' | null = null;
+  uniqueImages: ImageFile[] = [];
+  isLoading = false;
+  error: string | null = null;
   
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -36,143 +48,92 @@ export default class ProductCreateComponent {
     { label: 'Nuevo producto' }
   ];
   
-  categories = [
-    'Laptops',
-    'Audio',
-    'Cámaras',
-    'Gaming',
-    'Smartphones',
-    'Wearables',
-    'Televisores',
-    'Impresoras'
-  ];
+  categories: Array<{ id: string; name: string }> = [];
+  brands: Array<{ id: string; name: string }> = [];
 
-  brands: Marca[] = [
-    { 
-      id: '1', 
-      name: 'Apple', 
-      description: 'Marca líder en tecnología',
-      categories: ['Smartphones', 'Laptops', 'Wearables'],
-      visible: true
-    },
-    { 
-      id: '2', 
-      name: 'Samsung', 
-      description: 'Innovación tecnológica coreana',
-      categories: ['Smartphones', 'Televisores', 'Audio'],
-      visible: true
-    },
-    { 
-      id: '3', 
-      name: 'Sony', 
-      description: 'Calidad premium en audio y tecnología',
-      categories: ['Audio', 'Cámaras', 'Gaming'],
-      visible: true
-    },
-    { 
-      id: '4', 
-      name: 'HP', 
-      description: 'Soluciones empresariales y personales',
-      categories: ['Laptops', 'Impresoras'],
-      visible: true
-    },
-    { 
-      id: '5', 
-      name: 'Lenovo', 
-      description: 'Computadoras y dispositivos inteligentes',
-      categories: ['Laptops', 'Gaming'],
-      visible: true
-    },
-    { 
-      id: '6', 
-      name: 'Dell', 
-      description: 'Tecnología confiable para todos',
-      categories: ['Laptops', 'Gaming'],
-      visible: true
-    },
-    { 
-      id: '7', 
-      name: 'Asus', 
-      description: 'Innovación en gaming y tecnología',
-      categories: ['Laptops', 'Gaming'],
-      visible: true
-    },
-    { 
-      id: '8', 
-      name: 'Xiaomi', 
-      description: 'Tecnología accesible e innovadora',
-      categories: ['Smartphones', 'Wearables'],
-      visible: true
-    },
-    { 
-      id: '9', 
-      name: 'Huawei', 
-      description: 'Tecnología avanzada en comunicaciones',
-      categories: ['Smartphones', 'Wearables'],
-      visible: true
-    },
-    { 
-      id: '10', 
-      name: 'LG', 
-      description: 'Innovación en electrodomésticos y tecnología',
-      categories: ['Televisores', 'Audio'],
-      visible: true
-    },
-    { 
-      id: '11', 
-      name: 'Microsoft', 
-      description: 'Soluciones de software y hardware',
-      categories: ['Laptops', 'Gaming'],
-      visible: true
-    },
-    { 
-      id: '12', 
-      name: 'Logitech', 
-      description: 'Periféricos y accesorios tecnológicos',
-      categories: ['Gaming', 'Audio'],
-      visible: true
-    }
-  ];
-
-  get availableBrands(): Marca[] {
-    return this.brands.filter(brand => brand.visible);
-  }
-
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private productsService: ProductsService,
+    private storageService: StorageService,
+    private categoriesService: CategoriesService,
+    private brandsService: BrandsService
+  ) {
     this.productForm = this.fb.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
-      brand: ['', [Validators.required]],
+      brand_id: ['', [Validators.required]],
       price: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
       weight: ['', [Validators.required]],
       status: ['Activo', [Validators.required]],
       visible: [true],
-      onSale: [false],
-      salePrice: [0, [Validators.min(0)]],
+      on_sale: [false],
+      sale_price: [0, [Validators.min(0)]],
       featured: [false],
       recommended: [false]
     });
+
+    this.loadCategories();
+    this.loadBrands();
   }
 
-  toggleCategory(category: string): void {
-    const index = this.selectedCategories.indexOf(category);
+  loadCategories(): void {
+    this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.categories = categories;
+      },
+      error: (err) => {
+        console.error('Error cargando categorías:', err);
+      }
+    });
+  }
+
+  loadBrands(): void {
+    this.brandsService.getAll().subscribe({
+      next: (brands) => {
+        this.brands = brands;
+      },
+      error: (err) => {
+        console.error('Error cargando marcas:', err);
+      }
+    });
+  }
+
+  toggleCategory(categoryId: string): void {
+    const index = this.selectedCategories.indexOf(categoryId);
     if (index > -1) {
       this.selectedCategories.splice(index, 1);
     } else {
-      this.selectedCategories.push(category);
+      this.selectedCategories.push(categoryId);
     }
   }
 
-  isCategorySelected(category: string): boolean {
-    return this.selectedCategories.includes(category);
+  isCategorySelected(categoryId: string): boolean {
+    return this.selectedCategories.includes(categoryId);
+  }
+
+  setImageType(type: 'unique' | 'withColor'): void {
+    this.imageType = type;
+    if (type === 'unique') {
+      this.colors = [];
+      if (this.uniqueImages.length === 0) {
+        this.uniqueImages = [{ file: null, preview: '' }];
+      }
+    } else {
+      this.uniqueImages = [];
+      if (this.colors.length === 0) {
+        this.addColor();
+      }
+    }
   }
 
   addColor(): void {
-    const newColor: ProductColor = {
+    const newColor: ColorWithFiles = {
       name: '',
       hex: '#000000',
-      images: []
+      images: [],
+      imageFiles: []
     };
     this.colors.push(newColor);
   }
@@ -181,23 +142,54 @@ export default class ProductCreateComponent {
     this.colors.splice(index, 1);
   }
 
-  onColorImageChange(event: Event, color: ProductColor, imageIndex?: number): void {
+  onColorImageChange(event: Event, color: ColorWithFiles, imageIndex?: number): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
+      const file = input.files[0];
       const reader = new FileReader();
       reader.onload = (e: any) => {
+        const preview = e.target.result;
         if (imageIndex !== undefined) {
-          color.images[imageIndex] = e.target.result;
+          color.images[imageIndex] = preview;
+          color.imageFiles[imageIndex] = file;
         } else if (color.images.length < 5) {
-          color.images.push(e.target.result);
+          color.images.push(preview);
+          color.imageFiles.push(file);
         }
       };
-      reader.readAsDataURL(input.files[0]);
+      reader.readAsDataURL(file);
     }
+    input.value = '';
   }
 
-  removeColorImage(color: ProductColor, index: number): void {
+  removeColorImage(color: ColorWithFiles, index: number): void {
     color.images.splice(index, 1);
+    color.imageFiles.splice(index, 1);
+  }
+
+  onUniqueImageChange(event: Event, imageIndex: number): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        if (imageIndex < this.uniqueImages.length) {
+          this.uniqueImages[imageIndex] = { file, preview: e.target.result };
+        }
+        if (this.uniqueImages.length < 6 && imageIndex === this.uniqueImages.length - 1 && this.uniqueImages[imageIndex].file) {
+          this.uniqueImages.push({ file: null, preview: '' });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    input.value = '';
+  }
+
+  removeUniqueImage(index: number): void {
+    this.uniqueImages.splice(index, 1);
+    if (this.uniqueImages.length === 0) {
+      this.uniqueImages = [{ file: null, preview: '' }];
+    }
   }
 
   setActiveTab(tab: 'precios' | 'inventario'): void {
@@ -212,7 +204,7 @@ export default class ProductCreateComponent {
   }
 
 
-  onColorChange(color: ProductColor, event: Event): void {
+  onColorChange(color: ColorWithFiles, event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input) {
       color.hex = input.value;
@@ -220,41 +212,138 @@ export default class ProductCreateComponent {
   }
 
   onPromotionToggle(): void {
-    const onSale = this.productForm.get('onSale')?.value;
+    const onSale = this.productForm.get('on_sale')?.value;
     if (!onSale) {
-      this.productForm.patchValue({ salePrice: 0 });
+      this.productForm.patchValue({ sale_price: 0 });
+    }
+  }
+
+  private uploadImages(): Observable<{ uniqueImages?: string[]; colors?: ProductColor[] }> {
+    const timestamp = Date.now();
+    
+    if (this.imageType === 'unique') {
+      const imageFiles = this.uniqueImages.filter(img => img.file !== null).map(img => img.file!);
+      if (imageFiles.length === 0) {
+        return of({ uniqueImages: [] });
+      }
+      
+      const uploadPromises = imageFiles.map((file, index) => {
+        const fileName = `${timestamp}-${index}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const path = `products/${fileName}`;
+        return this.storageService.uploadImage('product-images', file, path);
+      });
+      
+      return forkJoin(uploadPromises).pipe(
+        map(urls => ({ uniqueImages: urls }))
+      );
+    } else {
+      const colorUploadPromises = this.colors.map((color, colorIndex) => {
+        const imageFiles = color.imageFiles.filter(file => file !== null && file !== undefined);
+        
+        if (imageFiles.length === 0) {
+          return of({ name: color.name, hex: color.hex, images: [] });
+        }
+        
+        const uploadPromises = imageFiles.map((file, imgIndex) => {
+          const fileName = `${timestamp}-color-${colorIndex}-${imgIndex}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const path = `products/${fileName}`;
+          return this.storageService.uploadImage('product-images', file, path);
+        });
+        
+        return forkJoin(uploadPromises).pipe(
+          map(urls => ({ name: color.name, hex: color.hex, images: urls }))
+        );
+      });
+      
+      return forkJoin(colorUploadPromises).pipe(
+        map(colors => ({ colors }))
+      );
     }
   }
 
   onSubmit(): void {
-    if (this.productForm.valid && this.selectedCategories.length > 0) {
-      const selectedBrand = this.brands.find(b => b.id.toString() === this.productForm.value.brand);
+    if (this.productForm.valid && this.selectedCategories.length > 0 && this.imageType) {
+      this.isLoading = true;
+      this.error = null;
+      
       const formValue = this.productForm.value;
       
-      // Guardar el precio regular como price y el precio con descuento como salePrice
-      const productData = {
-        ...formValue,
-        price: formValue.price, // Precio regular siempre se mantiene
-        originalPrice: formValue.onSale && formValue.salePrice ? formValue.price : undefined, // Para mostrar tachado en la tarjeta
-        // salePrice ya está en formValue si onSale está activo
-        brand: selectedBrand ? {
-          id: selectedBrand.id,
-          name: selectedBrand.name
-        } : formValue.brand,
-        categories: this.selectedCategories,
-        colors: this.colors
-      };
-      console.log('Producto creado:', productData);
+      this.uploadImages().pipe(
+        switchMap(({ uniqueImages, colors }) => {
+          const productData: Partial<Product> = {
+            name: formValue.name,
+            description: formValue.description,
+            brand_id: formValue.brand_id,
+            price: formValue.price,
+            sale_price: formValue.on_sale ? formValue.sale_price : null,
+            on_sale: formValue.on_sale || false,
+            stock: formValue.stock,
+            weight: formValue.weight,
+            status: formValue.status,
+            visible: formValue.visible ?? true,
+            featured: formValue.featured || false,
+            recommended: formValue.recommended || false,
+            categories: this.selectedCategories,
+            image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined,
+            colors: colors || undefined
+          };
+          
+          return this.productsService.create(productData);
+        })
+      ).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/admin/productos']);
+        },
+        error: (err) => {
+          console.error('Error creando producto:', err);
+          this.error = 'Error al crear el producto. Por favor, intenta nuevamente.';
+          this.isLoading = false;
+        }
+      });
     }
   }
 
   saveAsDraft(): void {
-    const productData = {
-      ...this.productForm.value,
-      categories: this.selectedCategories,
-      colors: this.colors,
-      status: 'Borrador'
-    };
-    console.log('Producto guardado como borrador:', productData);
+    if (this.productForm.valid && this.selectedCategories.length > 0 && this.imageType) {
+      this.isLoading = true;
+      this.error = null;
+      
+      const formValue = this.productForm.value;
+      
+      this.uploadImages().pipe(
+        switchMap(({ uniqueImages, colors }) => {
+          const productData: Partial<Product> = {
+            name: formValue.name,
+            description: formValue.description,
+            brand_id: formValue.brand_id,
+            price: formValue.price,
+            sale_price: formValue.on_sale ? formValue.sale_price : null,
+            on_sale: formValue.on_sale || false,
+            stock: formValue.stock,
+            weight: formValue.weight,
+            status: 'Borrador',
+            visible: false,
+            featured: formValue.featured || false,
+            recommended: formValue.recommended || false,
+            categories: this.selectedCategories,
+            image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined,
+            colors: colors || undefined
+          };
+          
+          return this.productsService.create(productData);
+        })
+      ).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/admin/productos']);
+        },
+        error: (err) => {
+          console.error('Error guardando borrador:', err);
+          this.error = 'Error al guardar el borrador. Por favor, intenta nuevamente.';
+          this.isLoading = false;
+        }
+      });
+    }
   }
 }

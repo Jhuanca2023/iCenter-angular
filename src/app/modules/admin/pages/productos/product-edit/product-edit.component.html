@@ -3,22 +3,22 @@
   <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
 
   <!-- Header -->
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
     <div>
-      <h1 class="text-3xl font-bold text-gray-900">Editar Producto</h1>
-      <p class="text-sm text-gray-500 mt-1">Actualiza la información del producto</p>
+      <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Editar Producto</h1>
+      <p class="text-xs sm:text-sm text-gray-500 mt-1">Actualiza la información del producto</p>
     </div>
-    <div class="flex gap-3">
+    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
       <a
         routerLink="/admin/productos"
-        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+        class="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm sm:text-base text-center">
         ← Cancelar
       </a>
       <button
         type="button"
         (click)="onSubmit()"
         [disabled]="!productForm.valid || selectedCategories.length === 0"
-        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+        class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
         Guardar cambios
       </button>
     </div>
@@ -70,7 +70,7 @@
                   [checked]="isCategorySelected(cat)"
                   (change)="toggleCategory(cat)"
                   class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                <span class="ml-2 text-sm text-gray-700">{{ cat }}</span>
+                <span class="ml-2 text-sm text-gray-700">{{ cat.name || cat }}</span>
               </label>
             </div>
           </div>
@@ -139,75 +139,159 @@
         </div>
       </div>
 
-      <!-- Colores con imágenes integradas -->
+      <!-- Imágenes del producto -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 class="text-xl font-semibold text-gray-900 mb-4">Colores</h2>
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Imágenes del producto</h2>
         
-        <div class="mb-4">
-          <button
-            type="button"
-            (click)="addColor()"
-            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-            Agregar Color
-          </button>
+        <!-- Selección de tipo de imagen -->
+        <div class="mb-6">
+          <p class="text-sm text-gray-600 mb-3">Selecciona el tipo de imágenes para este producto:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <button
+              type="button"
+              (click)="setImageType('unique')"
+              [class.border-purple-500]="imageType === 'unique'"
+              [class.bg-purple-50]="imageType === 'unique'"
+              [class.border-gray-300]="imageType !== 'unique'"
+              class="border-2 rounded-lg p-4 text-left transition hover:border-purple-300">
+              <div class="flex items-center gap-3">
+                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                     [class.border-purple-500]="imageType === 'unique'"
+                     [class.border-gray-300]="imageType !== 'unique'">
+                  <div *ngIf="imageType === 'unique'" class="w-3 h-3 rounded-full bg-purple-500"></div>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">Imagen única con adicionales</p>
+                  <p class="text-sm text-gray-500">Hasta 6 imágenes adicionales</p>
+                </div>
+              </div>
+            </button>
+            <button
+              type="button"
+              (click)="setImageType('withColor')"
+              [class.border-purple-500]="imageType === 'withColor'"
+              [class.bg-purple-50]="imageType === 'withColor'"
+              [class.border-gray-300]="imageType !== 'withColor'"
+              class="border-2 rounded-lg p-4 text-left transition hover:border-purple-300">
+              <div class="flex items-center gap-3">
+                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                     [class.border-purple-500]="imageType === 'withColor'"
+                     [class.border-gray-300]="imageType !== 'withColor'">
+                  <div *ngIf="imageType === 'withColor'" class="w-3 h-3 rounded-full bg-purple-500"></div>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">Imagen con color</p>
+                  <p class="text-sm text-gray-500">Múltiples colores con imágenes</p>
+                </div>
+              </div>
+            </button>
+          </div>
         </div>
 
-        <div class="space-y-6">
-          <div *ngFor="let color of colors; let i = index" class="border-2 border-gray-200 rounded-lg p-6">
-            <!-- Header del color -->
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-3 flex-1">
-                <input
-                  type="color"
-                  [id]="'color-picker-' + i"
-                  [(ngModel)]="color.hex"
-                  [ngModelOptions]="{standalone: true}"
-                  class="color-picker-circle w-10 h-10 rounded-full border-2 border-gray-300 cursor-pointer hover:border-purple-500 transition flex-shrink-0"
-                  (change)="onColorChange(color, $event)"
-                  title="Haz clic para cambiar el color"
-                  [value]="color.hex">
-                <input
-                  type="text"
-                  [(ngModel)]="color.name"
-                  [ngModelOptions]="{standalone: true}"
-                  placeholder="Nombre del color (Ej: Negro, Azul)"
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-              </div>
-              <button
-                type="button"
-                (click)="removeColor(i)"
-                class="px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition ml-4">
-                Eliminar
-              </button>
-            </div>
-
-            <!-- Imágenes del color -->
+        <!-- Imagen única con adicionales -->
+        <div *ngIf="imageType === 'unique'">
+          <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Imágenes para este color (máximo 5)</label>
-              <div class="grid grid-cols-3 md:grid-cols-5 gap-3 mb-3">
-                <div *ngFor="let img of color.images; let imgIndex = index" class="relative group">
-                  <img [src]="img" alt="Color" class="w-full h-24 object-cover rounded-lg">
-                  <button
-                    type="button"
-                    (click)="removeColorImage(color, imgIndex)"
-                    class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">
-                    ×
-                  </button>
-                </div>
-                <div *ngIf="color.images.length < 5" 
-                     class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-purple-500 transition"
-                     (click)="triggerFileInput('color-image-input-' + i)">
-                  <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                  </svg>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Imagen principal</label>
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-3">
+                <div *ngFor="let img of uniqueImages; let imgIndex = index" class="relative group">
+                  <div *ngIf="img" class="relative">
+                    <img [src]="img" alt="Imagen del producto" class="w-full h-24 object-cover rounded-lg">
+                    <button
+                      type="button"
+                      (click)="removeUniqueImage(imgIndex)"
+                      class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">
+                      ×
+                    </button>
+                  </div>
+                  <div *ngIf="!img" 
+                       class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-purple-500 transition h-24"
+                       (click)="triggerFileInput('unique-image-input-' + imgIndex)">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  </div>
+                  <input
+                    type="file"
+                    [id]="'unique-image-input-' + imgIndex"
+                    accept="image/*"
+                    (change)="onUniqueImageChange($event, imgIndex)"
+                    class="hidden">
                 </div>
               </div>
-              <input
-                type="file"
-                [id]="'color-image-input-' + i"
-                accept="image/*"
-                (change)="onColorImageChange($event, color)"
-                class="hidden">
+              <p class="text-xs text-gray-500">Puedes agregar hasta 6 imágenes adicionales</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Imágenes con color -->
+        <div *ngIf="imageType === 'withColor'">
+          <div class="mb-4">
+            <button
+              type="button"
+              (click)="addColor()"
+              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+              Agregar Color
+            </button>
+          </div>
+
+          <div class="space-y-6">
+            <div *ngFor="let color of colors; let i = index" class="border-2 border-gray-200 rounded-lg p-6">
+              <!-- Header del color -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3 flex-1">
+                  <input
+                    type="color"
+                    [id]="'color-picker-' + i"
+                    [(ngModel)]="color.hex"
+                    [ngModelOptions]="{standalone: true}"
+                    class="color-picker-circle w-10 h-10 rounded-full border-2 border-gray-300 cursor-pointer hover:border-purple-500 transition flex-shrink-0"
+                    (change)="onColorChange(color, $event)"
+                    title="Haz clic para cambiar el color"
+                    [value]="color.hex">
+                  <input
+                    type="text"
+                    [(ngModel)]="color.name"
+                    [ngModelOptions]="{standalone: true}"
+                    placeholder="Nombre del color (Ej: Negro, Azul)"
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <button
+                  type="button"
+                  (click)="removeColor(i)"
+                  class="px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition ml-4">
+                  Eliminar
+                </button>
+              </div>
+
+              <!-- Imágenes del color -->
+              <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Imágenes para este color (máximo 5)</label>
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-3">
+                  <div *ngFor="let img of color.images; let imgIndex = index" class="relative group">
+                    <img [src]="img" alt="Color" class="w-full h-24 object-cover rounded-lg">
+                    <button
+                      type="button"
+                      (click)="removeColorImage(color, imgIndex)"
+                      class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition">
+                      ×
+                    </button>
+                  </div>
+                  <div *ngIf="color.images.length < 5" 
+                       class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-purple-500 transition"
+                       (click)="triggerFileInput('color-image-input-' + i)">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  [id]="'color-image-input-' + i"
+                  accept="image/*"
+                  (change)="onColorImageChange($event, color)"
+                  class="hidden">
+              </div>
             </div>
           </div>
         </div>
@@ -335,7 +419,7 @@
               [checked]="isCategorySelected(cat)"
               (change)="toggleCategory(cat)"
               class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-            <span class="ml-2 text-sm text-gray-700">{{ cat }}</span>
+            <span class="ml-2 text-sm text-gray-700">{{ cat.name || cat }}</span>
           </label>
         </div>
       </div>

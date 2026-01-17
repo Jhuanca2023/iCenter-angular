@@ -86,10 +86,6 @@ export const adminRoutes: Routes = [
     loadComponent: () => import('./pages/users/user-delete/user-delete.component').then(m => m.default)
   },
   {
-    path: 'users/report',
-    loadComponent: () => import('./pages/users/user-report/user-report.component').then(m => m.default)
-  },
-  {
     path: 'orders',
     loadComponent: () => import('./pages/orders/orders.component').then(m => m.default)
   },

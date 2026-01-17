@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, A
 import { RouterModule, Router } from '@angular/router';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -18,10 +19,12 @@ export class RegisterComponent {
   showPassword = false;
   showConfirmPassword = false;
   isLoading = false;
+  error: string | null = null;
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.registerForm = this.fb.group({
       firstName: ['', [Validators.required]],
@@ -52,10 +55,22 @@ export class RegisterComponent {
   onSubmit(): void {
     if (this.registerForm.valid) {
       this.isLoading = true;
-      setTimeout(() => {
-        this.isLoading = false;
-        this.router.navigate(['/']);
-      }, 1500);
+      this.error = null;
+      
+      const { firstName, lastName, email, password } = this.registerForm.value;
+      const fullName = `${firstName} ${lastName}`;
+      
+      this.authService.register(email, password, fullName).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/']);
+        },
+        error: (err) => {
+          console.error('Error en registro:', err);
+          this.error = err.message || 'Error al registrar. Por favor, intenta nuevamente.';
+          this.isLoading = false;
+        }
+      });
     } else {
       this.registerForm.markAllAsTouched();
     }
