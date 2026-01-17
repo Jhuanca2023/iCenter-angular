@@ -12,6 +12,14 @@ CREATE TABLE IF NOT EXISTS users (
   status TEXT NOT NULL DEFAULT 'Activo' CHECK (status IN ('Activo', 'Inactivo')),
   last_access TIMESTAMPTZ,
   avatar TEXT,
+  auth_provider TEXT DEFAULT 'email' CHECK (auth_provider IN ('email', 'google')),
+  phone TEXT,
+  address TEXT,
+  city TEXT,
+  country TEXT,
+  postal_code TEXT,
+  first_name TEXT,
+  last_name TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

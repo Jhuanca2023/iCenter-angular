@@ -23,7 +23,9 @@ export class ProfileHeaderComponent implements OnInit, OnDestroy {
       .subscribe(user => {
         if (user) {
           this.currentUser = user;
+          // Detectar cuenta de Google por avatar o authProvider
           this.isGoogleAccount = user.avatar?.includes('googleusercontent.com') || false;
+          console.log('Usuario en profile-header:', user);
         }
       });
   }

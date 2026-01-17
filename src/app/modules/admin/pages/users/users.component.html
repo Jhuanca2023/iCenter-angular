@@ -72,15 +72,6 @@
         class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 w-full sm:w-64">
       <div class="flex gap-2">
         <a
-          routerLink="/admin/users/report"
-          class="px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          <span class="hidden sm:inline">Ver Reporte</span>
-          <span class="sm:hidden">Reporte</span>
-        </a>
-        <a
           routerLink="/admin/users/create"
           class="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2 text-sm">
           <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,6 +95,7 @@
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Último acceso</th>
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+            <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Autenticación</th>
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
           </tr>
         </thead>
@@ -112,7 +104,10 @@
             <!-- Usuario -->
             <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
               <div class="flex items-center gap-3">
-                <div [class]="'w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ' + getAvatarColor(user.name)">
+                <div *ngIf="user.avatar" class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                  <img [src]="user.avatar" [alt]="user.name" class="w-full h-full object-cover">
+                </div>
+                <div *ngIf="!user.avatar" [class]="'w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ' + getAvatarColor(user.name)">
                   {{ getInitials(user.name) }}
                 </div>
                 <div>
@@ -144,16 +139,22 @@
                 {{ user.status }}
               </span>
             </td>
+            <!-- Autenticación -->
+            <td class="px-4 lg:px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+              <span [class]="getAuthProviderBadgeClass(user)">
+                {{ getAuthProviderLabel(user) }}
+              </span>
+            </td>
             <!-- Acciones -->
             <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
               <div class="flex items-center gap-3 lg:gap-4">
-                <a [routerLink]="['/admin/users/detail', user.id]" class="text-gray-600 hover:text-blue-600 transition" title="Ver">
+                <a [routerLink]="['/admin/users/detail', user.uuid || user.id]" class="text-gray-600 hover:text-blue-600 transition" title="Ver">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                   </svg>
                 </a>
-                <a [routerLink]="['/admin/users/edit', user.id]" class="text-gray-600 hover:text-indigo-600 transition" title="Editar">
+                <a [routerLink]="['/admin/users/edit', user.uuid || user.id]" class="text-gray-600 hover:text-indigo-600 transition" title="Editar">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                   </svg>
@@ -181,7 +182,10 @@
     <div *ngFor="let user of paginatedUsers" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <div class="flex items-start justify-between mb-3">
         <div class="flex items-center gap-3 flex-1 min-w-0">
-          <div [class]="'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ' + getAvatarColor(user.name)">
+          <div *ngIf="user.avatar" class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+            <img [src]="user.avatar" [alt]="user.name" class="w-full h-full object-cover">
+          </div>
+          <div *ngIf="!user.avatar" [class]="'w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ' + getAvatarColor(user.name)">
             {{ getInitials(user.name) }}
           </div>
           <div class="flex-1 min-w-0">
@@ -205,13 +209,13 @@
         </div>
       </div>
       <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-200">
-        <a [routerLink]="['/admin/users/detail', user.id]" class="p-2 text-blue-600 hover:bg-blue-50 rounded transition" title="Ver">
+        <a [routerLink]="['/admin/users/detail', user.uuid || user.id]" class="p-2 text-blue-600 hover:bg-blue-50 rounded transition" title="Ver">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
           </svg>
         </a>
-        <a [routerLink]="['/admin/users/edit', user.id]" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded transition" title="Editar">
+        <a [routerLink]="['/admin/users/edit', user.uuid || user.id]" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded transition" title="Editar">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
           </svg>

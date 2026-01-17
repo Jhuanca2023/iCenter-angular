@@ -77,7 +77,9 @@ export class ProfileEditComponent implements OnInit, OnDestroy {
     this.usersService.getById(userId).subscribe({
       next: (user) => {
         if (user) {
-          this.isGoogleAccount = user.avatar?.includes('googleusercontent.com') || false;
+          // Detectar si es cuenta de Google por authProvider o avatar
+          this.isGoogleAccount = user.authProvider === 'google' || 
+                                 user.avatar?.includes('googleusercontent.com') || false;
           
           // Si es cuenta de Google, usar datos de Google primero
           let firstName = '';

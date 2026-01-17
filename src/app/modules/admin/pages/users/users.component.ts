@@ -136,6 +136,16 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
 
+  getAuthProviderLabel(user: User): string {
+    return user.authProvider === 'google' ? 'Google' : 'Email';
+  }
+
+  getAuthProviderBadgeClass(user: User): string {
+    return user.authProvider === 'google' 
+      ? 'px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800'
+      : 'px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800';
+  }
+
   setFilter(filter: 'todos' | 'activos' | 'inactivos'): void {
     this.selectedFilter = filter;
   }

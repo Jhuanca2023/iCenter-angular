@@ -7,8 +7,12 @@ export const profileRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'editar',
+        redirectTo: 'informacion',
         pathMatch: 'full'
+      },
+      {
+        path: 'informacion',
+        loadComponent: () => import('./profile-info/profile-info.component').then(m => m.ProfileInfoComponent)
       },
       {
         path: 'editar',

@@ -97,4 +97,16 @@ export default class UserDetailComponent implements OnInit, OnDestroy {
     const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
+
+  getAuthProviderLabel(): string {
+    if (!this.user) return '';
+    return this.user.authProvider === 'google' ? 'Google' : 'Email/Contraseña';
+  }
+
+  getAuthProviderBadgeClass(): string {
+    if (!this.user) return '';
+    return this.user.authProvider === 'google' 
+      ? 'px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800'
+      : 'px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-800';
+  }
 }

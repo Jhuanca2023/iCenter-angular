@@ -31,10 +31,16 @@ export class UsersService {
         .from('users')
         .select('*')
         .eq('id', id)
-        .single()
+        .maybeSingle()
     ).pipe(
       map(response => {
-        if (response.error) throw response.error;
+        if (response.error) {
+          // Si es error PGRST116 (no encontrado), retornar null
+          if (response.error.code === 'PGRST116') {
+            return null;
+          }
+          throw response.error;
+        }
         return response.data ? this.mapToUser(response.data) : null;
       })
     );
@@ -109,16 +115,31 @@ export class UsersService {
   }
 
   private mapToUser(data: any): User {
+    // Convertir UUID a número hash para compatibilidad con la interfaz User
+    let numericId = 0;
+    const originalUuid = data.id; // Guardar UUID original
+    if (data.id) {
+      if (typeof data.id === 'string' && data.id.includes('-')) {
+        // Es un UUID, convertir a número hash
+        const idHash = data.id.split('-').join('').substring(0, 15);
+        numericId = parseInt(idHash, 16) || 0;
+      } else if (typeof data.id === 'number') {
+        numericId = data.id;
+      }
+    }
+    
     const user: any = {
-      id: data.id,
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      status: data.status,
+      id: numericId,
+      uuid: originalUuid, // Guardar UUID original para búsquedas
+      name: data.name || '',
+      email: data.email || '',
+      role: data.role || 'Usuario',
+      status: data.status || 'Activo',
       lastAccess: data.last_access ? new Date(data.last_access).toLocaleDateString('es-PE') : undefined,
       avatar: data.avatar,
       createdAt: data.created_at ? new Date(data.created_at) : undefined,
-      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined
+      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined,
+      authProvider: data.auth_provider || 'email'
     };
     
     // Campos adicionales del perfil

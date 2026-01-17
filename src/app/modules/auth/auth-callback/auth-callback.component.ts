@@ -27,21 +27,35 @@ export class AuthCallbackComponent implements OnInit {
     this.authService.handleAuthCallback().subscribe({
       next: (user) => {
         if (user) {
-          // Esperar un momento para que se actualice la sesión
+          // Esperar un momento para que se actualice la sesión y se cargue el rol completo
           setTimeout(() => {
-            if (user.role === 'Administrador') {
+            const currentUser = this.authService.getCurrentUser();
+            if (currentUser?.role === 'Administrador') {
               this.router.navigate(['/admin']);
             } else {
               this.router.navigate(['/']);
             }
-          }, 500);
+          }, 1000);
         } else {
+          console.warn('No se pudo obtener el usuario del callback');
           this.router.navigate(['/auth']);
         }
       },
       error: (err) => {
         console.error('Error en callback:', err);
-        this.router.navigate(['/auth']);
+        // Intentar obtener el usuario actual de todas formas
+        setTimeout(() => {
+          const currentUser = this.authService.getCurrentUser();
+          if (currentUser) {
+            if (currentUser.role === 'Administrador') {
+              this.router.navigate(['/admin']);
+            } else {
+              this.router.navigate(['/']);
+            }
+          } else {
+            this.router.navigate(['/auth']);
+          }
+        }, 1000);
       }
     });
   }

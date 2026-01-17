@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
+import { UsersService } from '../../../../core/services/users.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-profile-security',
@@ -10,15 +12,19 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './profile-security.component.html',
   styleUrl: './profile-security.component.css'
 })
-export class ProfileSecurityComponent implements OnInit {
+export class ProfileSecurityComponent implements OnInit, OnDestroy {
   passwordForm: FormGroup;
   isLoading = false;
   successMessage: string | null = null;
   errorMessage: string | null = null;
+  isGoogleAccount = false;
+  currentUser: any = null;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private usersService: UsersService
   ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', [Validators.required]],
@@ -27,7 +33,35 @@ export class ProfileSecurityComponent implements OnInit {
     }, { validators: this.passwordMatchValidator });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        if (user) {
+          this.currentUser = user;
+          this.loadUserDetails(user.id);
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadUserDetails(userId: string): void {
+    this.usersService.getById(userId).subscribe({
+      next: (user) => {
+        if (user) {
+          this.isGoogleAccount = user.authProvider === 'google' || 
+                                user.avatar?.includes('googleusercontent.com') || false;
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar detalles del usuario:', err);
+      }
+    });
+  }
 
   passwordMatchValidator(form: FormGroup) {
     const newPassword = form.get('newPassword');

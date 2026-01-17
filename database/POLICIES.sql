@@ -38,7 +38,9 @@ BEGIN
   DROP POLICY IF EXISTS "Users can read own data" ON users;
   DROP POLICY IF EXISTS "Admins can read all users" ON users;
   DROP POLICY IF EXISTS "Admins can insert users" ON users;
+  DROP POLICY IF EXISTS "Users can insert themselves" ON users;
   DROP POLICY IF EXISTS "Admins can update users" ON users;
+  DROP POLICY IF EXISTS "Users can update themselves" ON users;
   DROP POLICY IF EXISTS "Admins can delete users" ON users;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
@@ -113,9 +115,20 @@ CREATE POLICY "Admins can insert users"
   ON users FOR INSERT
   WITH CHECK (is_admin());
 
+-- Permitir que los usuarios se creen a sí mismos (para registro con Google/Email)
+CREATE POLICY "Users can insert themselves"
+  ON users FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
 CREATE POLICY "Admins can update users"
   ON users FOR UPDATE
   USING (is_admin());
+
+-- Permitir que los usuarios se actualicen a sí mismos
+CREATE POLICY "Users can update themselves"
+  ON users FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "Admins can delete users"
   ON users FOR DELETE

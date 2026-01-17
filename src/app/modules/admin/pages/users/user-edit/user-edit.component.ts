@@ -5,6 +5,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { User } from '../../../interfaces/user.interface';
 import { UsersService } from '../../../../../core/services/users.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -41,7 +42,8 @@ export default class UserEditComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private authService: AuthService
   ) {
     this.userForm = this.fb.group({
       name: ['', [Validators.required]],
@@ -78,12 +80,19 @@ export default class UserEditComponent implements OnInit, OnDestroy {
     this.dataSubscription = this.usersService.getById(this.userId).subscribe({
       next: (user) => {
         if (user) {
+          console.log('Usuario cargado para edición:', user);
           this.userForm.patchValue({
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            status: user.status
+            name: user.name || '',
+            email: user.email || '',
+            role: user.role || 'Usuario',
+            status: user.status || 'Activo'
           });
+          // Guardar UUID original si existe
+          if (user.uuid) {
+            this.userId = user.uuid;
+          }
+        } else {
+          this.error = 'Usuario no encontrado';
         }
         this.isLoading = false;
       },
@@ -94,13 +103,24 @@ export default class UserEditComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
 
   onSubmit(): void {
     if (this.userForm.valid && this.userId) {
       this.isLoading = true;
       this.error = null;
       
-      this.usersService.update(this.userId, this.userForm.value).subscribe({
+      // Solo permitir cambiar rol si es administrador
+      const formData = { ...this.userForm.value };
+      if (!this.isAdmin) {
+        // Si no es admin, no permitir cambiar el rol
+        delete formData.role;
+      }
+      
+      this.usersService.update(this.userId, formData).subscribe({
         next: () => {
           this.isLoading = false;
           this.router.navigate(['/admin/users']);
