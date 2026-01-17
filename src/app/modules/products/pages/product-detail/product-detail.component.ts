@@ -30,6 +30,10 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   relatedProducts: ClientProduct[] = [];
   isLoading = false;
   error: string | null = null;
+  showFullDescription = false;
+  zoomActive = false;
+  zoomX = 0;
+  zoomY = 0;
   private subscription?: Subscription;
 
   constructor(
@@ -65,14 +69,26 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
           if (this.colors.length > 0) {
             this.imageType = 'withColor';
             this.selectedColor = this.colors[0];
-            this.selectedImage = this.colors[0].images[0] || '';
-          } else if (product.image) {
+            this.selectedImage = this.colors[0].images && this.colors[0].images.length > 0 
+              ? this.colors[0].images[0] 
+              : (product.image || '');
+          } else {
             this.imageType = 'unique';
-            this.uniqueImages = [product.image];
+            this.uniqueImages = product.image ? [product.image] : [];
+            this.selectedImage = product.image || '';
+          }
+          
+          // Si no hay imagen seleccionada pero hay producto, usar imagen del producto
+          if (!this.selectedImage && product.image) {
             this.selectedImage = product.image;
+            if (this.imageType === 'unique' && this.uniqueImages.length === 0) {
+              this.uniqueImages = [product.image];
+            }
           }
           
           this.loadRelatedProducts(product);
+        } else {
+          this.error = 'Producto no encontrado';
         }
         this.isLoading = false;
       },
@@ -130,5 +146,75 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
 
   getStarsArray(rating: number): number[] {
     return Array.from({ length: 5 }, (_, i) => i < rating ? 1 : 0);
+  }
+
+  get hasDiscount(): boolean {
+    return !!(this.product?.on_sale && this.product?.sale_price);
+  }
+
+  get originalPrice(): number {
+    return this.product?.price || 0;
+  }
+
+  get finalPrice(): number {
+    if (this.hasDiscount && this.product?.sale_price) {
+      return this.product.sale_price;
+    }
+    return this.product?.price || 0;
+  }
+
+  get discountPercentage(): number {
+    if (this.hasDiscount && this.product?.sale_price && this.product?.price) {
+      return Math.round(((this.product.price - this.product.sale_price) / this.product.price) * 100);
+    }
+    return 0;
+  }
+
+  get productCategory(): string {
+    if (Array.isArray(this.product?.categories) && this.product.categories.length > 0) {
+      return this.product.categories[0];
+    }
+    return 'Sin categoría';
+  }
+
+  get productBrand(): string {
+    return this.product?.brand || '';
+  }
+
+  get productCategories(): string[] {
+    if (Array.isArray(this.product?.categories)) {
+      return this.product.categories;
+    }
+    return [];
+  }
+
+  toggleDescription(): void {
+    this.showFullDescription = !this.showFullDescription;
+  }
+
+  get shortDescription(): string {
+    if (!this.product?.description) return 'Sin descripción disponible';
+    const maxLength = 150;
+    if (this.product.description.length <= maxLength) {
+      return this.product.description;
+    }
+    return this.product.description.substring(0, maxLength) + '...';
+  }
+
+  onImageMouseMove(event: MouseEvent): void {
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    this.zoomX = x;
+    this.zoomY = y;
+  }
+
+  onImageMouseEnter(): void {
+    this.zoomActive = true;
+  }
+
+  onImageMouseLeave(): void {
+    this.zoomActive = false;
   }
 }

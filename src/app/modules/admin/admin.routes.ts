@@ -90,7 +90,26 @@ export const adminRoutes: Routes = [
     loadComponent: () => import('./pages/orders/orders.component').then(m => m.default)
   },
   {
-    path: 'profiles',
-    loadComponent: () => import('./pages/profiles/profiles.component').then(m => m.default)
+    path: 'profile',
+    loadComponent: () => import('./pages/profile/profile.component').then(m => m.AdminProfileComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: 'informacion',
+        pathMatch: 'full'
+      },
+      {
+        path: 'informacion',
+        loadComponent: () => import('./pages/profile/profile-info/profile-info.component').then(m => m.AdminProfileInfoComponent)
+      },
+      {
+        path: 'editar',
+        loadComponent: () => import('./pages/profile/profile-edit/profile-edit.component').then(m => m.AdminProfileEditComponent)
+      },
+      {
+        path: 'seguridad',
+        loadComponent: () => import('./pages/profile/profile-security/profile-security.component').then(m => m.AdminProfileSecurityComponent)
+      }
+    ]
   }
 ];

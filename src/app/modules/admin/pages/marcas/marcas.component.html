@@ -65,8 +65,7 @@
 
   <!-- Tabla Desktop -->
   <div *ngIf="!isLoading && !error" class="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
+    <table class="w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
@@ -97,17 +96,17 @@
               </div>
             </td>
             <!-- Productos -->
-            <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+            <td class="px-4 lg:px-6 py-4">
               <span class="text-sm text-gray-900">{{ brand.productCount || 0 }} productos</span>
             </td>
             <!-- Estado -->
-            <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
+            <td class="px-4 lg:px-6 py-4">
               <span [class]="brand.visible ? 'px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800' : 'px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800'">
                 {{ brand.visible ? 'Visible' : 'Oculta' }}
               </span>
             </td>
             <!-- Acciones -->
-            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <td class="px-4 lg:px-6 py-4 text-sm font-medium">
               <div class="flex items-center gap-4">
                 <a [routerLink]="['/admin/marcas/detail', brand.id]" class="text-gray-600 hover:text-blue-600 transition" title="Ver">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,7 +132,6 @@
           </tr>
         </tbody>
       </table>
-    </div>
   </div>
 
   <!-- Cards Mobile -->

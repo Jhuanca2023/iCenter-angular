@@ -57,14 +57,19 @@ export class FlashSaleComponent implements OnInit, OnDestroy {
   }
 
   private mapToClientProduct(product: Product): ClientProduct {
+    // Mantener el ID como string si es UUID, convertir a número solo si es numérico
+    const productId = typeof product.id === 'string' ? product.id : (Number(product.id) || 0);
+    
     return {
-      id: Number(product.id) || 0,
+      id: productId as any, // Permitir string o number para compatibilidad
       name: product.name,
       category: Array.isArray(product.categories) && product.categories.length > 0 
         ? product.categories[0] 
         : 'Sin categoría',
-      price: product.on_sale && product.sale_price ? product.sale_price : product.price,
+      price: product.price, // Precio original
       originalPrice: product.on_sale && product.sale_price ? product.price : undefined,
+      salePrice: product.on_sale && product.sale_price ? product.sale_price : undefined,
+      onSale: product.on_sale || false,
       rating: 4,
       reviews: 0,
       image: product.image || (product.colors && product.colors[0]?.images?.[0]) || '',

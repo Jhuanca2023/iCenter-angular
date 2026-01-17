@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { BrandsService } from '../../../../../core/services/brands.service';
+import { ProductsService, Product } from '../../../../../core/services/products.service';
 import { Marca } from '../../../interfaces/marca.interface';
 import { Subscription } from 'rxjs';
 
@@ -16,9 +17,12 @@ import { Subscription } from 'rxjs';
 export default class MarcaDetailComponent implements OnInit, OnDestroy {
   marcaId: string | null = null;
   marca: Marca | null = null;
+  products: Product[] = [];
   isLoading = false;
+  isLoadingProducts = false;
   error: string | null = null;
   private subscription?: Subscription;
+  private productsSubscription?: Subscription;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -28,7 +32,8 @@ export default class MarcaDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private brandsService: BrandsService
+    private brandsService: BrandsService,
+    private productsService: ProductsService
   ) {}
 
   ngOnInit(): void {
@@ -44,6 +49,9 @@ export default class MarcaDetailComponent implements OnInit, OnDestroy {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+    if (this.productsSubscription) {
+      this.productsSubscription.unsubscribe();
+    }
   }
 
   loadMarcaData(): void {
@@ -56,11 +64,30 @@ export default class MarcaDetailComponent implements OnInit, OnDestroy {
       next: (marca) => {
         this.marca = marca;
         this.isLoading = false;
+        if (marca) {
+          this.loadProducts();
+        }
       },
       error: (err) => {
         console.error('Error cargando marca:', err);
         this.error = 'Error al cargar la marca. Por favor, intenta nuevamente.';
         this.isLoading = false;
+      }
+    });
+  }
+
+  loadProducts(): void {
+    if (!this.marcaId) return;
+    
+    this.isLoadingProducts = true;
+    this.productsSubscription = this.productsService.getByBrandId(this.marcaId).subscribe({
+      next: (products) => {
+        this.products = products;
+        this.isLoadingProducts = false;
+      },
+      error: (err) => {
+        console.error('Error cargando productos:', err);
+        this.isLoadingProducts = false;
       }
     });
   }

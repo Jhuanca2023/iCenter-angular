@@ -10,11 +10,13 @@ import { ProductsService } from '../../../../core/services/products.service';
 import { Subscription } from 'rxjs';
 
 interface Product {
-  id: number;
+  id: number | string; // Permitir string (UUID) o number
   name: string;
   category: string;
   price: number;
   originalPrice?: number;
+  salePrice?: number;
+  onSale?: boolean;
   rating: number;
   reviews: number;
   image: string;
@@ -198,11 +200,17 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     }
 
     if (this.currentFilters.minPrice !== undefined) {
-      products = products.filter(p => p.price >= this.currentFilters.minPrice!);
+      products = products.filter(p => {
+        const finalPrice = p.onSale && p.salePrice ? p.salePrice : p.price;
+        return finalPrice >= this.currentFilters.minPrice!;
+      });
     }
 
     if (this.currentFilters.maxPrice !== undefined) {
-      products = products.filter(p => p.price <= this.currentFilters.maxPrice!);
+      products = products.filter(p => {
+        const finalPrice = p.onSale && p.salePrice ? p.salePrice : p.price;
+        return finalPrice <= this.currentFilters.maxPrice!;
+      });
     }
 
     // Aplicar ordenamiento
@@ -215,9 +223,17 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     const sorted = [...products];
     switch (sort) {
       case 'price-asc':
-        return sorted.sort((a, b) => a.price - b.price);
+        return sorted.sort((a, b) => {
+          const priceA = a.onSale && a.salePrice ? a.salePrice : a.price;
+          const priceB = b.onSale && b.salePrice ? b.salePrice : b.price;
+          return priceA - priceB;
+        });
       case 'price-desc':
-        return sorted.sort((a, b) => b.price - a.price);
+        return sorted.sort((a, b) => {
+          const priceA = a.onSale && a.salePrice ? a.salePrice : a.price;
+          const priceB = b.onSale && b.salePrice ? b.salePrice : b.price;
+          return priceB - priceA;
+        });
       case 'name-asc':
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
       case 'name-desc':
