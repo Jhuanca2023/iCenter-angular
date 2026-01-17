@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
 export default class AdminProfilesComponent {
   profile = {
     name: 'Admin',
-    email: 'admin@sphere.com',
+    email: 'admin@icenter.com',
     role: 'Administrador'
   };
 

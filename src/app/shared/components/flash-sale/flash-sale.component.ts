@@ -1,7 +1,9 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ProductCardComponent } from '../../../modules/products/components/product-card/product-card.component';
+import { ProductsService, Product, ClientProduct } from '../../../core/services/products.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-flash-sale',
@@ -11,40 +13,64 @@ import { ProductCardComponent } from '../../../modules/products/components/produ
   styleUrl: './flash-sale.component.css',
   encapsulation: ViewEncapsulation.None
 })
-export class FlashSaleComponent {
-  products = [
-    {
-      id: 1,
-      name: 'Xpad Mini 6',
-      currentPrice: 89.000,
-      originalPrice: 150.00,
-      discount: 8,
-      description: 'Lorem ipsum dolor sit amet consectetur. Eleifend nec morbi tellus vitae leo nunc.',
-      rating: 5,
-      reviews: 125,
-      image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=300&h=300&fit=crop'
-    },
-    {
-      id: 2,
-      name: 'Hypermac Air Purpler M1',
-      currentPrice: 89.000,
-      originalPrice: 250.00,
-      discount: 8,
-      description: 'Lorem ipsum dolor sit amet consectetur. Eleifend nec morbi tellus vitae leo nunc.',
-      rating: 5,
-      reviews: 125,
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop'
-    },
-    {
-      id: 3,
-      name: 'AR10 AC 1PK with S-Inverter',
-      currentPrice: 90.000,
-      originalPrice: 250.00,
-      discount: 13,
-      description: 'Lorem ipsum dolor sit amet consectetur. Eleifend nec morbi tellus vitae leo nunc.',
-      rating: 5,
-      reviews: 125,
-      image: 'https://images.unsplash.com/photo-1631543915506-401a73d1a0e8?w=300&h=300&fit=crop'
+export class FlashSaleComponent implements OnInit, OnDestroy {
+  products: ClientProduct[] = [];
+  isLoading = false;
+  private subscription?: Subscription;
+
+  constructor(private productsService: ProductsService) {}
+
+  ngOnInit(): void {
+    this.loadProducts();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
     }
-  ];
+  }
+
+  loadProducts(): void {
+    this.isLoading = true;
+    
+    this.subscription = this.productsService.getAll().subscribe({
+      next: (products) => {
+        this.products = products
+          .filter(p => p.on_sale && p.visible && p.stock > 0)
+          .slice(0, 3)
+          .map(p => {
+            const clientProduct = this.mapToClientProduct(p);
+            return {
+              ...clientProduct,
+              discount: p.sale_price && p.price 
+                ? Math.round(((p.price - p.sale_price) / p.price) * 100) 
+                : 0
+            };
+          });
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando productos en oferta:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private mapToClientProduct(product: Product): ClientProduct {
+    return {
+      id: Number(product.id) || 0,
+      name: product.name,
+      category: Array.isArray(product.categories) && product.categories.length > 0 
+        ? product.categories[0] 
+        : 'Sin categoría',
+      price: product.on_sale && product.sale_price ? product.sale_price : product.price,
+      originalPrice: product.on_sale && product.sale_price ? product.price : undefined,
+      rating: 4,
+      reviews: 0,
+      image: product.image || (product.colors && product.colors[0]?.images?.[0]) || '',
+      description: product.description,
+      stock: product.stock || 0,
+      brand: product.brand || ''
+    };
+  }
 }

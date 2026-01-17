@@ -1,14 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
-
-interface ProductColor {
-  name: string;
-  hex: string;
-  images: string[];
-}
+import { ProductsService, Product, ProductColor } from '../../../../../core/services/products.service';
+import { CategoriesService } from '../../../../../core/services/categories.service';
+import { BrandsService } from '../../../../../core/services/brands.service';
+import { forkJoin, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-product-edit',
@@ -23,13 +21,16 @@ interface ProductColor {
   templateUrl: './product-edit.component.html',
   styleUrl: './product-edit.component.css'
 })
-export default class ProductEditComponent implements OnInit {
+export default class ProductEditComponent implements OnInit, OnDestroy {
   productForm: FormGroup;
   colors: ProductColor[] = [];
   selectedCategories: string[] = [];
-  productImages: string[] = [];
   activeTab: 'precios' | 'inventario' = 'precios';
   productId: string | null = null;
+  imageType: 'unique' | 'withColor' | null = null;
+  uniqueImages: string[] = [];
+  isLoading = false;
+  error: string | null = null;
   
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -37,97 +38,140 @@ export default class ProductEditComponent implements OnInit {
     { label: 'Editar producto' }
   ];
   
-  categories = [
-    'Laptops',
-    'Audio',
-    'Cámaras',
-    'Gaming',
-    'Smartphones',
-    'Wearables',
-    'Televisores',
-    'Impresoras'
-  ];
-
-  brands = [
-    'Apple',
-    'Samsung',
-    'Sony',
-    'HP',
-    'Lenovo',
-    'Dell',
-    'Asus',
-    'Xiaomi',
-    'Huawei',
-    'LG',
-    'Microsoft',
-    'Logitech'
-  ];
+  categories: Array<{ id: string; name: string }> = [];
+  brands: Array<{ id: string; name: string }> = [];
+  private subscription?: Subscription;
 
   constructor(
     private fb: FormBuilder,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router,
+    private productsService: ProductsService,
+    private categoriesService: CategoriesService,
+    private brandsService: BrandsService
   ) {
     this.productForm = this.fb.group({
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
-      brand: ['', [Validators.required]],
+      brand_id: ['', [Validators.required]],
       price: [0, [Validators.required, Validators.min(0)]],
       stock: [0, [Validators.required, Validators.min(0)]],
       weight: ['', [Validators.required]],
       status: ['Activo', [Validators.required]],
-      visible: [true]
+      visible: [true],
+      on_sale: [false],
+      sale_price: [0, [Validators.min(0)]],
+      featured: [false],
+      recommended: [false]
     });
   }
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.paramMap.get('id');
-    this.loadProductData();
+    this.loadInitialData();
   }
 
-  loadProductData(): void {
-    // Mock data
-    this.productForm.patchValue({
-      name: 'AUDÍFONOS BLUETOOTH PARA CASCO MOTO AURICULARES INALÁMBRICOS',
-      description: 'string',
-      brand: 'Sony',
-      price: 89.99,
-      stock: 15,
-      weight: '0.2',
-      status: 'Activo',
-      visible: true
-    });
-
-    this.selectedCategories = ['Audio'];
-    this.productImages = [
-      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop',
-      'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=200&h=200&fit=crop',
-      'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop',
-      'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=200&h=200&fit=crop'
-    ];
-
-    this.colors = [
-      {
-        name: 'Negro',
-        hex: '#000000',
-        images: [
-          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop',
-          'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=200&h=200&fit=crop'
-        ]
-      }
-    ];
-  }
-
-  toggleCategory(category: string): void {
-    const index = this.selectedCategories.indexOf(category);
-    if (index > -1) {
-      this.selectedCategories.splice(index, 1);
-    } else {
-      this.selectedCategories.push(category);
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
     }
   }
 
-  isCategorySelected(category: string): boolean {
-    return this.selectedCategories.includes(category);
+  loadInitialData(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.subscription = forkJoin({
+      categories: this.categoriesService.getAll(),
+      brands: this.brandsService.getAll()
+    }).subscribe({
+      next: ({ categories, brands }) => {
+        this.categories = categories.map(cat => ({ id: cat.id, name: cat.name }));
+        this.brands = brands.map(brand => ({ id: brand.id, name: brand.name }));
+        
+        if (this.productId) {
+          this.loadProductData();
+        } else {
+          this.isLoading = false;
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando datos iniciales:', err);
+        this.error = 'Error al cargar los datos. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadProductData(): void {
+    if (!this.productId) return;
+    
+    this.subscription = this.productsService.getById(this.productId).subscribe({
+      next: (product) => {
+        if (product) {
+          this.productForm.patchValue({
+            name: product.name,
+            description: product.description,
+            brand_id: product.brand_id,
+            price: product.price,
+            stock: product.stock,
+            weight: product.weight,
+            status: product.status,
+            visible: product.visible,
+            on_sale: product.on_sale || false,
+            sale_price: product.sale_price || 0,
+            featured: product.featured || false,
+            recommended: product.recommended || false
+          });
+
+          this.selectedCategories = product.categories || [];
+          this.colors = product.colors || [];
+          
+          if (this.colors.length > 0) {
+            this.imageType = 'withColor';
+          } else {
+            this.imageType = 'unique';
+            this.uniqueImages = product.image ? [product.image] : [''];
+          }
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando producto:', err);
+        this.error = 'Error al cargar el producto. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  toggleCategory(category: { id: string; name: string } | string): void {
+    const categoryId = typeof category === 'string' ? category : category.id;
+    const index = this.selectedCategories.indexOf(categoryId);
+    if (index > -1) {
+      this.selectedCategories.splice(index, 1);
+    } else {
+      this.selectedCategories.push(categoryId);
+    }
+  }
+
+  isCategorySelected(category: { id: string; name: string } | string): boolean {
+    const categoryId = typeof category === 'string' ? category : category.id;
+    return this.selectedCategories.includes(categoryId);
+  }
+
+  setImageType(type: 'unique' | 'withColor'): void {
+    this.imageType = type;
+    if (type === 'unique') {
+      this.colors = [];
+      if (this.uniqueImages.length === 0) {
+        this.uniqueImages = [''];
+      }
+    } else {
+      this.uniqueImages = [];
+      if (this.colors.length === 0) {
+        this.addColor();
+      }
+    }
   }
 
   addColor(): void {
@@ -162,23 +206,27 @@ export default class ProductEditComponent implements OnInit {
     color.images.splice(index, 1);
   }
 
-  onProductImageChange(event: Event, index?: number): void {
+  onUniqueImageChange(event: Event, imageIndex: number): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        if (index !== undefined) {
-          this.productImages[index] = e.target.result;
-        } else if (this.productImages.length < 5) {
-          this.productImages.push(e.target.result);
+        if (imageIndex < this.uniqueImages.length) {
+          this.uniqueImages[imageIndex] = e.target.result;
+        }
+        if (this.uniqueImages.length < 6 && imageIndex === this.uniqueImages.length - 1 && this.uniqueImages[imageIndex]) {
+          this.uniqueImages.push('');
         }
       };
       reader.readAsDataURL(input.files[0]);
     }
   }
 
-  removeProductImage(index: number): void {
-    this.productImages.splice(index, 1);
+  removeUniqueImage(index: number): void {
+    this.uniqueImages.splice(index, 1);
+    if (this.uniqueImages.length === 0) {
+      this.uniqueImages = [''];
+    }
   }
 
   setActiveTab(tab: 'precios' | 'inventario'): void {
@@ -192,25 +240,66 @@ export default class ProductEditComponent implements OnInit {
     }
   }
 
+  onPromotionToggle(): void {
+    const onSale = this.productForm.get('on_sale')?.value;
+    if (!onSale) {
+      this.productForm.patchValue({ sale_price: 0 });
+    }
+  }
+
+
+  onColorChange(color: ProductColor, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input) {
+      color.hex = input.value;
+    }
+  }
+
   onSubmit(): void {
-    if (this.productForm.valid && this.selectedCategories.length > 0) {
-      const productData = {
-        id: this.productId,
-        ...this.productForm.value,
+    if (this.productForm.valid && this.selectedCategories.length > 0 && this.imageType && this.productId) {
+      this.isLoading = true;
+      this.error = null;
+      
+      const formValue = this.productForm.value;
+      
+      const productData: Partial<Product> = {
+        name: formValue.name,
+        description: formValue.description,
+        brand_id: formValue.brand_id,
+        price: formValue.price,
+        stock: formValue.stock,
+        weight: formValue.weight,
+        status: formValue.status,
+        visible: formValue.visible,
+        on_sale: formValue.on_sale,
+        sale_price: formValue.on_sale ? formValue.sale_price : null,
+        featured: formValue.featured,
+        recommended: formValue.recommended,
         categories: this.selectedCategories,
-        colors: this.colors,
-        images: this.productImages
+        colors: this.imageType === 'withColor' ? this.colors : undefined
       };
-      console.log('Producto actualizado:', productData);
+      
+      this.productsService.update(this.productId, productData).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.router.navigate(['/admin/productos']);
+        },
+        error: (err) => {
+          console.error('Error actualizando producto:', err);
+          this.error = 'Error al actualizar el producto. Por favor, intenta nuevamente.';
+          this.isLoading = false;
+        }
+      });
     }
   }
 
   getProductInfo(): any {
+    const totalImages = this.colors.reduce((sum, color) => sum + color.images.length, 0);
     return {
       id: this.productId,
       createdAt: '19/04/2025 15:33',
       category: this.selectedCategories[0] || 'N/A',
-      imagesActive: this.productImages.length,
+      imagesActive: totalImages,
       imagesNew: 0,
       imagesToDelete: 0
     };

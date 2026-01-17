@@ -18,7 +18,7 @@
     </div>
 
     <!-- Marcas -->
-    <div>
+    <div *ngIf="brands && brands.length > 0">
       <label class="block text-sm font-semibold text-gray-900 mb-3">Marcas</label>
       <div class="space-y-2">
         <label *ngFor="let brand of brands" class="flex items-center gap-2 cursor-pointer">

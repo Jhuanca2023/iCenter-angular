@@ -1,13 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
-
-interface ProductColor {
-  name: string;
-  hex: string;
-  images: string[];
-}
+import { ProductsService, Product, ProductColor } from '../../../../../core/services/products.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-product-detail',
@@ -16,12 +12,15 @@ interface ProductColor {
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css'
 })
-export default class ProductDetailComponent implements OnInit {
+export default class ProductDetailComponent implements OnInit, OnDestroy {
   productId: string | null = null;
-  product: any = null;
+  product: Product | null = null;
   colors: ProductColor[] = [];
   selectedColor: ProductColor | null = null;
   selectedImage: string = '';
+  isLoading = false;
+  error: string | null = null;
+  private subscription?: Subscription;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -29,49 +28,48 @@ export default class ProductDetailComponent implements OnInit {
     { label: 'Detalle' }
   ];
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private productsService: ProductsService
+  ) {}
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.paramMap.get('id');
-    this.loadProductData();
+    if (this.productId) {
+      this.loadProductData();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   loadProductData(): void {
-    // Mock data - en producción vendría de un servicio
-    this.product = {
-      id: this.productId,
-      name: 'CELULAR SAMSUNG GALAXY S24 ULTRA 256GB 12GB RAM 200MP 6.8 GRIS',
-      description: 'Smartphone Samsung Galaxy S24 Ultra con 256GB de almacenamiento, 12GB RAM, cámara de 200MP y pantalla de 6.8 pulgadas.',
-      category: 'Smartphones',
-      price: 999.99,
-      stock: 12,
-      status: 'Activo',
-      visible: true,
-      createdAt: '2024-01-15',
-      updatedAt: '2024-01-20'
-    };
-
-    this.colors = [
-      {
-        name: 'Gris',
-        hex: '#808080',
-        images: [
-          'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=400&fit=crop',
-          'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=400&fit=crop',
-          'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400&h=400&fit=crop'
-        ]
+    if (!this.productId) return;
+    
+    this.isLoading = true;
+    this.error = null;
+    
+    this.subscription = this.productsService.getById(this.productId).subscribe({
+      next: (product) => {
+        if (product) {
+          this.product = product;
+          this.colors = product.colors || [];
+          if (this.colors.length > 0) {
+            this.selectedColor = this.colors[0];
+            this.selectedImage = this.colors[0].images[0] || '';
+          }
+        }
+        this.isLoading = false;
       },
-      {
-        name: 'Negro',
-        hex: '#000000',
-        images: [
-          'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400&h=400&fit=crop',
-          'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=400&h=400&fit=crop'
-        ]
+      error: (err) => {
+        console.error('Error cargando producto:', err);
+        this.error = 'Error al cargar el producto. Por favor, intenta nuevamente.';
+        this.isLoading = false;
       }
-    ];
-    this.selectedColor = this.colors[0];
-    this.selectedImage = this.colors[0].images[0];
+    });
   }
 
   selectColor(color: ProductColor): void {
@@ -86,5 +84,22 @@ export default class ProductDetailComponent implements OnInit {
   get allImages(): string[] {
     if (!this.selectedColor) return [];
     return this.selectedColor.images;
+  }
+
+  get category(): string {
+    if (!this.product || !this.product.categories || !Array.isArray(this.product.categories)) {
+      return 'N/A';
+    }
+    return this.product.categories[0] || 'N/A';
+  }
+
+  get createdAt(): string {
+    if (!this.product || !this.product.created_at) return 'N/A';
+    return new Date(this.product.created_at).toLocaleDateString('es-PE');
+  }
+
+  get updatedAt(): string {
+    if (!this.product || !this.product.updated_at) return 'N/A';
+    return new Date(this.product.updated_at).toLocaleDateString('es-PE');
   }
 }

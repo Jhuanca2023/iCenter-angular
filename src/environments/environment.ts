@@ -1,4 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000/api'
+  supabaseUrl: 'https://pmmnphvaqfmefurempul.supabase.co',
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtbW5waHZhcWZtZWZ1cmVtcHVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1ODIyNTQsImV4cCI6MjA4NDE1ODI1NH0.K3FQ-b2nOwgMJP1CRZCb2ffH92vEb6PNytnaxemEqbI'
 };

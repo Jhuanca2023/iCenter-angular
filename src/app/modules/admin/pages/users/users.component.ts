@@ -1,42 +1,74 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { User } from '../../interfaces/user.interface';
+import { UsersService } from '../../../../core/services/users.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent, PaginationComponent],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'
 })
-export default class AdminUsersComponent {
+export default class AdminUsersComponent implements OnInit, OnDestroy {
   searchTerm = '';
-  selectedRole = '';
-  selectedStatus = '';
+  currentPage = 1;
+  itemsPerPage = 10;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
     { label: 'Usuarios' }
   ];
 
-  users: User[] = [
-    { id: 1, name: 'Juan Pérez', email: 'juan@example.com', role: 'Usuario', status: 'Activo' },
-    { id: 2, name: 'María García', email: 'maria@example.com', role: 'Usuario', status: 'Activo' },
-    { id: 3, name: 'Carlos Rodríguez', email: 'carlos@example.com', role: 'Usuario', status: 'Activo' },
-    { id: 4, name: 'Ana Martínez', email: 'ana@example.com', role: 'Admin', status: 'Activo' },
-    { id: 5, name: 'Luis González', email: 'luis@example.com', role: 'Usuario', status: 'Inactivo' },
-    { id: 6, name: 'Laura Sánchez', email: 'laura@example.com', role: 'Usuario', status: 'Activo' },
-    { id: 7, name: 'Pedro López', email: 'pedro@example.com', role: 'Usuario', status: 'Activo' }
-  ];
+  users: User[] = [];
+  isLoading = false;
+  error: string | null = null;
+  private subscription?: Subscription;
 
-  roles = ['Todos', 'Admin', 'Usuario'];
-  statuses = ['Todos', 'Activo', 'Inactivo'];
+  constructor(private usersService: UsersService) {}
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  loadUsers(): void {
+    this.isLoading = true;
+    this.error = null;
+    
+    this.subscription = this.usersService.getAll().subscribe({
+      next: (users) => {
+        this.users = users;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando usuarios:', err);
+        this.error = 'Error al cargar los usuarios. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  selectedFilter: 'todos' | 'activos' | 'inactivos' = 'todos';
 
   get filteredUsers(): User[] {
     let filtered = [...this.users];
+    
+    if (this.selectedFilter === 'activos') {
+      filtered = filtered.filter(u => u.status === 'Activo');
+    } else if (this.selectedFilter === 'inactivos') {
+      filtered = filtered.filter(u => u.status === 'Inactivo');
+    }
     
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
@@ -46,20 +78,81 @@ export default class AdminUsersComponent {
       );
     }
 
-    if (this.selectedRole && this.selectedRole !== 'Todos') {
-      filtered = filtered.filter(u => u.role === this.selectedRole);
-    }
-
-    if (this.selectedStatus && this.selectedStatus !== 'Todos') {
-      filtered = filtered.filter(u => u.status === this.selectedStatus);
-    }
-
     return filtered;
+  }
+
+  get paginatedUsers(): User[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.filteredUsers.slice(start, end);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredUsers.length / this.itemsPerPage);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+  }
+
+  get activeCount(): number {
+    return this.users.filter(u => u.status === 'Activo').length;
+  }
+
+  get inactiveCount(): number {
+    return this.users.filter(u => u.status === 'Inactivo').length;
+  }
+
+  getTotalCount(): number {
+    return this.users.length;
+  }
+
+  getInitials(name: string): string {
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  getAvatarColor(name: string): string {
+    const colors = [
+      'bg-red-500',
+      'bg-purple-500',
+      'bg-pink-500',
+      'bg-yellow-500',
+      'bg-green-500',
+      'bg-blue-500',
+      'bg-indigo-500'
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  }
+
+  formatDate(date: Date | undefined): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  getAuthProviderLabel(user: User): string {
+    return user.authProvider === 'google' ? 'Google' : 'Email';
+  }
+
+  getAuthProviderBadgeClass(user: User): string {
+    return user.authProvider === 'google' 
+      ? 'px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800'
+      : 'px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800';
+  }
+
+  setFilter(filter: 'todos' | 'activos' | 'inactivos'): void {
+    this.selectedFilter = filter;
   }
 
   clearFilters(): void {
     this.searchTerm = '';
-    this.selectedRole = '';
-    this.selectedStatus = '';
+    this.selectedFilter = 'todos';
+    this.currentPage = 1;
   }
 }
