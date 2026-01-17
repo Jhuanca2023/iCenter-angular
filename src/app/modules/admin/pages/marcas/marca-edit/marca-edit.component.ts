@@ -53,11 +53,15 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadCategories();
     this.routeSubscription = this.route.paramMap.subscribe(params => {
       this.marcaId = params.get('id');
       if (this.marcaId) {
-        this.loadMarcaData();
+        // Primero cargar categorías, luego datos de la marca
+        this.loadCategories();
+        // Esperar un momento para que las categorías se carguen antes de cargar la marca
+        setTimeout(() => {
+          this.loadMarcaData();
+        }, 200);
       }
     });
   }
@@ -72,9 +76,13 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
   }
 
   loadCategories(): void {
+    if (!this.marcaId) return;
+    
+    // Cargar solo las categorías que pertenecen a esta marca
     this.categoriesService.getAll().subscribe({
       next: (categories) => {
-        this.availableCategories = categories;
+        // Filtrar categorías por brand_id de la marca actual
+        this.availableCategories = categories.filter(cat => cat.brand_id === this.marcaId);
       },
       error: (err) => {
         console.error('Error cargando categorías:', err);
@@ -96,7 +104,22 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
             description: marca.description || '',
             visible: marca.visible
           });
-          this.selectedCategories = marca.categories || [];
+          
+          // Convertir nombres de categorías a IDs
+          if (marca.categories && marca.categories.length > 0 && this.availableCategories.length > 0) {
+            this.selectedCategories = this.availableCategories
+              .filter(cat => marca.categories.includes(cat.name))
+              .map(cat => cat.id);
+          } else if (marca.categories && marca.categories.length > 0) {
+            // Si las categorías aún no están cargadas, esperar un poco más
+            setTimeout(() => {
+              this.selectedCategories = this.availableCategories
+                .filter(cat => marca.categories.includes(cat.name))
+                .map(cat => cat.id);
+            }, 300);
+          } else {
+            this.selectedCategories = [];
+          }
         }
         this.isLoadingData = false;
       },

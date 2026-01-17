@@ -28,11 +28,13 @@ export interface ProductListResponse {
 }
 
 export interface ClientProduct {
-  id: number;
+  id: number | string; // Permitir string (UUID) o number
   name: string;
   category: string;
   price: number;
   originalPrice?: number;
+  salePrice?: number;
+  onSale?: boolean;
   rating: number;
   reviews: number;
   image: string;
@@ -81,6 +83,7 @@ export class ProductsService {
       this.supabase
         .from('products')
         .select('*, brands(name)')
+        .eq('visible', true)
         .order('created_at', { ascending: false })
     ).pipe(
       switchMap(response => {
@@ -103,6 +106,7 @@ export class ProductsService {
         .from('products')
         .select('*, brands(name), product_categories(category_id, categories(*))')
         .eq('id', id)
+        .eq('visible', true)
         .single()
     ).pipe(
       switchMap(response => {
@@ -188,9 +192,20 @@ export class ProductsService {
       switchMap(response => {
         if (response.error) throw response.error;
         
+        const updatePromises: Observable<any>[] = [];
+        
         // Actualizar categorías si se proporcionan
         if (product.categories) {
-          return this.updateProductCategories(id, product.categories).pipe(
+          updatePromises.push(this.updateProductCategories(id, product.categories));
+        }
+        
+        // Actualizar colores si se proporcionan
+        if (product.colors !== undefined) {
+          updatePromises.push(this.updateProductColors(id, product.colors));
+        }
+        
+        if (updatePromises.length > 0) {
+          return forkJoin(updatePromises).pipe(
             switchMap(() => from([response.data]))
           );
         }
@@ -210,6 +225,57 @@ export class ProductsService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
+      })
+    );
+  }
+
+  getByBrandId(brandId: string): Observable<Product[]> {
+    return from(
+      this.supabase
+        .from('products')
+        .select('*, brands(name)')
+        .eq('brand_id', brandId)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      switchMap(response => {
+        if (response.error) throw response.error;
+        const products = response.data || [];
+        
+        if (products.length === 0) {
+          return from([[]]);
+        }
+        
+        const productPromises = products.map(product => 
+          this.getProductWithDetails(product)
+        );
+        
+        return forkJoin(productPromises);
+      })
+    );
+  }
+
+  getByCategoryId(categoryId: string): Observable<Product[]> {
+    return from(
+      this.supabase
+        .from('product_categories')
+        .select('product_id, products(*, brands(name))')
+        .eq('category_id', categoryId)
+    ).pipe(
+      switchMap(response => {
+        if (response.error) throw response.error;
+        const productCategories = response.data || [];
+        
+        if (productCategories.length === 0) {
+          return from([[]]);
+        }
+        
+        const products = productCategories.map((pc: any) => pc.products).filter(Boolean);
+        
+        const productPromises = products.map((product: any) => 
+          this.getProductWithDetails(product)
+        );
+        
+        return forkJoin(productPromises);
       })
     );
   }
@@ -278,18 +344,30 @@ export class ProductsService {
   }
 
   private mapToClientProducts(products: Product[]): ClientProduct[] {
-    return products.map(p => this.mapToClientProduct(p));
+    return products
+      .map(p => this.mapToClientProduct(p))
+      .filter(p => p !== null); // Filtrar productos no visibles
   }
 
   private mapToClientProduct(product: Product): ClientProduct {
+    // Solo mostrar productos visibles
+    if (!product.visible) {
+      return null as any;
+    }
+    
+    // Mantener el ID como string si es UUID, convertir a número solo si es numérico
+    const productId = typeof product.id === 'string' ? product.id : (Number(product.id) || 0);
+    
     return {
-      id: Number(product.id) || 0,
+      id: productId as any, // Permitir string o number para compatibilidad
       name: product.name,
       category: Array.isArray(product.categories) && product.categories.length > 0 
         ? product.categories[0] 
         : 'Sin categoría',
-      price: product.on_sale && product.sale_price ? product.sale_price : product.price,
+      price: product.price, // Precio original/regular
       originalPrice: product.on_sale && product.sale_price ? product.price : undefined,
+      salePrice: product.on_sale && product.sale_price ? product.sale_price : undefined,
+      onSale: product.on_sale || false,
       rating: 4,
       reviews: 0,
       image: product.image || (product.colors && product.colors[0]?.images?.[0]) || '',
@@ -384,6 +462,28 @@ export class ProductsService {
     );
   }
 
+  private updateProductColors(productId: string, colors: ProductColor[]): Observable<void> {
+    // Eliminar colores existentes y sus imágenes
+    return from(
+      this.supabase
+        .from('product_colors')
+        .delete()
+        .eq('product_id', productId)
+    ).pipe(
+      switchMap(() => {
+        // Insertar nuevos colores
+        if (colors.length === 0) return from([null]);
+        
+        const colorPromises = colors.map(color =>
+          this.saveProductColor(productId, color)
+        );
+        
+        return forkJoin(colorPromises);
+      }),
+      map(() => undefined)
+    );
+  }
+
   private getProductWithDetails(productData: any): Observable<Product> {
     const productId = productData.id;
 
@@ -406,11 +506,14 @@ export class ProductsService {
         return from(
           this.supabase
             .from('product_categories')
-            .select('category_id, categories(*)')
+            .select('category_id, categories(name)')
             .eq('product_id', productId)
         ).pipe(
           map(categoriesResponse => {
-            const categories = (categoriesResponse.data || []).map((pc: any) => pc.category_id);
+            // Mapear categorías: usar nombres si están disponibles, sino usar IDs
+            const categories = (categoriesResponse.data || []).map((pc: any) => 
+              pc.categories?.name || pc.category_id
+            );
 
             return {
               id: productData.id,
@@ -429,7 +532,7 @@ export class ProductsService {
               recommended: productData.recommended,
               categories: Array.isArray(categories) ? categories as string[] : [],
               colors,
-              image: colors[0]?.images[0] || null,
+              image: colors[0]?.images[0] || productData.image || null,
               created_at: productData.created_at,
               updated_at: productData.updated_at
             } as Product;

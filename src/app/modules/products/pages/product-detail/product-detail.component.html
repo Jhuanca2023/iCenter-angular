@@ -1,15 +1,40 @@
 <main class="min-h-screen bg-white py-4 sm:py-8">
-  <div class="max-w-6xl w-full px-4 sm:px-6 mx-auto">
-    <p class="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-0">
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="max-w-6xl w-full px-4 sm:px-6 mx-auto">
+    <div class="flex items-center justify-center py-20">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+        <p class="text-gray-600">Cargando producto...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !isLoading" class="max-w-6xl w-full px-4 sm:px-6 mx-auto">
+    <div class="text-center py-20">
+      <p class="text-red-600 mb-4">{{ error }}</p>
+      <a routerLink="/productos" class="text-indigo-500 hover:text-indigo-600">Volver a productos</a>
+    </div>
+  </div>
+
+  <!-- Product content -->
+  <div *ngIf="product && !isLoading && !error" class="max-w-6xl w-full px-4 sm:px-6 mx-auto">
+    <p class="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-0" *ngIf="product">
       <a routerLink="/" class="hover:text-indigo-500">Inicio</a> /
       <a routerLink="/productos" class="hover:text-indigo-500"> Productos</a> /
-      <span> Sports</span> /
-      <span class="text-indigo-500"> Casual Shoes</span>
+      <span *ngFor="let category of productCategories; let last = last">
+        <a *ngIf="!last" [routerLink]="['/productos']" [queryParams]="{ categoria: category }" class="hover:text-indigo-500">{{ category }}</a>
+        <span *ngIf="!last"> / </span>
+        <span *ngIf="last" class="hover:text-indigo-500">{{ category }}</span>
+      </span>
+      <span *ngIf="productCategories.length === 0 && productBrand">{{ productBrand }}</span>
+      <span *ngIf="productCategories.length > 0 || productBrand"> / </span>
+      <span class="text-indigo-500">{{ product.name }}</span>
     </p>
 
     <div class="flex flex-col md:flex-row gap-6 md:gap-16 mt-4">
       <!-- Galería de imágenes -->
-      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-1/2">
         <!-- Thumbnails - ocultos en mobile, visibles en desktop -->
         <div class="hidden sm:flex flex-col gap-3 flex-shrink-0">
           <div 
@@ -22,8 +47,21 @@
         </div>
 
         <!-- Imagen principal -->
-        <div class="border border-gray-500/30 w-full sm:flex-1 rounded overflow-hidden">
-          <img [src]="selectedImage" alt="Selected product" class="w-full h-auto">
+        <div 
+          class="border border-gray-500/30 w-full sm:w-auto rounded overflow-hidden relative image-zoom-container"
+          (mousemove)="onImageMouseMove($event)"
+          (mouseenter)="onImageMouseEnter()"
+          (mouseleave)="onImageMouseLeave()">
+          <!-- Badge de descuento -->
+          <div *ngIf="hasDiscount" class="absolute top-3 left-3 z-10 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
+            -{{ discountPercentage }}%
+          </div>
+          <img 
+            [src]="selectedImage || product?.image" 
+            [alt]="product?.name || 'Producto'" 
+            [class.zoomed]="zoomActive"
+            [style.transform-origin]="zoomActive ? zoomX + '% ' + zoomY + '%' : 'center'"
+            class="product-image w-full h-auto max-w-md max-h-[500px] object-contain">
         </div>
 
         <!-- Thumbnails móvil - debajo de la imagen principal -->
@@ -38,8 +76,8 @@
         </div>
       </div>
 
-      <div class="text-sm w-full md:w-1/2">
-        <h1 class="text-2xl sm:text-3xl font-medium">Casual Shoes</h1>
+      <div class="text-sm w-full md:w-1/2" *ngIf="product">
+        <h1 class="text-2xl sm:text-3xl font-medium">{{ product.name }}</h1>
 
         <div class="flex items-center gap-0.5 mt-1">
           <svg 
@@ -63,8 +101,8 @@
         </div>
 
         <div class="mt-4 sm:mt-6">
-          <p class="text-sm sm:text-base text-gray-500/70 line-through">Precio: $100</p>
-          <p class="text-xl sm:text-2xl font-medium">Precio: $80</p>
+          <p *ngIf="hasDiscount" class="text-sm sm:text-base text-gray-500/70 line-through">Precio: ${{ originalPrice | number:'1.2-2' }}</p>
+          <p class="text-xl sm:text-2xl font-medium">Precio: ${{ finalPrice | number:'1.2-2' }}</p>
           <span class="text-xs sm:text-sm text-gray-500/70">(incluye todos los impuestos)</span>
         </div>
 
@@ -90,11 +128,25 @@
         </div>
 
         <p class="text-sm sm:text-base font-medium mt-4 sm:mt-6">Acerca del Producto</p>
-        <ul class="list-disc ml-4 sm:ml-6 text-sm sm:text-base text-gray-500/70 space-y-1">
-          <li>Material de alta calidad</li>
-          <li>Cómodo para uso diario</li>
-          <li>Disponible en diferentes tallas</li>
-        </ul>
+        <div class="text-sm sm:text-base text-gray-500/70 mt-2">
+          <div [class.line-clamp-3]="!showFullDescription" class="whitespace-pre-line">
+            {{ showFullDescription ? (product.description || 'Sin descripción disponible') : shortDescription }}
+          </div>
+          <button 
+            *ngIf="product.description && product.description.length > 150"
+            type="button"
+            (click)="toggleDescription()"
+            class="mt-2 text-indigo-500 hover:text-indigo-600 text-sm font-medium transition">
+            {{ showFullDescription ? 'Ver menos' : 'Ver más' }}
+          </button>
+        </div>
+        
+        <!-- Información adicional del producto -->
+        <div class="mt-4 space-y-2 text-sm text-gray-600">
+          <p *ngIf="productBrand"><strong>Marca:</strong> {{ productBrand }}</p>
+          <p *ngIf="product.weight"><strong>Peso:</strong> {{ product.weight }}</p>
+          <p *ngIf="product.stock !== undefined"><strong>Stock disponible:</strong> {{ product.stock }} unidades</p>
+        </div>
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center mt-6 sm:mt-10 gap-3 sm:gap-4 text-sm sm:text-base">
           <button class="w-full py-3 sm:py-3.5 font-medium bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition cursor-pointer rounded-lg">

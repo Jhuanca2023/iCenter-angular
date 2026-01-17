@@ -41,7 +41,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   isLoggedIn(): boolean {
-    return this.authService.isLoggedIn() && !this.authService.isAdmin();
+    return this.authService.isLoggedIn();
+  }
+
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  goToAdminPanel(): void {
+    this.router.navigate(['/admin']);
+    this.closeMenu();
+    this.closeUserMenu();
   }
 
   toggleUserMenu(): void {

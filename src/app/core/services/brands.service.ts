@@ -1,8 +1,8 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { getSupabaseClient } from '../config/supabase.config';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Observable, from } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, from, forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { Marca } from '../../modules/admin/interfaces/marca.interface';
 
 @Injectable({
@@ -18,9 +18,30 @@ export class BrandsService {
         .select('*')
         .order('name', { ascending: true })
     ).pipe(
-      map(response => {
+      switchMap(response => {
         if (response.error) throw response.error;
-        return this.mapToMarcas(response.data || []);
+        const brands = response.data || [];
+        
+        if (brands.length === 0) {
+          return from([[]]);
+        }
+        
+        // Para cada marca, obtener sus categorías
+        const brandObservables = brands.map((brand: any) => 
+          from(
+            this.supabase
+              .from('categories')
+              .select('name')
+              .eq('brand_id', brand.id)
+          ).pipe(
+            map(catResponse => {
+              const categories = catResponse.data?.map((cat: any) => cat.name) || [];
+              return this.mapToMarcaWithCategories(brand, categories);
+            })
+          )
+        );
+        
+        return forkJoin(brandObservables);
       })
     );
   }
@@ -29,13 +50,26 @@ export class BrandsService {
     return from(
       this.supabase
         .from('brands')
-        .select('*, brand_categories(category_id, categories(*))')
+        .select('*')
         .eq('id', id)
         .single()
     ).pipe(
-      map(response => {
+      switchMap(response => {
         if (response.error) throw response.error;
-        return response.data ? this.mapToMarca(response.data) : null;
+        if (!response.data) return from([null]);
+        
+        // Obtener categorías asociadas directamente desde categories por brand_id
+        return from(
+          this.supabase
+            .from('categories')
+            .select('id, name')
+            .eq('brand_id', id)
+        ).pipe(
+          map(catResponse => {
+            const categories = catResponse.data?.map((cat: any) => cat.name) || [];
+            return this.mapToMarcaWithCategories(response.data, categories);
+          })
+        );
       })
     );
   }
@@ -102,6 +136,19 @@ export class BrandsService {
       description: data.description,
       visible: data.visible,
       categories: data.brand_categories?.map((bc: any) => bc.categories?.name).filter(Boolean) || [],
+      productCount: data.product_count || 0,
+      createdAt: data.created_at ? new Date(data.created_at) : undefined,
+      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined
+    };
+  }
+
+  private mapToMarcaWithCategories(data: any, categories: string[]): Marca {
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      visible: data.visible,
+      categories: categories,
       productCount: data.product_count || 0,
       createdAt: data.created_at ? new Date(data.created_at) : undefined,
       updatedAt: data.updated_at ? new Date(data.updated_at) : undefined

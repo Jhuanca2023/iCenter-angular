@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ProductFavoriteComponent } from '../product-favorite/product-favorite.component';
 
 interface Product {
-  id: number;
+  id: number | string; // Permitir string (UUID) o number
   name: string;
   category: string;
   price: number;

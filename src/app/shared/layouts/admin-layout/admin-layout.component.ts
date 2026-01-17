@@ -17,8 +17,7 @@ export class AdminLayoutComponent implements OnInit {
     { name: 'Categorías', path: '/admin/categories', icon: 'categories' },
     { name: 'Marcas', path: '/admin/marcas', icon: 'brands' },
     { name: 'Usuarios', path: '/admin/users', icon: 'users' },
-    { name: 'Pedidos', path: '/admin/orders', icon: 'orders' },
-    { name: 'Perfiles', path: '/admin/profiles', icon: 'profiles' }
+    { name: 'Pedidos', path: '/admin/orders', icon: 'orders' }
   ];
 
   activeLink = this.sidebarLinks[0].path;
