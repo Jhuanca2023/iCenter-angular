@@ -6,7 +6,18 @@ import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/comp
 import { ProductsService, Product, ProductColor } from '../../../../../core/services/products.service';
 import { CategoriesService } from '../../../../../core/services/categories.service';
 import { BrandsService } from '../../../../../core/services/brands.service';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subscription, of, Observable } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
+import { StorageService } from '../../../../../core/services/storage.service';
+
+interface ColorWithFiles extends ProductColor {
+  imageFiles: File[];
+}
+
+interface ImageFile {
+  file: File | null;
+  preview: string;
+}
 
 @Component({
   selector: 'app-product-edit',
@@ -23,12 +34,12 @@ import { forkJoin, Subscription } from 'rxjs';
 })
 export default class ProductEditComponent implements OnInit, OnDestroy {
   productForm: FormGroup;
-  colors: ProductColor[] = [];
+  colors: ColorWithFiles[] = [];
   selectedCategories: string[] = [];
   activeTab: 'precios' | 'inventario' = 'precios';
   productId: string | null = null;
   imageType: 'unique' | 'withColor' | null = null;
-  uniqueImages: string[] = [];
+  uniqueImages: ImageFile[] = [];
   isLoading = false;
   error: string | null = null;
   
@@ -48,7 +59,8 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
     private router: Router,
     private productsService: ProductsService,
     private categoriesService: CategoriesService,
-    private brandsService: BrandsService
+    private brandsService: BrandsService,
+    private storageService: StorageService
   ) {
     this.productForm = this.fb.group({
       name: ['', [Validators.required]],
@@ -125,13 +137,16 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
           });
 
           this.selectedCategories = product.categories || [];
-          this.colors = product.colors || [];
+          this.colors = (product.colors || []).map(color => ({
+            ...color,
+            imageFiles: []
+          }));
           
           if (this.colors.length > 0) {
             this.imageType = 'withColor';
           } else {
             this.imageType = 'unique';
-            this.uniqueImages = product.image ? [product.image] : [''];
+            this.uniqueImages = product.image ? [{ file: null, preview: product.image }] : [{ file: null, preview: '' }];
           }
         }
         this.isLoading = false;
@@ -164,7 +179,7 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
     if (type === 'unique') {
       this.colors = [];
       if (this.uniqueImages.length === 0) {
-        this.uniqueImages = [''];
+        this.uniqueImages = [{ file: null, preview: '' }];
       }
     } else {
       this.uniqueImages = [];
@@ -175,10 +190,11 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
   }
 
   addColor(): void {
-    const newColor: ProductColor = {
+    const newColor: ColorWithFiles = {
       name: '',
       hex: '#000000',
-      images: []
+      images: [],
+      imageFiles: []
     };
     this.colors.push(newColor);
   }
@@ -187,45 +203,53 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
     this.colors.splice(index, 1);
   }
 
-  onColorImageChange(event: Event, color: ProductColor, imageIndex?: number): void {
+  onColorImageChange(event: Event, color: ColorWithFiles, imageIndex?: number): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
+      const file = input.files[0];
       const reader = new FileReader();
       reader.onload = (e: any) => {
+        const preview = e.target.result;
         if (imageIndex !== undefined) {
-          color.images[imageIndex] = e.target.result;
+          color.images[imageIndex] = preview;
+          color.imageFiles[imageIndex] = file;
         } else if (color.images.length < 5) {
-          color.images.push(e.target.result);
+          color.images.push(preview);
+          color.imageFiles.push(file);
         }
       };
-      reader.readAsDataURL(input.files[0]);
+      reader.readAsDataURL(file);
+      input.value = '';
     }
   }
 
-  removeColorImage(color: ProductColor, index: number): void {
+  removeColorImage(color: ColorWithFiles, index: number): void {
     color.images.splice(index, 1);
+    color.imageFiles.splice(index, 1);
   }
 
   onUniqueImageChange(event: Event, imageIndex: number): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
+      const file = input.files[0];
       const reader = new FileReader();
       reader.onload = (e: any) => {
         if (imageIndex < this.uniqueImages.length) {
-          this.uniqueImages[imageIndex] = e.target.result;
+          this.uniqueImages[imageIndex] = { file, preview: e.target.result };
         }
-        if (this.uniqueImages.length < 6 && imageIndex === this.uniqueImages.length - 1 && this.uniqueImages[imageIndex]) {
-          this.uniqueImages.push('');
+        if (this.uniqueImages.length < 6 && imageIndex === this.uniqueImages.length - 1 && this.uniqueImages[imageIndex].file) {
+          this.uniqueImages.push({ file: null, preview: '' });
         }
       };
-      reader.readAsDataURL(input.files[0]);
+      reader.readAsDataURL(file);
+      input.value = '';
     }
   }
 
   removeUniqueImage(index: number): void {
     this.uniqueImages.splice(index, 1);
     if (this.uniqueImages.length === 0) {
-      this.uniqueImages = [''];
+      this.uniqueImages = [{ file: null, preview: '' }];
     }
   }
 
@@ -248,10 +272,82 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
   }
 
 
-  onColorChange(color: ProductColor, event: Event): void {
+  onColorChange(color: ColorWithFiles, event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input) {
       color.hex = input.value;
+    }
+  }
+
+  private extractFileFromDataUrl(dataUrl: string): File | null {
+    try {
+      const arr = dataUrl.split(',');
+      if (arr.length < 2) return null;
+      const mime = arr[0].match(/:(.*?);/)?.[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], `image-${Date.now()}.png`, { type: mime || 'image/png' });
+    } catch {
+      return null;
+    }
+  }
+
+  private uploadImages(): Observable<{ uniqueImages?: string[]; colors?: ProductColor[] }> {
+    const timestamp = Date.now();
+    
+    if (this.imageType === 'unique') {
+      const imageFiles = this.uniqueImages.filter(img => img.file !== null).map(img => img.file!);
+      if (imageFiles.length === 0) {
+        // Si no hay archivos nuevos, usar las URLs existentes
+        const existingUrls = this.uniqueImages.filter(img => img.preview && !img.file && img.preview.startsWith('http')).map(img => img.preview);
+        return of({ uniqueImages: existingUrls.length > 0 ? existingUrls : [] });
+      }
+      
+      const uploadPromises = imageFiles.map((file, index) => {
+        const fileName = `${timestamp}-${index}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const path = `products/${fileName}`;
+        return this.storageService.uploadImage('product-images', file, path);
+      });
+      
+      return forkJoin(uploadPromises).pipe(
+        map(urls => {
+          // Combinar URLs nuevas con existentes
+          const existingUrls = this.uniqueImages.filter(img => img.preview && !img.file && img.preview.startsWith('http')).map(img => img.preview);
+          return { uniqueImages: [...existingUrls, ...urls] };
+        })
+      );
+    } else {
+      const colorUploadPromises = this.colors.map((color, colorIndex) => {
+        const imageFiles = color.imageFiles.filter(file => file !== null && file !== undefined);
+        
+        if (imageFiles.length === 0) {
+          // Si no hay archivos nuevos, usar las URLs existentes
+          const existingUrls = color.images.filter(img => img.startsWith('http'));
+          return of({ name: color.name, hex: color.hex, images: existingUrls });
+        }
+        
+        const uploadPromises = imageFiles.map((file, imgIndex) => {
+          const fileName = `${timestamp}-color-${colorIndex}-${imgIndex}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+          const path = `products/${fileName}`;
+          return this.storageService.uploadImage('product-images', file, path);
+        });
+        
+        return forkJoin(uploadPromises).pipe(
+          map(urls => {
+            // Combinar URLs nuevas con existentes
+            const existingUrls = color.images.filter(img => img.startsWith('http'));
+            return { name: color.name, hex: color.hex, images: [...existingUrls, ...urls] };
+          })
+        );
+      });
+      
+      return forkJoin(colorUploadPromises).pipe(
+        map(colors => ({ colors }))
+      );
     }
   }
 
@@ -262,24 +358,29 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
       
       const formValue = this.productForm.value;
       
-      const productData: Partial<Product> = {
-        name: formValue.name,
-        description: formValue.description,
-        brand_id: formValue.brand_id,
-        price: formValue.price,
-        stock: formValue.stock,
-        weight: formValue.weight,
-        status: formValue.status,
-        visible: formValue.visible,
-        on_sale: formValue.on_sale,
-        sale_price: formValue.on_sale ? formValue.sale_price : null,
-        featured: formValue.featured,
-        recommended: formValue.recommended,
-        categories: this.selectedCategories,
-        colors: this.imageType === 'withColor' ? this.colors : undefined
-      };
-      
-      this.productsService.update(this.productId, productData).subscribe({
+      this.uploadImages().pipe(
+        switchMap(({ uniqueImages, colors }) => {
+          const productData: Partial<Product> = {
+            name: formValue.name,
+            description: formValue.description,
+            brand_id: formValue.brand_id,
+            price: formValue.price,
+            sale_price: formValue.on_sale ? formValue.sale_price : null,
+            on_sale: formValue.on_sale || false,
+            stock: formValue.stock,
+            weight: formValue.weight,
+            status: formValue.status,
+            visible: formValue.visible ?? true,
+            featured: formValue.featured || false,
+            recommended: formValue.recommended || false,
+            categories: this.selectedCategories,
+            colors: colors || (this.imageType === 'withColor' ? this.colors : undefined),
+            image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined
+          };
+          
+          return this.productsService.update(this.productId!, productData);
+        })
+      ).subscribe({
         next: () => {
           this.isLoading = false;
           this.router.navigate(['/admin/productos']);

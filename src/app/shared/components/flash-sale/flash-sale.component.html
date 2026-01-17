@@ -26,16 +26,7 @@
 
     <!-- Grid de productos -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      <app-product-card *ngFor="let product of products" [product]="{
-        id: product.id,
-        name: product.name,
-        category: product.category,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        rating: product.rating,
-        reviews: product.reviews,
-        image: product.image
-      }"></app-product-card>
+      <app-product-card *ngFor="let product of products" [product]="product"></app-product-card>
     </div>
   </div>
 </section>

@@ -4,7 +4,6 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { RouterModule, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { BrandsService } from '../../../../../core/services/brands.service';
-import { CategoriesService } from '../../../../../core/services/categories.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -22,8 +21,6 @@ import { Subscription } from 'rxjs';
 })
 export default class MarcaCreateComponent implements OnInit, OnDestroy {
   marcaForm: FormGroup;
-  selectedCategories: string[] = [];
-  availableCategories: any[] = [];
   isLoading = false;
   error: string | null = null;
   private subscription?: Subscription;
@@ -37,7 +34,6 @@ export default class MarcaCreateComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private brandsService: BrandsService,
-    private categoriesService: CategoriesService,
     private router: Router
   ) {
     this.marcaForm = this.fb.group({
@@ -48,37 +44,12 @@ export default class MarcaCreateComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadCategories();
   }
 
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-  }
-
-  loadCategories(): void {
-    this.subscription = this.categoriesService.getAll().subscribe({
-      next: (categories) => {
-        this.availableCategories = categories;
-      },
-      error: (err) => {
-        console.error('Error cargando categorías:', err);
-      }
-    });
-  }
-
-  toggleCategory(categoryId: string): void {
-    const index = this.selectedCategories.indexOf(categoryId);
-    if (index > -1) {
-      this.selectedCategories.splice(index, 1);
-    } else {
-      this.selectedCategories.push(categoryId);
-    }
-  }
-
-  isCategorySelected(categoryId: string): boolean {
-    return this.selectedCategories.includes(categoryId);
   }
 
   onSubmit(): void {
@@ -95,7 +66,6 @@ export default class MarcaCreateComponent implements OnInit, OnDestroy {
       this.brandsService.create(marcaData).subscribe({
         next: (marca) => {
           this.isLoading = false;
-          // TODO: Asociar categorías si se implementa en el servicio
           this.router.navigate(['/admin/marcas']);
         },
         error: (err) => {

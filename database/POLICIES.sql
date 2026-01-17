@@ -170,6 +170,24 @@ CREATE POLICY "Admins can update orders"
   USING (is_admin())
   WITH CHECK (is_admin());
 
+-- Políticas para product_categories
+CREATE POLICY "Admins full access product_categories"
+  ON product_categories FOR ALL
+  USING (is_admin())
+  WITH CHECK (is_admin());
+
+-- Políticas para product_colors
+CREATE POLICY "Admins full access product_colors"
+  ON product_colors FOR ALL
+  USING (is_admin())
+  WITH CHECK (is_admin());
+
+-- Políticas para product_color_images
+CREATE POLICY "Admins full access product_color_images"
+  ON product_color_images FOR ALL
+  USING (is_admin())
+  WITH CHECK (is_admin());
+
 -- ============================================
 -- POLÍTICAS STORAGE
 -- ============================================
