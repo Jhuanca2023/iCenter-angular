@@ -26,17 +26,22 @@ export class BrandsService {
           return from([[]]);
         }
         
-        // Para cada marca, obtener sus categorías
         const brandObservables = brands.map((brand: any) => 
-          from(
-            this.supabase
-              .from('categories')
-              .select('name')
-              .eq('brand_id', brand.id)
-          ).pipe(
-            map(catResponse => {
-              const categories = catResponse.data?.map((cat: any) => cat.name) || [];
-              return this.mapToMarcaWithCategories(brand, categories);
+          forkJoin({
+            categories: from(
+              this.supabase
+                .from('categories')
+                .select('name')
+                .eq('brand_id', brand.id)
+            ).pipe(
+              map(catResponse => catResponse.data?.map((cat: any) => cat.name) || [])
+            ),
+            productCount: this.getProductCountForBrand(brand.id)
+          }).pipe(
+            map(result => {
+              const marca = this.mapToMarcaWithCategories(brand, result.categories);
+              marca.productCount = result.productCount;
+              return marca;
             })
           )
         );
@@ -58,16 +63,21 @@ export class BrandsService {
         if (response.error) throw response.error;
         if (!response.data) return from([null]);
         
-        // Obtener categorías asociadas directamente desde categories por brand_id
-        return from(
-          this.supabase
-            .from('categories')
-            .select('id, name')
-            .eq('brand_id', id)
-        ).pipe(
-          map(catResponse => {
-            const categories = catResponse.data?.map((cat: any) => cat.name) || [];
-            return this.mapToMarcaWithCategories(response.data, categories);
+        return forkJoin({
+          categories: from(
+            this.supabase
+              .from('categories')
+              .select('id, name')
+              .eq('brand_id', id)
+          ).pipe(
+            map(catResponse => catResponse.data?.map((cat: any) => cat.name) || [])
+          ),
+          productCount: this.getProductCountForBrand(id)
+        }).pipe(
+          map(result => {
+            const marca = this.mapToMarcaWithCategories(response.data, result.categories);
+            marca.productCount = result.productCount;
+            return marca;
           })
         );
       })
@@ -157,5 +167,20 @@ export class BrandsService {
 
   private mapToMarcas(data: any[]): Marca[] {
     return data.map(item => this.mapToMarca(item));
+  }
+
+  private getProductCountForBrand(brandId: string): Observable<number> {
+    return from(
+      this.supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('brand_id', brandId)
+        .eq('visible', true)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.count || 0;
+      })
+    );
   }
 }

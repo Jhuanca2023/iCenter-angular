@@ -111,8 +111,7 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onFavoriteToggle(event: { productId: number; isFavorite: boolean }): void {
-    // TODO: Implementar lógica de favoritos cuando conectemos backend
+  onFavoriteToggle(event: { productId: number | string; isFavorite: boolean }): void {
     console.log('Favorite toggled:', event);
   }
 

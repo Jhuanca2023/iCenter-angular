@@ -4,6 +4,9 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 import { ProductsService, Product, ProductColor, ClientProduct } from '../../../../core/services/products.service';
+import { CartService } from '../../../../core/services/cart.service';
+import { ProductReviewsService, ProductRatingSummary } from '../../../../core/services/product-reviews.service';
+import { AuthService, AuthUser } from '../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -34,15 +37,23 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   zoomActive = false;
   zoomX = 0;
   zoomY = 0;
+  ratingAverage = 0;
+  ratingCount = 0;
+  userRating = 0;
+  currentUser: AuthUser | null = null;
   private subscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
-    private productsService: ProductsService
+    private productsService: ProductsService,
+    private cartService: CartService,
+    private productReviewsService: ProductReviewsService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.paramMap.get('id');
+    this.currentUser = this.authService.getCurrentUser();
     if (this.productId) {
       this.loadProduct();
     }
@@ -87,6 +98,7 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
           }
           
           this.loadRelatedProducts(product);
+          this.loadProductRating();
         } else {
           this.error = 'Producto no encontrado';
         }
@@ -216,5 +228,57 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
 
   onImageMouseLeave(): void {
     this.zoomActive = false;
+  }
+
+  addToCart(): void {
+    if (!this.product) {
+      return;
+    }
+    this.cartService.addItem(
+      {
+        id: this.product.id || '',
+        name: this.product.name,
+        price: this.finalPrice,
+        originalPrice: this.originalPrice,
+        image: this.product.image
+      },
+      1
+    );
+  }
+
+  loadProductRating(): void {
+    if (!this.productId) {
+      return;
+    }
+    const userId = this.currentUser?.id;
+    this.productReviewsService.getRating(this.productId, userId).subscribe({
+      next: (summary: ProductRatingSummary) => {
+        this.ratingAverage = summary.average;
+        this.ratingCount = summary.count;
+        this.userRating = summary.userRating || 0;
+      },
+      error: (err) => {
+        console.error('Error cargando calificación del producto:', err);
+      }
+    });
+  }
+
+  setRating(rating: number): void {
+    if (!this.productId) {
+      return;
+    }
+    this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser) {
+      return;
+    }
+    this.productReviewsService.setRating(this.productId, this.currentUser.id, rating).subscribe({
+      next: () => {
+        this.userRating = rating;
+        this.loadProductRating();
+      },
+      error: (err) => {
+        console.error('Error guardando calificación:', err);
+      }
+    });
   }
 }
