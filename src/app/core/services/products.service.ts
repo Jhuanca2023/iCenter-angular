@@ -68,6 +68,7 @@ export interface Product {
   categories?: string[];
   colors?: ProductColor[];
   image?: string;
+  specifications?: { key: string; value: string }[];
   created_at?: string;
   updated_at?: string;
 }
@@ -559,6 +560,7 @@ export class ProductsService {
               categories: Array.isArray(categories) ? categories as string[] : [],
               colors,
               image: colors[0]?.images[0] || productData.image || null,
+              specifications: productData.specifications || [],
               created_at: productData.created_at,
               updated_at: productData.updated_at
             } as Product;

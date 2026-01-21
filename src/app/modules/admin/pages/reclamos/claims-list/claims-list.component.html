@@ -1,0 +1,154 @@
+<div class="px-6 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h2 class="text-3xl font-black text-slate-800">Centro de Reclamaciones</h2>
+            <p class="text-slate-500 text-sm">Gestiona y responde a los reclamos y quejas de los clientes.</p>
+        </div>
+        <div class="flex items-center gap-4 w-full md:w-auto">
+            <div class="relative flex-1 md:w-64">
+                <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()"
+                    placeholder="Buscar por código o nombre..."
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <button (click)="loadClaims()"
+                class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-100 font-bold active:scale-95 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Actualizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl mb-8 w-fit border border-slate-200 shadow-inner">
+        <button (click)="setTab('PENDIENTE')"
+            [ngClass]="activeTab === 'PENDIENTE' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+            class="px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span> Pendientes
+        </button>
+        <button (click)="setTab('EN PROCESO')"
+            [ngClass]="activeTab === 'EN PROCESO' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+            class="px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> En Proceso
+        </button>
+        <button (click)="setTab('COMPLETADO')"
+            [ngClass]="activeTab === 'COMPLETADO' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+            class="px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Completados
+        </button>
+        <button (click)="setTab('TODO')"
+            [ngClass]="activeTab === 'TODO' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'"
+            class="px-5 py-2 rounded-xl text-sm font-bold transition-all">
+            Todos
+        </button>
+    </div>
+
+    <div *ngIf="isLoading"
+        class="flex flex-col justify-center items-center py-24 bg-white rounded-3xl border border-slate-100 shadow-sm">
+        <div class="animate-spin rounded-full h-14 w-14 border-b-2 border-indigo-600 mb-4"></div>
+        <p class="text-slate-500 font-medium animate-pulse">Sincronizando reclamos...</p>
+    </div>
+
+    <div *ngIf="error"
+        class="bg-red-50 border border-red-100 text-red-700 px-6 py-4 rounded-2xl mb-6 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        {{ error }}
+    </div>
+
+    <div *ngIf="!isLoading && !error" class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-6 py-4 font-bold text-slate-700 text-xs uppercase tracking-wider">Código</th>
+                        <th class="px-6 py-4 font-bold text-slate-700 text-xs uppercase tracking-wider">Consumidor</th>
+                        <th class="px-6 py-4 font-bold text-slate-700 text-xs uppercase tracking-wider">Motivo</th>
+                        <th class="px-6 py-4 font-bold text-slate-700 text-xs uppercase tracking-wider">Fecha</th>
+                        <th class="px-6 py-4 font-bold text-slate-700 text-xs uppercase tracking-wider text-center">
+                            Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr *ngFor="let claim of paginatedClaims" class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-5">
+                            <span class="font-mono text-indigo-600 font-bold">{{ claim.claim_code }}</span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <div class="font-bold text-slate-800">{{ claim.consumer_name }} {{ claim.consumer_lastname
+                                }}</div>
+                            <div class="text-slate-400 text-[11px]">{{ claim.email }}</div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter"
+                                [ngClass]="claim.record_type === 'Reclamo' ? 'bg-purple-50 text-purple-700' : 'bg-amber-50 text-amber-700'">
+                                {{ claim.record_type }}: {{ claim.motive }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5 text-slate-500 text-sm">
+                            {{ claim.created_at | date:'dd MMM yyyy' }}
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <a [routerLink]="['/admin/reclamos', claim.id]"
+                                class="inline-flex items-center justify-center p-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm group">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5 group-hover:scale-110 transition-transform" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr *ngIf="filteredClaims.length === 0">
+                        <td colspan="5" class="px-6 py-20 text-center">
+                            <div class="flex flex-col items-center justify-center grayscale opacity-30">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p class="text-lg font-bold">No hay reclamos en esta categoría</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1"
+            class="px-6 py-4 bg-slate-50 flex items-center justify-between border-t border-slate-100">
+            <p class="text-xs text-slate-500 font-medium">Página {{ currentPage }} de {{ totalPages }}</p>
+            <div class="flex gap-2">
+                <button (click)="currentPage = currentPage - 1" [disabled]="currentPage === 1"
+                    class="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-30 hover:bg-slate-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <button (click)="currentPage = currentPage + 1" [disabled]="currentPage === totalPages"
+                    class="p-2 rounded-lg bg-white border border-slate-200 disabled:opacity-30 hover:bg-slate-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

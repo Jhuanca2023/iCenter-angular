@@ -1,0 +1,9 @@
+<div class="flex items-center border border-gray-300 rounded-md shadow-sm w-32">
+  <button type="button" (click)="decrementQuantity()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-l-md">
+    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+  </button>
+  <input type="text" id="quantity" [value]="quantity" class="w-full text-center border-l border-r border-gray-300 py-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" readonly>
+  <button type="button" (click)="incrementQuantity()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-r-md">
+    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+  </button>
+</div>

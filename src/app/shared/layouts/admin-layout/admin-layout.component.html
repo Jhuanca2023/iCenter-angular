@@ -1,14 +1,13 @@
 <div class="flex flex-col h-screen bg-gray-50">
   <!-- Header -->
-  <div class="flex items-center justify-between px-3 sm:px-4 md:px-8 border-b border-gray-300 py-3 bg-white transition-all duration-300">
+  <div
+    class="flex items-center justify-between px-3 sm:px-4 md:px-8 border-b border-gray-300 py-3 bg-white transition-all duration-300">
     <div class="flex items-center gap-3">
-      <button
-        type="button"
-        (click)="toggleSidebar()"
+      <button type="button" (click)="toggleSidebar()"
         class="md:hidden sidebar-toggle p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition"
         aria-label="Toggle sidebar">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
       <a routerLink="/" class="flex items-center">
@@ -17,57 +16,51 @@
       </a>
     </div>
     <div class="relative user-menu-container">
-      <button
-        type="button"
-        (click)="toggleUserMenu()"
+      <button type="button" (click)="toggleUserMenu()"
         class="flex items-center gap-2 sm:gap-3 text-gray-500 hover:text-gray-900 transition cursor-pointer">
         <div class="text-right hidden sm:block">
           <p class="text-sm font-medium">{{ adminInfo.name }}</p>
           <p class="text-xs text-gray-400 hidden md:block">{{ adminInfo.email }}</p>
         </div>
-        <div *ngIf="adminInfo.avatar" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-gray-200">
+        <div *ngIf="adminInfo.avatar"
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-gray-200">
           <img [src]="adminInfo.avatar" [alt]="adminInfo.name" class="w-full h-full object-cover">
         </div>
-        <div *ngIf="!adminInfo.avatar" [class]="'w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm ' + getAvatarColor(adminInfo.name)">
+        <div *ngIf="!adminInfo.avatar"
+          [class]="'w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm ' + getAvatarColor(adminInfo.name)">
           {{ getInitials(adminInfo.name) }}
         </div>
-        <svg
-          class="w-4 h-4 transition-transform hidden sm:block"
-          [class.rotate-180]="isUserMenuOpen"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        <svg class="w-4 h-4 transition-transform hidden sm:block" [class.rotate-180]="isUserMenuOpen" fill="none"
+          stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       <!-- Dropdown Menu -->
-      <div
-        *ngIf="isUserMenuOpen"
+      <div *ngIf="isUserMenuOpen"
         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-        <a
-          routerLink="/admin/profile"
-          (click)="closeUserMenu()"
+        <a routerLink="/admin/profile" (click)="closeUserMenu()"
           class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition">
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
           <span>Ver Perfil</span>
         </a>
-        <a
-          (click)="goToStore()"
+        <a (click)="goToStore()"
           class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition">
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
           <span>Ir a la tienda</span>
         </a>
         <div class="border-t border-gray-200 my-1"></div>
-        <a
-          (click)="logout()"
+        <a (click)="logout()"
           class="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer transition">
           <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
           <span>Cerrar sesión</span>
         </a>
@@ -77,10 +70,7 @@
 
   <div class="flex flex-1 overflow-hidden relative">
     <!-- Overlay para móvil -->
-    <div
-      *ngIf="isSidebarOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-      (click)="closeSidebar()">
+    <div *ngIf="isSidebarOpen" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" (click)="closeSidebar()">
     </div>
 
     <!-- Sidebar -->
@@ -88,91 +78,76 @@
       [class]="'sidebar-container fixed md:static inset-y-0 left-0 z-50 md:z-auto w-64 md:w-64 border-r border-gray-300 bg-white pt-4 flex flex-col transition-transform duration-300 overflow-y-auto ' + (isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0')">
       <div class="flex items-center justify-between px-4 mb-4 md:hidden">
         <span class="text-lg font-bold text-slate-900 uppercase">iCenter</span>
-        <button
-          type="button"
-          (click)="closeSidebar()"
+        <button type="button" (click)="closeSidebar()"
           class="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded transition"
           aria-label="Cerrar sidebar">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <a
-        *ngFor="let item of sidebarLinks; let i = index"
-        [routerLink]="item.path"
-        (click)="closeSidebar()"
-        routerLinkActive="border-r-4 md:border-r-[6px] bg-indigo-500/10 border-indigo-500 text-indigo-500"
-        [routerLinkActiveOptions]="{exact: i === 0}"
-        class="flex items-center py-3 px-4 gap-3 hover:bg-gray-100/90 border-white text-gray-700 transition">
-        <svg
-          *ngIf="item.icon === 'dashboard'"
-          class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5Zm16 14a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2ZM4 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6Zm16-2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6Z"/>
-        </svg>
-        <svg
-          *ngIf="item.icon === 'products'"
-          class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-        </svg>
-        <svg
-          *ngIf="item.icon === 'categories'"
-          class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-        <svg
-          *ngIf="item.icon === 'brands'"
-          class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
-        <svg
-          *ngIf="item.icon === 'users'"
-          class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-width="2" d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7Z"/>
-        </svg>
-        <svg
-          *ngIf="item.icon === 'orders'"
-          class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-        </svg>
-        <span class="text-sm font-medium">{{ item.name }}</span>
-      </a>
+      <div *ngFor="let item of sidebarLinks; let i = index" class="w-full">
+        <a [routerLink]="item.children ? null : item.path"
+          (click)="item.children ? toggleSubmenu(item, $event) : closeSidebar()"
+          routerLinkActive="border-r-4 md:border-r-[6px] bg-indigo-500/10 border-indigo-500 text-indigo-500"
+          [routerLinkActiveOptions]="{exact: i === 0}"
+          class="flex items-center py-3 px-4 gap-3 hover:bg-gray-100/90 border-white text-gray-700 transition w-full group">
+
+          <!-- Icons -->
+          <svg *ngIf="item.icon === 'dashboard'" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5Zm16 14a1 1 0 01-1 1h-4a1 1 0 01-1-1v-2a1 1 0 01 1-1h4a1 1 0 01 1 1v2ZM4 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6Zm16-2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5a1 1 0 01 1-1h4a1 1 0 01 1 1v6Z" />
+          </svg>
+          <svg *ngIf="item.icon === 'products'" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <svg *ngIf="item.icon === 'categories'" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <svg *ngIf="item.icon === 'brands'" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          <svg *ngIf="item.icon === 'users'" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0ZM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7Z" />
+          </svg>
+          <svg *ngIf="item.icon === 'orders'" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 00 2 2h10a2 2 0 00 2-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 00 2 2h2a2 2 0 00 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          </svg>
+          <svg *ngIf="item.icon === 'claims'" class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 3v4c0 .6-.4 1-1 1H5m4 6H5m4-3H5m14-4v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7c0-1.1.9-2 2-2h4l2-2h7a2 2 0 0 1 2 2Z" />
+          </svg>
+
+          <span class="text-sm font-medium flex-1">{{ item.name }}</span>
+
+          <!-- Arrow for children -->
+          <svg *ngIf="item.children" [class.rotate-180]="item.isOpen"
+            class="w-4 h-4 transition-transform text-gray-400 group-hover:text-gray-900" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </a>
+
+        <!-- Sub-links -->
+        <div *ngIf="item.children && item.isOpen" class="bg-gray-50/50 border-white">
+          <a *ngFor="let child of item.children" [routerLink]="child.path" (click)="closeSidebar()"
+            routerLinkActive="text-indigo-600 font-bold bg-indigo-50/50"
+            class="flex items-center py-2.5 pl-12 pr-4 text-xs text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition border-white">
+            {{ child.name }}
+          </a>
+        </div>
+      </div>
     </div>
 
     <!-- Main Content -->

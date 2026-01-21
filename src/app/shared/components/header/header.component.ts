@@ -29,7 +29,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private categoriesService: CategoriesService,
     private authService: AuthService,
     private cartService: CartService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadCategories();

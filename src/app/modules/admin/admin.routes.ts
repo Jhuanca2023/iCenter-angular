@@ -90,6 +90,30 @@ export const adminRoutes: Routes = [
     loadComponent: () => import('./pages/orders/orders.component').then(m => m.default)
   },
   {
+    path: 'reclamos',
+    loadComponent: () => import('./pages/reclamos/claims-list/claims-list.component').then(m => m.ClaimsListComponent)
+  },
+  {
+    path: 'reclamos/pendientes',
+    loadComponent: () => import('./pages/reclamos/pendientes/pendientes.component').then(m => m.ClaimsPendientesComponent)
+  },
+  {
+    path: 'reclamos/en-proceso',
+    loadComponent: () => import('./pages/reclamos/en-proceso/en-proceso.component').then(m => m.ClaimsEnProcesoComponent)
+  },
+  {
+    path: 'reclamos/completados',
+    loadComponent: () => import('./pages/reclamos/completados/completados.component').then(m => m.ClaimsCompletadosComponent)
+  },
+  {
+    path: 'reclamos/archivados',
+    loadComponent: () => import('./pages/reclamos/archivados/archivados.component').then(m => m.ArchivadosComponent)
+  },
+  {
+    path: 'reclamos/:id',
+    loadComponent: () => import('./pages/reclamos/claim-detail/claim-detail.component').then(m => m.ClaimDetailComponent)
+  },
+  {
     path: 'profile',
     loadComponent: () => import('./pages/profile/profile.component').then(m => m.AdminProfileComponent),
     children: [

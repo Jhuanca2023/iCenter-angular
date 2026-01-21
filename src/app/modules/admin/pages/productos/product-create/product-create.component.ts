@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService, Product, ProductColor } from '../../../../../core/services/products.service';
@@ -71,11 +71,27 @@ export default class ProductCreateComponent {
       on_sale: [false],
       sale_price: [0, [Validators.min(0)]],
       featured: [false],
-      recommended: [false]
+      recommended: [false],
+      specifications: this.fb.array([])
     });
 
     this.loadCategories();
     this.loadBrands();
+  }
+
+  get specifications(): FormArray {
+    return this.productForm.get('specifications') as FormArray;
+  }
+
+  addSpecification(): void {
+    this.specifications.push(this.fb.group({
+      key: ['', Validators.required],
+      value: ['', Validators.required]
+    }));
+  }
+
+  removeSpecification(index: number): void {
+    this.specifications.removeAt(index);
   }
 
   loadCategories(): void {
@@ -152,7 +168,7 @@ export default class ProductCreateComponent {
         if (imageIndex !== undefined) {
           color.images[imageIndex] = preview;
           color.imageFiles[imageIndex] = file;
-        } else if (color.images.length < 5) {
+        } else if (color.images.length < 10) {
           color.images.push(preview);
           color.imageFiles.push(file);
         }
@@ -176,7 +192,7 @@ export default class ProductCreateComponent {
         if (imageIndex < this.uniqueImages.length) {
           this.uniqueImages[imageIndex] = { file, preview: e.target.result };
         }
-        if (this.uniqueImages.length < 6 && imageIndex === this.uniqueImages.length - 1 && this.uniqueImages[imageIndex].file) {
+        if (this.uniqueImages.length < 11 && imageIndex === this.uniqueImages.length - 1 && this.uniqueImages[imageIndex].file) {
           this.uniqueImages.push({ file: null, preview: '' });
         }
       };
@@ -285,7 +301,8 @@ export default class ProductCreateComponent {
             recommended: formValue.recommended || false,
             categories: this.selectedCategories,
             image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined,
-            colors: colors || undefined
+            colors: colors || undefined,
+            specifications: formValue.specifications
           };
           
           return this.productsService.create(productData);
@@ -328,7 +345,8 @@ export default class ProductCreateComponent {
             recommended: formValue.recommended || false,
             categories: this.selectedCategories,
             image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined,
-            colors: colors || undefined
+            colors: colors || undefined,
+            specifications: formValue.specifications
           };
           
           return this.productsService.create(productData);

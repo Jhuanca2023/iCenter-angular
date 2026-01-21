@@ -29,7 +29,7 @@ interface Product {
 export class ProductCardComponent {
   @Input() product!: Product;
 
-  constructor(private cartService: CartService) {}
+  constructor(private cartService: CartService) { }
 
   get hasDiscount(): boolean {
     return !!(this.product.onSale && this.product.salePrice);

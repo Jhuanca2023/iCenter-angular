@@ -37,19 +37,12 @@
 
         <!-- Imagen principal -->
         <div 
-          class="border border-gray-500/30 w-full sm:w-auto rounded overflow-hidden relative image-zoom-container"
-          (mousemove)="onImageMouseMove($event)"
-          (mouseenter)="onImageMouseEnter()"
-          (mouseleave)="onImageMouseLeave()">
+          class="border border-gray-500/30 w-full sm:w-auto rounded overflow-hidden relative">
           <!-- Badge de descuento -->
-          <div *ngIf="hasDiscount" class="absolute top-3 left-3 z-10 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
-            -{{ discountPercentage }}%
-          </div>
+          <!-- Discount badge removed from image as per request, now in details -->
           <img 
             [src]="selectedImage || product.image" 
             [alt]="product.name || 'Producto'" 
-            [class.zoomed]="zoomActive"
-            [style.transform-origin]="zoomActive ? zoomX + '% ' + zoomY + '%' : 'center'"
             class="product-image w-full h-auto max-w-md max-h-[500px] object-contain">
         </div>
 
@@ -68,35 +61,30 @@
       <div class="text-sm w-full md:w-1/2" *ngIf="product">
         <h1 class="text-2xl sm:text-3xl font-medium">{{ product.name }}</h1>
 
+        <!-- Rating Summary -->
         <div class="flex items-center gap-2 mt-1">
           <div class="flex items-center gap-0.5">
-            <button
-              *ngFor="let star of getStarsArray(5); let i = index"
-              type="button"
-              (click)="setRating(i + 1)"
-              class="cursor-pointer">
-              <svg 
-                width="18" 
-                height="18" 
-                viewBox="0 0 18 17" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg">
-                <path 
-                  [attr.fill]="i < userRating ? '#facc15' : '#e5e7eb'"
-                  d="M8.049.927c.3-.921 1.603-.921 1.902 0l1.294 3.983a1 1 0 0 0 .951.69h4.188c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 0 0-.364 1.118l1.295 3.983c.299.921-.756 1.688-1.54 1.118L9.589 13.63a1 1 0 0 0-1.176 0l-3.389 2.46c-.783.57-1.838-.197-1.539-1.118L4.78 10.99a1 1 0 0 0-.363-1.118L1.028 7.41c-.783-.57-.38-1.81.588-1.81h4.188a1 1 0 0 0 .95-.69z" />
-              </svg>
-            </button>
+             <svg *ngFor="let star of getStarsArray(Math.round(ratingAverage))" 
+                width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" 
+                   [attr.fill]="star ? '#facc15' : '#e5e7eb'" />
+             </svg>
           </div>
           <p class="text-sm text-gray-700">
-            <span *ngIf="ratingCount > 0">{{ ratingAverage | number:'1.1-1' }} · {{ ratingCount }} reseñas</span>
+            <span *ngIf="ratingCount > 0">{{ ratingAverage | number:'1.1-1' }} Rating ({{ ratingCount }} reseñas)</span>
             <span *ngIf="ratingCount === 0">Sin reseñas</span>
           </p>
         </div>
 
         <div class="mt-4 sm:mt-6">
-          <p *ngIf="hasDiscount" class="text-sm sm:text-base text-gray-500/70 line-through">Precio: ${{ originalPrice | number:'1.2-2' }}</p>
-          <p class="text-xl sm:text-2xl font-medium">Precio: ${{ finalPrice | number:'1.2-2' }}</p>
-          <span class="text-xs sm:text-sm text-gray-500/70">(incluye todos los impuestos)</span>
+           <div class="flex items-center gap-3">
+             <p class="text-3xl font-bold text-indigo-600">${{ finalPrice | number:'1.2-2' }}</p>
+             <div *ngIf="hasDiscount" class="flex items-center gap-2">
+                <span class="text-gray-400 line-through text-lg">${{ originalPrice | number:'1.2-2' }}</span>
+                <span class="bg-orange-100 text-orange-600 px-2 py-1 rounded text-sm font-bold">{{ discountPercentage }}% OFF</span>
+             </div>
+           </div>
+           <span class="text-xs sm:text-sm text-gray-500/70">(incluye todos los impuestos)</span>
         </div>
 
         <!-- Selector de colores (solo si tiene colores) -->
@@ -120,20 +108,6 @@
           </div>
         </div>
 
-        <p class="text-sm sm:text-base font-medium mt-4 sm:mt-6">Acerca del Producto</p>
-        <div class="text-sm sm:text-base text-gray-500/70 mt-2">
-          <div [class.line-clamp-3]="!showFullDescription" class="whitespace-pre-line">
-            {{ showFullDescription ? (product.description || 'Sin descripción disponible') : shortDescription }}
-          </div>
-          <button 
-            *ngIf="product.description && product.description.length > 150"
-            type="button"
-            (click)="toggleDescription()"
-            class="mt-2 text-indigo-500 hover:text-indigo-600 text-sm font-medium transition">
-            {{ showFullDescription ? 'Ver menos' : 'Ver más' }}
-          </button>
-        </div>
-        
         <!-- Información adicional del producto -->
         <div class="mt-4 space-y-2 text-sm text-gray-600">
           <p *ngIf="productBrand"><strong>Marca:</strong> {{ productBrand }}</p>
@@ -141,23 +115,103 @@
           <p *ngIf="product.stock !== undefined"><strong>Stock disponible:</strong> {{ product.stock }} unidades</p>
         </div>
 
+        <!-- Sección de Características -->
+        <div class="mt-6 border-t border-gray-200 pt-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Características</h3>
+          <ul class="space-y-3 text-gray-600">
+            <li class="flex items-center">
+              <svg class="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Garantía de 1 año gratis</span>
+            </li>
+            <li class="flex items-center">
+              <svg class="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Envío gratis</span>
+            </li>
+            <li class="flex items-center">
+              <svg class="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>100% garantía de devolución de dinero</span>
+            </li>
+            <li class="flex items-center">
+              <svg class="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Soporte al cliente 24/7</span>
+            </li>
+            <li class="flex items-center">
+              <svg class="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Método de pago seguro</span>
+            </li>
+          </ul>
+        </div>
+
+
+
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center mt-6 sm:mt-10 gap-3 sm:gap-4 text-sm sm:text-base">
-          <button type="button" (click)="addToCart()" class="w-full py-3 sm:py-3.5 font-medium bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition cursor-pointer rounded-lg">
+          <app-product-quantity-selector
+            [quantity]="quantity"
+            [maxQuantity]="product.stock"
+            (quantityChange)="onQuantityChange($event)">
+          </app-product-quantity-selector>
+          <button type="button" (click)="addItemToCart()" class="w-full py-3 sm:py-3.5 font-medium bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition cursor-pointer rounded-lg">
             Agregar al Carrito
           </button>
-          <button type="button" (click)="addToCart()" class="w-full py-3 sm:py-3.5 font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition cursor-pointer rounded-lg">
+          <button type="button" (click)="buyNow()" class="w-full py-3 sm:py-3.5 font-medium bg-indigo-500 text-white hover:bg-indigo-600 transition cursor-pointer rounded-lg">
             Comprar Ahora
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Productos relacionados -->
-    <div class="mt-8 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200">
-      <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Productos Relacionados</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <app-product-card *ngFor="let product of relatedProducts" [product]="product" class="h-full"></app-product-card>
+    <!-- Tabs Section -->
+    <div class="mt-12">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8 justify-center">
+          <button (click)="activeTab = 'description'" 
+                  [class.border-indigo-500]="activeTab === 'description'"
+                  [class.text-indigo-600]="activeTab === 'description'"
+                  class="whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-colors uppercase tracking-wider"
+                  [class.border-transparent]="activeTab !== 'description'"
+                  [class.text-gray-500]="activeTab !== 'description'">
+            DESCRIPTION
+          </button>
+          <button (click)="activeTab = 'reviews'"
+                  [class.border-indigo-500]="activeTab === 'reviews'"
+                  [class.text-indigo-600]="activeTab === 'reviews'"
+                  class="whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm transition-colors uppercase tracking-wider"
+                  [class.border-transparent]="activeTab !== 'reviews'"
+                  [class.text-gray-500]="activeTab !== 'reviews'">
+            REVIEW
+          </button>
+        </nav>
+      </div>
+      
+      <div class="py-8">
+         <div *ngIf="activeTab === 'description'">
+           <div class="prose max-w-none text-gray-600">
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Description</h3>
+              <p class="whitespace-pre-line leading-relaxed">{{ product.description }}</p>
+           </div>
+           
+           <!-- Specifications -->
+           <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+             <div class="flex border-b border-gray-100 py-2" *ngIf="product.weight">
+               <span class="font-medium text-gray-900 w-1/3">Weight</span>
+               <span class="text-gray-600">{{ product.weight }}</span>
+             </div>
+             <div *ngFor="let spec of product.specifications" class="flex border-b border-gray-100 py-2">
+               <span class="font-medium text-gray-900 w-1/3">{{ spec.key }}</span>
+               <span class="text-gray-600">{{ spec.value }}</span>
+             </div>
+           </div>
+         </div>
+         
+         <div *ngIf="activeTab === 'reviews'">
+           <app-review-list 
+              [productId]="product.id!" 
+              [ratingSummary]="{ productId: product.id!, average: ratingAverage, count: ratingCount, userRating: userRating }"
+              (reviewUpdated)="loadProductRating()">
+           </app-review-list>
+         </div>
       </div>
     </div>
+
   </div>
 </main>

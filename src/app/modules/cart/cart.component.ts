@@ -19,7 +19,7 @@ export default class CartComponent implements OnInit, OnDestroy {
   };
   private destroy$ = new Subject<void>();
 
-  constructor(private cartService: CartService) {}
+  constructor(private cartService: CartService) { }
 
   ngOnInit(): void {
     this.cartService.cart$

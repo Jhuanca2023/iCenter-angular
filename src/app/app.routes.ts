@@ -28,6 +28,10 @@ export const routes: Routes = [
       {
         path: 'pedidos',
         loadChildren: () => import('./modules/user/orders/orders.routes').then(m => m.ordersRoutes)
+      },
+      {
+        path: 'complaint-book',
+        loadChildren: () => import('./modules/claims/claims.routes').then(m => m.claimsRoutes)
       }
     ]
   },

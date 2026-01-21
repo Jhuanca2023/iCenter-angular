@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { getSupabaseClient } from '../config/supabase.config';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Observable, from, BehaviorSubject, of } from 'rxjs';
+import { Observable, from, BehaviorSubject, of, throwError } from 'rxjs';
 import { map, tap, switchMap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { User } from '../../modules/admin/interfaces/user.interface';
@@ -35,19 +35,8 @@ export class AuthService {
       }
     });
 
-    // Limpiar sesión al cerrar el navegador si no se quiere recordar
-    window.addEventListener('beforeunload', () => {
-      if (sessionStorage.getItem('clearSessionOnClose') === 'true') {
-        // Limpiar tokens de Supabase del localStorage
-        const keys = Object.keys(localStorage);
-        keys.forEach(key => {
-          if (key.includes('supabase') || key.includes('auth-token')) {
-            localStorage.removeItem(key);
-          }
-        });
-        sessionStorage.removeItem('clearSessionOnClose');
-      }
-    });
+    // Nota: El manejo de "clearSessionOnClose" se ha simplificado.
+    // Supabase mantiene la sesión en localStorage. Si el usuario no marcó "Recordarme",
   }
 
   login(email: string, password: string, rememberMe: boolean = false): Observable<AuthUser> {
@@ -58,25 +47,25 @@ export class AuthService {
       })
     ).pipe(
       switchMap(response => {
-        if (response.error) throw response.error;
+        if (response.error) {
+          if (response.error.message.includes('Email not confirmed')) {
+            throw new Error('Por favor, confirma tu correo electrónico antes de iniciar sesión.');
+          }
+          throw response.error;
+        }
         if (!response.data.user) throw new Error('No se pudo autenticar');
-        
+
         this.accessToken = response.data.session?.access_token || null;
-        
-        // Si no se quiere recordar, la sesión se eliminará al cerrar el navegador
-        // Supabase usa localStorage por defecto, pero podemos limpiar al cerrar si rememberMe es false
+
         if (!rememberMe && response.data.session) {
-          // Guardar flag para limpiar sesión al cerrar
           sessionStorage.setItem('clearSessionOnClose', 'true');
         } else {
           sessionStorage.removeItem('clearSessionOnClose');
         }
-        
-        // Actualizar último acceso y esperar a que se cargue el usuario completo desde la BD
+
         return this.updateLastAccess(response.data.user.id).pipe(
           switchMap(() => this.loadUserWithRole(response.data.user.id)),
           map(authUser => {
-            // Si hay avatar en user_metadata de Google, usarlo
             const metadata = response.data.user.user_metadata || {};
             const googleAvatar = metadata['avatar_url'] || metadata['picture'];
             const finalAuthUser = {
@@ -87,11 +76,15 @@ export class AuthService {
             return finalAuthUser;
           })
         );
+      }),
+      catchError(err => {
+        console.error('Error en AuthService.login:', err);
+        return throwError(() => err);
       })
     );
   }
 
-  register(email: string, password: string, name: string): Observable<AuthUser> {
+  register(email: string, password: string, name: string): Observable<void> {
     return from(
       this.supabase.auth.signUp({
         email,
@@ -106,18 +99,31 @@ export class AuthService {
       switchMap(response => {
         if (response.error) throw response.error;
         if (!response.data.user) throw new Error('No se pudo registrar');
-        
+
         const user = response.data.user;
-        this.accessToken = response.data.session?.access_token || null;
-        
-        // Crear usuario en la tabla users
+
+        // Intentar crear el registro en la tabla pública 'users'
+        // Si el email no está confirmado, esto puede fallar por RLS (401),
+        // pero el registro en auth.users ya fue exitoso.
         return this.createUserInDatabase(user.id, email, name, undefined, 'email').pipe(
-          switchMap(() => this.loadUserWithRole(user.id)),
-          map(authUser => {
-            this.currentUserSubject.next(authUser);
-            return authUser;
-          })
+          catchError(dbErr => {
+            console.warn('Advertencia: No se pudo crear el registro en "users" inmediatamente. Se intentará en el primer login.', dbErr);
+            return of(undefined);
+          }),
+          switchMap(() => {
+            this.accessToken = null;
+            this.currentUserSubject.next(null);
+            return from(this.supabase.auth.signOut());
+          }),
+          map(() => undefined)
         );
+      }),
+      catchError(err => {
+        console.error('Error en AuthService.register:', err);
+        if (err.message.includes('Email not confirmed')) {
+          return throwError(() => new Error('Registro exitoso. Revisa tu bandeja de entrada para confirmar tu correo.'));
+        }
+        return throwError(() => err);
       })
     );
   }
@@ -148,28 +154,28 @@ export class AuthService {
       switchMap(({ data: { session }, error }) => {
         if (error) throw error;
         if (!session?.user) return of(null);
-        
+
         this.accessToken = session.access_token || null;
-        
+
         // Detectar si es Google y guardar datos automáticamente
-        const isGoogle = session.user.app_metadata?.['provider'] === 'google' || 
-                        session.user.user_metadata?.['provider'] === 'google' ||
-                        session.user.identities?.some((id: any) => id['provider'] === 'google');
-        
+        const isGoogle = session.user.app_metadata?.['provider'] === 'google' ||
+          session.user.user_metadata?.['provider'] === 'google' ||
+          session.user.identities?.some((id: any) => id['provider'] === 'google');
+
         if (isGoogle) {
           const metadata = session.user.user_metadata || {};
           // Obtener nombre completo de Google (puede estar en diferentes campos)
-          const googleName = metadata['name'] || 
-                            metadata['full_name'] || 
-                            (metadata['given_name'] && metadata['family_name'] ? `${metadata['given_name']} ${metadata['family_name']}` : null) ||
-                            metadata['given_name'] ||
-                            session.user.email?.split('@')[0] || 
-                            'Usuario';
+          const googleName = metadata['name'] ||
+            metadata['full_name'] ||
+            (metadata['given_name'] && metadata['family_name'] ? `${metadata['given_name']} ${metadata['family_name']}` : null) ||
+            metadata['given_name'] ||
+            session.user.email?.split('@')[0] ||
+            'Usuario';
           const googleAvatar = metadata['avatar_url'] || metadata['picture'];
           const googleEmail = session.user.email || '';
-          
+
           console.log('Datos de Google detectados:', { googleName, googleEmail, googleAvatar, metadata });
-          
+
           // Crear o actualizar usuario con datos de Google y actualizar último acceso
           return this.createOrUpdateGoogleUser(session.user.id, googleEmail, googleName, googleAvatar).pipe(
             switchMap(() => this.updateLastAccess(session.user.id)),
@@ -226,12 +232,12 @@ export class AuthService {
 
   private createOrUpdateGoogleUser(userId: string, email: string, name: string, avatar?: string): Observable<void> {
     console.log('🔵 createOrUpdateGoogleUser llamado:', { userId, email, name, avatar });
-    
+
     // Dividir nombre completo en first_name y last_name si es posible
     const nameParts = name.split(' ');
     const firstName = nameParts[0] || null;
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : null;
-    
+
     // Primero verificar si el usuario existe
     return from(
       this.supabase
@@ -258,14 +264,14 @@ export class AuthService {
             auth_provider: 'google',
             last_access: new Date().toISOString()
           };
-          
+
           // Solo agregar campos si tienen valor
           if (firstName && firstName.trim()) updateData.first_name = firstName.trim();
           if (lastName && lastName.trim()) updateData.last_name = lastName.trim();
           if (avatar && avatar.trim()) updateData.avatar = avatar.trim();
-          
+
           console.log('🔄 Actualizando usuario de Google existente:', updateData);
-          
+
           return from(
             this.supabase
               .from('users')
@@ -284,14 +290,14 @@ export class AuthService {
             auth_provider: 'google',
             last_access: new Date().toISOString()
           };
-          
+
           // Solo agregar campos si tienen valor
           if (firstName && firstName.trim()) insertData.first_name = firstName.trim();
           if (lastName && lastName.trim()) insertData.last_name = lastName.trim();
           if (avatar && avatar.trim()) insertData.avatar = avatar.trim();
-          
+
           console.log('➕ Insertando nuevo usuario de Google:', insertData);
-          
+
           return from(
             this.supabase
               .from('users')
@@ -392,23 +398,23 @@ export class AuthService {
           this.currentUserSubject.next(null);
           return of(false);
         }
-        
+
         this.accessToken = session.access_token || null;
-        
+
         // Cargar usuario completo desde BD
         return this.loadUserWithRole(session.user.id).pipe(
           map(authUser => {
             // Si es Google, asegurar que los datos estén guardados
-            const isGoogle = session.user.app_metadata?.['provider'] === 'google' || 
-                            session.user.user_metadata?.['provider'] === 'google' ||
-                            session.user.identities?.some((id: any) => id['provider'] === 'google');
-            
+            const isGoogle = session.user.app_metadata?.['provider'] === 'google' ||
+              session.user.user_metadata?.['provider'] === 'google' ||
+              session.user.identities?.some((id: any) => id['provider'] === 'google');
+
             if (isGoogle) {
               const metadata = session.user.user_metadata || {};
               const googleName = metadata['name'] || metadata['full_name'] || session.user.email?.split('@')[0] || 'Usuario';
               const googleAvatar = metadata['avatar_url'] || metadata['picture'];
               const googleEmail = session.user.email || '';
-              
+
               // Actualizar en segundo plano sin bloquear
               this.createOrUpdateGoogleUser(session.user.id, googleEmail, googleName, googleAvatar).subscribe({
                 next: () => {
@@ -418,7 +424,7 @@ export class AuthService {
                 }
               });
             }
-            
+
             this.currentUserSubject.next(authUser);
             return true;
           })
@@ -435,16 +441,16 @@ export class AuthService {
         this.loadUserWithRole(session.user.id).subscribe({
           next: (authUser) => {
             // Si es Google, asegurar que los datos estén guardados
-            const isGoogle = session.user.app_metadata?.['provider'] === 'google' || 
-                            session.user.user_metadata?.['provider'] === 'google' ||
-                            session.user.identities?.some((id: any) => id['provider'] === 'google');
-            
+            const isGoogle = session.user.app_metadata?.['provider'] === 'google' ||
+              session.user.user_metadata?.['provider'] === 'google' ||
+              session.user.identities?.some((id: any) => id['provider'] === 'google');
+
             if (isGoogle) {
               const metadata = session.user.user_metadata || {};
               const googleName = metadata['name'] || metadata['full_name'] || session.user.email?.split('@')[0] || 'Usuario';
               const googleAvatar = metadata['avatar_url'] || metadata['picture'];
               const googleEmail = session.user.email || '';
-              
+
               this.createOrUpdateGoogleUser(session.user.id, googleEmail, googleName, googleAvatar).subscribe({
                 next: () => {
                   this.loadUserWithRole(session.user.id).subscribe(updatedUser => {
@@ -470,12 +476,12 @@ export class AuthService {
 
   private setCurrentUser(user: any): void {
     const authUser = this.mapToAuthUser(user);
-    
+
     // Detectar si es Google
-    const isGoogle = user.app_metadata?.['provider'] === 'google' || 
-                    user.user_metadata?.['provider'] === 'google' ||
-                    user.identities?.some((id: any) => id['provider'] === 'google');
-    
+    const isGoogle = user.app_metadata?.['provider'] === 'google' ||
+      user.user_metadata?.['provider'] === 'google' ||
+      user.identities?.some((id: any) => id['provider'] === 'google');
+
     // Obtener datos adicionales del usuario desde la tabla users
     if (authUser.id) {
       this.getUserFromDatabase(authUser.id).subscribe({
@@ -492,7 +498,7 @@ export class AuthService {
             const name = user.user_metadata?.name || user.user_metadata?.full_name || authUser.name || 'Usuario';
             const avatar = user.user_metadata?.['avatar_url'] || user.user_metadata?.['picture'] || authUser.avatar;
             const provider = isGoogle ? 'google' : 'email';
-            
+
             this.createUserInDatabase(authUser.id, authUser.email, name, avatar, provider).subscribe({
               next: () => {
                 this.getUserFromDatabase(authUser.id).subscribe(createdUser => {
@@ -526,12 +532,12 @@ export class AuthService {
       map(response => {
         if (response.error) return null;
         if (!response.data) return null;
-        
+
         // El id en Supabase es UUID (string), pero User interface espera number
         // Convertimos el UUID a un número hash para compatibilidad
         const idHash = response.data.id.split('-').join('').substring(0, 15);
         const numericId = parseInt(idHash, 16) || 0;
-        
+
         return {
           id: numericId,
           name: response.data.name,
@@ -581,7 +587,7 @@ export class AuthService {
             })
           );
         }
-        
+
         return of({
           id: response.data.id, // UUID como string
           email: response.data.email || '',
@@ -598,7 +604,7 @@ export class AuthService {
     // Priorizar nombre completo de Google
     const name = metadata['name'] || metadata['full_name'] || user.email?.split('@')[0] || 'Usuario';
     const avatar = metadata['avatar_url'] || metadata['picture'];
-    
+
     return {
       id: user.id,
       email: user.email || '',
