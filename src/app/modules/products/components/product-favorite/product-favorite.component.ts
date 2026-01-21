@@ -10,9 +10,9 @@ import { CommonModule } from '@angular/common';
   encapsulation: ViewEncapsulation.None
 })
 export class ProductFavoriteComponent {
-  @Input() productId!: number;
+  @Input() productId!: number | string;
   @Input() isFavorite = false;
-  @Output() favoriteToggle = new EventEmitter<{ productId: number; isFavorite: boolean }>();
+  @Output() favoriteToggle = new EventEmitter<{ productId: number | string; isFavorite: boolean }>();
 
   toggleFavorite(): void {
     this.isFavorite = !this.isFavorite;

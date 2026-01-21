@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { getSupabaseClient } from '../config/supabase.config';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Observable, from } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, from, forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 export interface Category {
   id: string;
@@ -30,9 +30,25 @@ export class CategoriesService {
         .select('*, brands(name)')
         .order('name', { ascending: true })
     ).pipe(
-      map(response => {
+      switchMap(response => {
         if (response.error) throw response.error;
-        return this.mapToCategories(response.data || []);
+        const rows = response.data || [];
+
+        if (rows.length === 0) {
+          return from([[]]);
+        }
+
+        const categoryObservables = rows.map((row: any) =>
+          this.getProductCountForCategory(row.id).pipe(
+            map(count => {
+              const category = this.mapToCategory(row);
+              category.productCount = count;
+              return category;
+            })
+          )
+        );
+
+        return forkJoin(categoryObservables);
       })
     );
   }
@@ -45,9 +61,17 @@ export class CategoriesService {
         .eq('id', id)
         .single()
     ).pipe(
-      map(response => {
+      switchMap(response => {
         if (response.error) throw response.error;
-        return response.data ? this.mapToCategory(response.data) : null;
+        if (!response.data) return from([null]);
+
+        return this.getProductCountForCategory(response.data.id).pipe(
+          map(count => {
+            const category = this.mapToCategory(response.data);
+            category.productCount = count;
+            return category;
+          })
+        );
       })
     );
   }
@@ -132,5 +156,19 @@ export class CategoriesService {
 
   private mapToCategories(data: any[]): Category[] {
     return data.map(item => this.mapToCategory(item));
+  }
+
+  private getProductCountForCategory(categoryId: string): Observable<number> {
+    return from(
+      this.supabase
+        .from('product_categories')
+        .select('*', { count: 'exact', head: true })
+        .eq('category_id', categoryId)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.count || 0;
+      })
+    );
   }
 }

@@ -33,20 +33,12 @@ export class FlashSaleComponent implements OnInit, OnDestroy {
   loadProducts(): void {
     this.isLoading = true;
     
-    this.subscription = this.productsService.getAll().subscribe({
+    this.subscription = this.productsService.getRecommended().subscribe({
       next: (products) => {
         this.products = products
-          .filter(p => p.on_sale && p.visible && p.stock > 0)
+          .filter(p => p.visible && p.stock > 0)
           .slice(0, 3)
-          .map(p => {
-            const clientProduct = this.mapToClientProduct(p);
-            return {
-              ...clientProduct,
-              discount: p.sale_price && p.price 
-                ? Math.round(((p.price - p.sale_price) / p.price) * 100) 
-                : 0
-            };
-          });
+          .map(p => this.mapToClientProduct(p));
         this.isLoading = false;
       },
       error: (err) => {

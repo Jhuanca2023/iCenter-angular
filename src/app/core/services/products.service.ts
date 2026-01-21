@@ -100,6 +100,32 @@ export class ProductsService {
     );
   }
 
+  getRecommended(): Observable<Product[]> {
+    return from(
+      this.supabase
+        .from('products')
+        .select('*, brands(name)')
+        .eq('visible', true)
+        .eq('recommended', true)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      switchMap(response => {
+        if (response.error) throw response.error;
+        const products = response.data || [];
+
+        if (products.length === 0) {
+          return from([[]]);
+        }
+
+        const productPromises = products.map(product =>
+          this.getProductWithDetails(product)
+        );
+
+        return forkJoin(productPromises);
+      })
+    );
+  }
+
   getById(id: string): Observable<Product | null> {
     return from(
       this.supabase

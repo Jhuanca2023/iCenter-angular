@@ -18,6 +18,10 @@ export const routes: Routes = [
         children: productsRoutes
       },
       {
+        path: 'carrito',
+        loadComponent: () => import('./modules/cart/cart.component').then(m => m.default)
+      },
+      {
         path: 'perfil',
         loadChildren: () => import('./modules/user/profile/profile.routes').then(m => m.profileRoutes)
       },

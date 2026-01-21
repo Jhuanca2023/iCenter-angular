@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { CategoriesService, Category } from '../../../core/services/categories.service';
 import { AuthService, AuthUser } from '../../../core/services/auth.service';
+import { CartService, CartState } from '../../../core/services/cart.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -19,17 +20,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isUserMenuOpen = false;
   categories: Category[] = [];
   currentUser: AuthUser | null = null;
+  cartQuantity = 0;
+  cartTotal = 0;
   private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
     private categoriesService: CategoriesService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cartService: CartService
   ) {}
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadCurrentUser();
+    this.loadCart();
   }
 
   loadCurrentUser(): void {
@@ -37,6 +42,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.currentUser = user;
+      });
+  }
+
+  loadCart(): void {
+    this.cartService.cart$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((cart: CartState) => {
+        this.cartQuantity = cart.totalQuantity;
+        this.cartTotal = cart.totalAmount;
       });
   }
 
@@ -140,6 +154,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   navigateToCategoryByName(categoryName: string): void {
     this.router.navigate(['/productos'], { queryParams: { categoria: categoryName } });
     this.closeCategoriesDropdown();
+  }
+
+  navigateToCart(fromMenu: boolean = false): void {
+    this.router.navigate(['/carrito']);
+    if (fromMenu) {
+      this.closeMenu();
+    }
   }
 
   navigateToLogin(): void {
