@@ -19,18 +19,7 @@
 
   <!-- Product content -->
   <div *ngIf="product && !isLoading && !error" class="max-w-6xl w-full px-4 sm:px-6 mx-auto">
-    <p class="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-0" *ngIf="product">
-      <a routerLink="/" class="hover:text-indigo-500">Inicio</a> /
-      <a routerLink="/productos" class="hover:text-indigo-500"> Productos</a> /
-      <span *ngFor="let category of productCategories; let last = last">
-        <a *ngIf="!last" [routerLink]="['/productos']" [queryParams]="{ categoria: category }" class="hover:text-indigo-500">{{ category }}</a>
-        <span *ngIf="!last"> / </span>
-        <span *ngIf="last" class="hover:text-indigo-500">{{ category }}</span>
-      </span>
-      <span *ngIf="productCategories.length === 0 && productBrand">{{ productBrand }}</span>
-      <span *ngIf="productCategories.length > 0 || productBrand"> / </span>
-      <span class="text-indigo-500">{{ product.name }}</span>
-    </p>
+    <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
 
     <div class="flex flex-col md:flex-row md:items-start gap-6 md:gap-16 mt-4">
       <!-- Galería de imágenes -->

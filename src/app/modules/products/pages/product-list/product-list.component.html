@@ -1,12 +1,7 @@
 <div class="bg-gray-50 py-8">
   <div class="container mx-auto px-4">
     <!-- Breadcrumb -->
-    <div class="mb-6">
-      <p class="text-sm text-gray-600">
-        <a routerLink="/" class="hover:text-indigo-500">INICIO</a> /
-        <span class="text-gray-900 font-medium"> PRODUCTOS</span>
-      </p>
-    </div>
+    <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
 
     <!-- Título -->
     <div class="mb-4 sm:mb-6">

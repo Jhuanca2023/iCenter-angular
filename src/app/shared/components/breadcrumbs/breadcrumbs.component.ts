@@ -1,6 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 export interface BreadcrumbItem {
   label: string;
@@ -14,6 +14,14 @@ export interface BreadcrumbItem {
   templateUrl: './breadcrumbs.component.html',
   styleUrl: './breadcrumbs.component.css'
 })
-export class BreadcrumbsComponent {
+export class BreadcrumbsComponent implements OnInit {
   @Input() items: BreadcrumbItem[] = [];
+  homeRoute = '/';
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    // Si estamos en la sección de admin, el home del breadcrumb debe ir a /admin
+    this.homeRoute = this.router.url.startsWith('/admin') ? '/admin' : '/';
+  }
 }

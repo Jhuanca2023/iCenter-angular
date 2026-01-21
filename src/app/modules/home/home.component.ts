@@ -6,6 +6,7 @@ import { FlashSaleComponent } from '../../shared/components/flash-sale/flash-sal
 import { TestimonialsComponent } from '../../shared/components/testimonials/testimonials.component';
 import { GatewayComponent } from '../../shared/components/gateway/gateway.component';
 import { PromotionModalComponent } from '../../shared/components/promotion-modal/promotion-modal.component';
+import { BestSellersComponent } from '../../shared/components/best-sellers/best-sellers.component';
 
 @Component({
   selector: 'app-home',
@@ -17,7 +18,8 @@ import { PromotionModalComponent } from '../../shared/components/promotion-modal
     FlashSaleComponent,
     TestimonialsComponent,
     GatewayComponent,
-    PromotionModalComponent
+    PromotionModalComponent,
+    BestSellersComponent
   ],
   templateUrl: './home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush

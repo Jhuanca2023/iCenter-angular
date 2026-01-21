@@ -6,6 +6,7 @@ import { ProductCardComponent } from '../../components/product-card/product-card
 import { ProductSearchComponent } from '../../components/product-search/product-search.component';
 import { FilterBarComponent, FilterOptions } from '../../components/filter-bar/filter-bar.component';
 import { ProductSortComponent, SortOption } from '../../components/product-sort/product-sort.component';
+import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService } from '../../../../core/services/products.service';
 import { Subscription } from 'rxjs';
 
@@ -33,7 +34,8 @@ interface Product {
     ProductCardComponent,
     ProductSearchComponent,
     FilterBarComponent,
-    ProductSortComponent
+    ProductSortComponent,
+    BreadcrumbsComponent
   ],
   templateUrl: './product-list.component.html',
   changeDetection: ChangeDetectionStrategy.Default
@@ -41,6 +43,10 @@ interface Product {
 export default class ProductListComponent implements OnInit, OnDestroy {
   allProducts: Product[] = [];
   filteredProducts: Product[] = [];
+  breadcrumbs: BreadcrumbItem[] = [
+    { label: 'Inicio', route: '/' },
+    { label: 'Productos' }
+  ];
   isLoading = false;
   error: string | null = null;
   private subscription?: Subscription;

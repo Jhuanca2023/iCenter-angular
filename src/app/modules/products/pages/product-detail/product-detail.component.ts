@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
+import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService, Product, ProductColor, ClientProduct } from '../../../../core/services/products.service';
 import { CartService } from '../../../../core/services/cart.service';
 import { ProductReviewsService, ProductRatingSummary } from '../../../../core/services/product-reviews.service';
@@ -16,7 +17,8 @@ import { Subscription } from 'rxjs';
     CommonModule,
     RouterModule,
     FormsModule,
-    ProductCardComponent
+    ProductCardComponent,
+    BreadcrumbsComponent
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css'
@@ -25,6 +27,7 @@ import { Subscription } from 'rxjs';
 export default class ProductDetailComponent implements OnInit, OnDestroy {
   productId: string | null = null;
   product: Product | null = null;
+  breadcrumbs: BreadcrumbItem[] = [];
   selectedColor: ProductColor | null = null;
   selectedImage = '';
   imageType: 'unique' | 'withColor' = 'withColor';
@@ -75,6 +78,7 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
       next: (product) => {
         if (product) {
           this.product = product;
+          this.updateBreadcrumbs();
           this.colors = product.colors || [];
           
           if (this.colors.length > 0) {
@@ -132,6 +136,33 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
         console.error('Error cargando productos relacionados:', err);
       }
     });
+  }
+
+  updateBreadcrumbs(): void {
+    if (!this.product) return;
+    
+    this.breadcrumbs = [
+      { label: 'Inicio', route: '/' },
+      { label: 'Productos', route: '/productos' }
+    ];
+
+    if (this.productCategories.length > 0) {
+      this.productCategories.forEach(cat => {
+        this.breadcrumbs.push({ 
+          label: cat, 
+          route: '/productos',
+          // Note: In a real app, you'd add queryParams here if the component supported it
+          // For now, we'll just link to the main products page
+        });
+      });
+    } else if (this.productBrand) {
+      this.breadcrumbs.push({ 
+        label: this.productBrand, 
+        route: '/productos'
+      });
+    }
+
+    this.breadcrumbs.push({ label: this.product.name });
   }
 
   get images(): string[] {
