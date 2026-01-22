@@ -40,6 +40,30 @@
   animation: tab-glow 0.3s ease-out forwards;
 }
 
+/* Main Image Container & Zoom Effect */
+.zoom-container {
+  cursor: zoom-in;
+  overflow: hidden;
+  position: relative;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: white;
+}
+
+.zoom-image {
+  transition: transform 0.2s ease-out, transform-origin 0.05s ease-out;
+  pointer-events: none;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.zoom-active .zoom-image {
+  transform: scale(2.2);
+  cursor: zoom-out;
+}
+
 /* Ensure images don't stretch */
 img {
   max-width: 100%;
