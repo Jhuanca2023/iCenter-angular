@@ -11,6 +11,19 @@ export interface ProductRatingSummary {
   userRating?: number;
 }
 
+export interface Review {
+  id: string;
+  product_id: string;
+  user_id: string;
+  rating: number;
+  comment?: string;
+  created_at: Date;
+  user?: {
+    name: string;
+    avatar?: string;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -54,17 +67,63 @@ export class ProductReviewsService {
     );
   }
 
-  setRating(productId: string, userId: string, rating: number): Observable<void> {
+  getReviews(productId: string): Observable<Review[]> {
+    return from(
+      this.supabase
+        .from('product_reviews')
+        .select('*, users(name, avatar)')
+        .eq('product_id', productId)
+        .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          throw response.error;
+        }
+        return (response.data || []).map((row: any) => ({
+          id: row.id,
+          product_id: row.product_id,
+          user_id: row.user_id,
+          rating: row.rating,
+          comment: row.comment,
+          created_at: new Date(row.created_at),
+          user: row.users ? {
+            name: row.users.name,
+            avatar: row.users.avatar
+          } : undefined
+        }));
+      })
+    );
+  }
+
+  saveReview(productId: string, userId: string, rating: number, comment?: string): Observable<void> {
     const data = {
       product_id: productId,
       user_id: userId,
-      rating
+      rating,
+      comment,
+      updated_at: new Date()
     };
 
     return from(
       this.supabase
         .from('product_reviews')
         .upsert(data, { onConflict: 'product_id,user_id' })
+    ).pipe(
+      map(response => {
+        if (response.error) {
+          throw response.error;
+        }
+        return;
+      })
+    );
+  }
+
+  deleteReview(reviewId: string): Observable<void> {
+    return from(
+      this.supabase
+        .from('product_reviews')
+        .delete()
+        .eq('id', reviewId)
     ).pipe(
       map(response => {
         if (response.error) {

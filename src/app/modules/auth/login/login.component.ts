@@ -19,6 +19,7 @@ export class LoginComponent implements OnInit {
   showPassword = false;
   isLoading = false;
   error: string | null = null;
+  successMessage: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -46,6 +47,13 @@ export class LoginComponent implements OnInit {
         rememberMe: true
       });
     }
+
+    // Verificar si viene de un registro exitoso
+    this.route.queryParams.subscribe(params => {
+      if (params['registered']) {
+        this.successMessage = '¡Registro exitoso! Por favor, inicia sesión con tus credenciales.';
+      }
+    });
   }
 
   onSubmit(): void {
@@ -94,7 +102,7 @@ export class LoginComponent implements OnInit {
   signInWithGoogle(): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.authService.signInWithGoogle().subscribe({
       next: () => {
         // La redirección será manejada por Supabase

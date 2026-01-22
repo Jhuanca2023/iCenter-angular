@@ -56,14 +56,15 @@ export class RegisterComponent {
     if (this.registerForm.valid) {
       this.isLoading = true;
       this.error = null;
-      
+
       const { firstName, lastName, email, password } = this.registerForm.value;
       const fullName = `${firstName} ${lastName}`;
-      
+
       this.authService.register(email, password, fullName).subscribe({
         next: () => {
           this.isLoading = false;
-          this.router.navigate(['/']);
+          // Redirigir al login para que inicie sesión manualmente
+          this.router.navigate(['/auth/login'], { queryParams: { registered: true } });
         },
         error: (err) => {
           console.error('Error en registro:', err);

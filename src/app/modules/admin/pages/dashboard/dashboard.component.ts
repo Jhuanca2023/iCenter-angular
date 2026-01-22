@@ -28,34 +28,34 @@ export default class DashboardComponent implements OnInit, AfterViewInit, OnDest
   doughnutChart: Chart | null = null;
 
   stats = [
-    { 
-      title: 'Usuarios activos', 
-      value: '0', 
-      change: '0%', 
+    {
+      title: 'Usuarios activos',
+      value: '0',
+      change: '0%',
       subtitle: 'Cargando...',
       icon: 'users',
       trend: 'neutral' as 'up' | 'down' | 'neutral'
     },
-    { 
-      title: 'Productos totales', 
-      value: '0', 
-      change: '0%', 
+    {
+      title: 'Productos totales',
+      value: '0',
+      change: '0%',
       subtitle: 'Cargando...',
       icon: 'products',
       trend: 'neutral' as 'up' | 'down' | 'neutral'
     },
-    { 
-      title: 'Categorías', 
-      value: '0', 
-      change: '0%', 
+    {
+      title: 'Categorías',
+      value: '0',
+      change: '0%',
       subtitle: 'Cargando...',
       icon: 'categories',
       trend: 'neutral' as 'up' | 'down' | 'neutral'
     },
-    { 
-      title: 'Usuarios totales', 
-      value: '0', 
-      change: '0%', 
+    {
+      title: 'Usuarios totales',
+      value: '0',
+      change: '0%',
       subtitle: 'Cargando...',
       icon: 'total-users',
       trend: 'neutral' as 'up' | 'down' | 'neutral'
@@ -71,7 +71,7 @@ export default class DashboardComponent implements OnInit, AfterViewInit, OnDest
     private usersService: UsersService,
     private productsService: ProductsService,
     private categoriesService: CategoriesService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -79,10 +79,10 @@ export default class DashboardComponent implements OnInit, AfterViewInit, OnDest
 
   loadDashboardData(): void {
     this.isLoading = true;
-    
+
     this.subscription = forkJoin({
       users: this.usersService.getAll(),
-      products: this.productsService.getAll(),
+      products: this.productsService.getAllAdmin(),
       categories: this.categoriesService.getAll()
     }).subscribe({
       next: ({ users, products, categories }) => {
@@ -91,7 +91,7 @@ export default class DashboardComponent implements OnInit, AfterViewInit, OnDest
         const totalProducts = products.length;
         const lowStock = products.filter(p => p.stock <= 3).slice(0, 8);
         const totalCategories = categories.length;
-        
+
         this.stats[0].value = activeUsers.toString();
         this.stats[0].subtitle = `${activeUsers} usuarios activos`;
         this.stats[1].value = totalProducts.toString();
@@ -100,22 +100,22 @@ export default class DashboardComponent implements OnInit, AfterViewInit, OnDest
         this.stats[2].subtitle = `${categories.filter(c => c.visible).length} categorías activas`;
         this.stats[3].value = totalUsers.toString();
         this.stats[3].subtitle = `${Math.round((activeUsers / totalUsers) * 100) || 0}% activos actualmente`;
-        
+
         this.lowStockProducts = lowStock.map(p => ({
           name: p.name,
           stock: p.stock,
           status: p.stock === 0 ? 'Sin stock' : p.stock <= 2 ? 'Crítico' : 'Bajo'
         }));
-        
+
         const categoryMap = new Map<string, number>();
         products.forEach(p => {
-          if (p.categories) {
-            p.categories.forEach(cat => {
+          if (p.category_names && Array.isArray(p.category_names)) {
+            p.category_names.forEach(cat => {
               categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
             });
           }
         });
-        
+
         const colors = ['#6366f1', '#ec4899', '#22c55e', '#fb923c', '#a855f7', '#3b82f6', '#f59e0b'];
         const total = products.length;
         this.categoryDistribution = Array.from(categoryMap.entries())
@@ -127,7 +127,7 @@ export default class DashboardComponent implements OnInit, AfterViewInit, OnDest
           }))
           .sort((a, b) => b.products - a.products)
           .slice(0, 5);
-        
+
         this.isLoading = false;
         setTimeout(() => {
           this.initBarChart();
@@ -153,7 +153,7 @@ export default class DashboardComponent implements OnInit, AfterViewInit, OnDest
   initBarChart(): void {
     if (!this.barChartCanvas?.nativeElement) return;
 
-    const labels = this.lowStockProducts.map(p => 
+    const labels = this.lowStockProducts.map(p =>
       p.name.length > 25 ? p.name.substring(0, 25) + '...' : p.name
     );
     const data = this.lowStockProducts.map(p => p.stock);

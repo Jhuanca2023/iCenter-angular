@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ProductCardComponent } from '../../components/product-card/product-card.component';
+import { ProductQuantitySelectorComponent } from '../../components/product-quantity-selector/product-quantity-selector.component';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService, Product, ProductColor, ClientProduct } from '../../../../core/services/products.service';
 import { CartService } from '../../../../core/services/cart.service';
 import { ProductReviewsService, ProductRatingSummary } from '../../../../core/services/product-reviews.service';
+import { ResenaListComponent } from '../../../../modules/resenas/components/resena-list/resena-list.component';
 import { AuthService, AuthUser } from '../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 
@@ -17,8 +18,9 @@ import { Subscription } from 'rxjs';
     CommonModule,
     RouterModule,
     FormsModule,
-    ProductCardComponent,
-    BreadcrumbsComponent
+    ProductQuantitySelectorComponent,
+    BreadcrumbsComponent,
+    ResenaListComponent
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css'
@@ -33,7 +35,7 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   imageType: 'unique' | 'withColor' = 'withColor';
   colors: ProductColor[] = [];
   uniqueImages: string[] = [];
-  relatedProducts: ClientProduct[] = [];
+  // relatedProducts removed as per redesign
   isLoading = false;
   error: string | null = null;
   showFullDescription = false;
@@ -44,6 +46,12 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   ratingCount = 0;
   userRating = 0;
   currentUser: AuthUser | null = null;
+  quantity: number = 1; // New quantity property
+
+  activeTab: 'description' | 'reviews' = 'description';
+
+  protected Math = Math;
+
   private subscription?: Subscription;
 
   constructor(
@@ -51,8 +59,9 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
     private productsService: ProductsService,
     private cartService: CartService,
     private productReviewsService: ProductReviewsService,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.paramMap.get('id');
@@ -70,29 +79,29 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
 
   loadProduct(): void {
     if (!this.productId) return;
-    
+
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = this.productsService.getById(this.productId).subscribe({
       next: (product) => {
         if (product) {
           this.product = product;
           this.updateBreadcrumbs();
           this.colors = product.colors || [];
-          
+
           if (this.colors.length > 0) {
             this.imageType = 'withColor';
             this.selectedColor = this.colors[0];
-            this.selectedImage = this.colors[0].images && this.colors[0].images.length > 0 
-              ? this.colors[0].images[0] 
+            this.selectedImage = this.colors[0].images && this.colors[0].images.length > 0
+              ? this.colors[0].images[0]
               : (product.image || '');
           } else {
             this.imageType = 'unique';
             this.uniqueImages = product.image ? [product.image] : [];
             this.selectedImage = product.image || '';
           }
-          
+
           // Si no hay imagen seleccionada pero hay producto, usar imagen del producto
           if (!this.selectedImage && product.image) {
             this.selectedImage = product.image;
@@ -100,8 +109,8 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
               this.uniqueImages = [product.image];
             }
           }
-          
-          this.loadRelatedProducts(product);
+
+          // loadRelatedProducts removed
           this.loadProductRating();
         } else {
           this.error = 'Producto no encontrado';
@@ -116,31 +125,11 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadRelatedProducts(currentProduct: Product): void {
-    const category = Array.isArray(currentProduct.categories) && currentProduct.categories.length > 0
-      ? currentProduct.categories[0]
-      : null;
-    
-    if (!category) return;
-    
-    this.productsService.searchProducts({
-      filters: { category },
-      limit: 4
-    }).subscribe({
-      next: (response) => {
-        this.relatedProducts = response.products
-          .filter(p => p.id !== Number(currentProduct.id))
-          .slice(0, 4);
-      },
-      error: (err) => {
-        console.error('Error cargando productos relacionados:', err);
-      }
-    });
-  }
+  // loadRelatedProducts method removed
 
   updateBreadcrumbs(): void {
     if (!this.product) return;
-    
+
     this.breadcrumbs = [
       { label: 'Inicio', route: '/' },
       { label: 'Productos', route: '/productos' }
@@ -148,16 +137,16 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
 
     if (this.productCategories.length > 0) {
       this.productCategories.forEach(cat => {
-        this.breadcrumbs.push({ 
-          label: cat, 
+        this.breadcrumbs.push({
+          label: cat,
           route: '/productos',
           // Note: In a real app, you'd add queryParams here if the component supported it
           // For now, we'll just link to the main products page
         });
       });
     } else if (this.productBrand) {
-      this.breadcrumbs.push({ 
-        label: this.productBrand, 
+      this.breadcrumbs.push({
+        label: this.productBrand,
         route: '/productos'
       });
     }
@@ -214,8 +203,8 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   get productCategory(): string {
-    if (Array.isArray(this.product?.categories) && this.product.categories.length > 0) {
-      return this.product.categories[0];
+    if (Array.isArray(this.product?.category_names) && this.product.category_names.length > 0) {
+      return this.product.category_names[0];
     }
     return 'Sin categoría';
   }
@@ -225,8 +214,8 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   get productCategories(): string[] {
-    if (Array.isArray(this.product?.categories)) {
-      return this.product.categories;
+    if (Array.isArray(this.product?.category_names)) {
+      return this.product.category_names;
     }
     return [];
   }
@@ -261,7 +250,7 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
     this.zoomActive = false;
   }
 
-  addToCart(): void {
+  addItemToCart(): void {
     if (!this.product) {
       return;
     }
@@ -273,8 +262,28 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
         originalPrice: this.originalPrice,
         image: this.product.image
       },
-      1
+      this.quantity
     );
+    // Optionally, show a success message or update cart icon
+  }
+
+  buyNow(): void {
+    if (!this.product) {
+      return;
+    }
+    // Add item to cart with selected quantity
+    this.cartService.addItem(
+      {
+        id: this.product.id || '',
+        name: this.product.name,
+        price: this.finalPrice,
+        originalPrice: this.originalPrice,
+        image: this.product.image
+      },
+      this.quantity
+    );
+    // Navigate to checkout page
+    this.router.navigate(['/checkout']);
   }
 
   loadProductRating(): void {
@@ -302,7 +311,7 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
     if (!this.currentUser) {
       return;
     }
-    this.productReviewsService.setRating(this.productId, this.currentUser.id, rating).subscribe({
+    this.productReviewsService.saveReview(this.productId, this.currentUser.id, rating).subscribe({
       next: () => {
         this.userRating = rating;
         this.loadProductRating();
@@ -311,5 +320,9 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
         console.error('Error guardando calificación:', err);
       }
     });
+  }
+
+  onQuantityChange(newQuantity: number): void {
+    this.quantity = newQuantity;
   }
 }

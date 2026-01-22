@@ -19,11 +19,11 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
     { label: 'E-Commerce', route: '/admin' },
     { label: 'Productos' }
   ];
-  
+
   searchTerm = '';
   selectedCategory = '';
   selectedStatus = '';
-  
+
   products: Product[] = [];
   categories: string[] = ['Todas las categorías'];
   statuses = ['Todos los estados', 'Activo', 'Inactivo', 'Borrador'];
@@ -34,7 +34,7 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
   constructor(
     private productsService: ProductsService,
     private categoriesService: CategoriesService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -50,8 +50,8 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
   loadProducts(): void {
     this.isLoading = true;
     this.error = null;
-    
-    this.subscription = this.productsService.getAll().subscribe({
+
+    this.subscription = this.productsService.getAllAdmin().subscribe({
       next: (products) => {
         this.products = products;
         this.isLoading = false;
@@ -81,18 +81,18 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
 
   get filteredProducts() {
     let filtered = [...this.products];
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(term) ||
-        (Array.isArray(p.categories) && p.categories.some((cat: string) => cat.toLowerCase().includes(term)))
+        (Array.isArray(p.category_names) && p.category_names.some((cat: string) => cat.toLowerCase().includes(term)))
       );
     }
 
     if (this.selectedCategory && this.selectedCategory !== 'Todas las categorías') {
-      filtered = filtered.filter(p => 
-        p.categories && p.categories.includes(this.selectedCategory)
+      filtered = filtered.filter(p =>
+        p.category_names && p.category_names.includes(this.selectedCategory)
       );
     }
 
@@ -110,10 +110,10 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
   }
 
   getCategory(product: Product): string {
-    if (!product.categories || !Array.isArray(product.categories)) {
-      return 'N/A';
+    if (!product.category_names || !Array.isArray(product.category_names)) {
+      return 'Sin categoría';
     }
-    return product.categories[0] || 'N/A';
+    return product.category_names[0] || 'Sin categoría';
   }
 
   hasBrands(): boolean {
