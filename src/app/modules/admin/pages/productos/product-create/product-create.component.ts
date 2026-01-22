@@ -41,13 +41,13 @@ export default class ProductCreateComponent {
   uniqueImages: ImageFile[] = [];
   isLoading = false;
   error: string | null = null;
-  
+
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
     { label: 'Productos', route: '/admin/productos' },
     { label: 'Nuevo producto' }
   ];
-  
+
   categories: Array<{ id: string; name: string }> = [];
   brands: Array<{ id: string; name: string }> = [];
 
@@ -77,6 +77,25 @@ export default class ProductCreateComponent {
 
     this.loadCategories();
     this.loadBrands();
+
+    // Validar visibilidad vs estado borrador
+    this.productForm.get('visible')?.valueChanges.subscribe(visible => {
+      const status = this.productForm.get('status')?.value;
+      if (visible && status === 'Borrador') {
+        setTimeout(() => {
+          this.productForm.patchValue({ visible: false }, { emitEvent: false });
+          this.error = 'Un producto en estado "Borrador" no puede ser visible en el catálogo. Cambia el estado a "Activo" primero.';
+        });
+      }
+    });
+
+    this.productForm.get('status')?.valueChanges.subscribe(status => {
+      const visible = this.productForm.get('visible')?.value;
+      if (status === 'Borrador' && visible) {
+        this.productForm.patchValue({ visible: false }, { emitEvent: false });
+        this.error = 'El estado se cambió a "Borrador", por lo que la visibilidad se ha desactivado automáticamente.';
+      }
+    });
   }
 
   get specifications(): FormArray {
@@ -236,41 +255,41 @@ export default class ProductCreateComponent {
 
   private uploadImages(): Observable<{ uniqueImages?: string[]; colors?: ProductColor[] }> {
     const timestamp = Date.now();
-    
+
     if (this.imageType === 'unique') {
       const imageFiles = this.uniqueImages.filter(img => img.file !== null).map(img => img.file!);
       if (imageFiles.length === 0) {
         return of({ uniqueImages: [] });
       }
-      
+
       const uploadPromises = imageFiles.map((file, index) => {
         const fileName = `${timestamp}-${index}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
         const path = `products/${fileName}`;
         return this.storageService.uploadImage('product-images', file, path);
       });
-      
+
       return forkJoin(uploadPromises).pipe(
         map(urls => ({ uniqueImages: urls }))
       );
     } else {
       const colorUploadPromises = this.colors.map((color, colorIndex) => {
         const imageFiles = color.imageFiles.filter(file => file !== null && file !== undefined);
-        
+
         if (imageFiles.length === 0) {
           return of({ name: color.name, hex: color.hex, images: [] });
         }
-        
+
         const uploadPromises = imageFiles.map((file, imgIndex) => {
           const fileName = `${timestamp}-color-${colorIndex}-${imgIndex}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
           const path = `products/${fileName}`;
           return this.storageService.uploadImage('product-images', file, path);
         });
-        
+
         return forkJoin(uploadPromises).pipe(
           map(urls => ({ name: color.name, hex: color.hex, images: urls }))
         );
       });
-      
+
       return forkJoin(colorUploadPromises).pipe(
         map(colors => ({ colors }))
       );
@@ -281,9 +300,9 @@ export default class ProductCreateComponent {
     if (this.productForm.valid && this.selectedCategories.length > 0 && this.imageType) {
       this.isLoading = true;
       this.error = null;
-      
+
       const formValue = this.productForm.value;
-      
+
       this.uploadImages().pipe(
         switchMap(({ uniqueImages, colors }) => {
           const productData: Partial<Product> = {
@@ -304,7 +323,7 @@ export default class ProductCreateComponent {
             colors: colors || undefined,
             specifications: formValue.specifications
           };
-          
+
           return this.productsService.create(productData);
         })
       ).subscribe({
@@ -322,46 +341,50 @@ export default class ProductCreateComponent {
   }
 
   saveAsDraft(): void {
-    if (this.productForm.valid && this.selectedCategories.length > 0 && this.imageType) {
-      this.isLoading = true;
-      this.error = null;
-      
-      const formValue = this.productForm.value;
-      
-      this.uploadImages().pipe(
-        switchMap(({ uniqueImages, colors }) => {
-          const productData: Partial<Product> = {
-            name: formValue.name,
-            description: formValue.description,
-            brand_id: formValue.brand_id,
-            price: formValue.price,
-            sale_price: formValue.on_sale ? formValue.sale_price : null,
-            on_sale: formValue.on_sale || false,
-            stock: formValue.stock,
-            weight: formValue.weight,
-            status: 'Borrador',
-            visible: false,
-            featured: formValue.featured || false,
-            recommended: formValue.recommended || false,
-            categories: this.selectedCategories,
-            image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined,
-            colors: colors || undefined,
-            specifications: formValue.specifications
-          };
-          
-          return this.productsService.create(productData);
-        })
-      ).subscribe({
-        next: () => {
-          this.isLoading = false;
-          this.router.navigate(['/admin/productos']);
-        },
-        error: (err) => {
-          console.error('Error guardando borrador:', err);
-          this.error = 'Error al guardar el borrador. Por favor, intenta nuevamente.';
-          this.isLoading = false;
-        }
-      });
+    const name = this.productForm.get('name')?.value;
+    if (!name) {
+      this.error = 'El nombre del producto es obligatorio incluso para borradores.';
+      return;
     }
+
+    this.isLoading = true;
+    this.error = null;
+
+    const formValue = this.productForm.value;
+
+    this.uploadImages().pipe(
+      switchMap(({ uniqueImages, colors }) => {
+        const productData: Partial<Product> = {
+          name: formValue.name,
+          description: formValue.description || '',
+          brand_id: formValue.brand_id || null,
+          price: formValue.price || 0,
+          sale_price: formValue.on_sale ? (formValue.sale_price || 0) : null,
+          on_sale: formValue.on_sale || false,
+          stock: formValue.stock || 0,
+          weight: formValue.weight || '',
+          status: 'Borrador',
+          visible: false,
+          featured: formValue.featured || false,
+          recommended: formValue.recommended || false,
+          categories: this.selectedCategories,
+          image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined,
+          colors: (colors && colors.length > 0) ? colors : undefined,
+          specifications: formValue.specifications
+        };
+
+        return this.productsService.create(productData);
+      })
+    ).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.router.navigate(['/admin/productos']);
+      },
+      error: (err) => {
+        console.error('Error guardando borrador:', err);
+        this.error = 'Error al guardar el borrador. Por favor, intenta nuevamente.';
+        this.isLoading = false;
+      }
+    });
   }
 }

@@ -31,7 +31,7 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private productsService: ProductsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.paramMap.get('id');
@@ -48,11 +48,11 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
 
   loadProductData(): void {
     if (!this.productId) return;
-    
+
     this.isLoading = true;
     this.error = null;
-    
-    this.subscription = this.productsService.getById(this.productId).subscribe({
+
+    this.subscription = this.productsService.getByIdAdmin(this.productId).subscribe({
       next: (product) => {
         if (product) {
           this.product = product;
@@ -87,10 +87,10 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   get category(): string {
-    if (!this.product || !this.product.categories || !Array.isArray(this.product.categories)) {
-      return 'N/A';
+    if (!this.product || !this.product.category_names || !Array.isArray(this.product.category_names)) {
+      return 'Sin categoría';
     }
-    return this.product.categories[0] || 'N/A';
+    return this.product.category_names[0] || 'Sin categoría';
   }
 
   get createdAt(): string {

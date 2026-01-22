@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService, Product, ProductColor } from '../../../../../core/services/products.service';
@@ -42,13 +42,13 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
   uniqueImages: ImageFile[] = [];
   isLoading = false;
   error: string | null = null;
-  
+
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
     { label: 'Productos', route: '/admin/productos' },
     { label: 'Editar producto' }
   ];
-  
+
   categories: Array<{ id: string; name: string }> = [];
   brands: Array<{ id: string; name: string }> = [];
   private subscription?: Subscription;
@@ -74,7 +74,27 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
       on_sale: [false],
       sale_price: [0, [Validators.min(0)]],
       featured: [false],
-      recommended: [false]
+      recommended: [false],
+      specifications: this.fb.array([])
+    });
+
+    // Validar visibilidad vs estado borrador
+    this.productForm.get('visible')?.valueChanges.subscribe(visible => {
+      const status = this.productForm.get('status')?.value;
+      if (visible && status === 'Borrador') {
+        setTimeout(() => {
+          this.productForm.patchValue({ visible: false }, { emitEvent: false });
+          this.error = 'Un producto en estado "Borrador" no puede ser visible en el catálogo. Cambia el estado a "Activo" primero.';
+        });
+      }
+    });
+
+    this.productForm.get('status')?.valueChanges.subscribe(status => {
+      const visible = this.productForm.get('visible')?.value;
+      if (status === 'Borrador' && visible) {
+        this.productForm.patchValue({ visible: false }, { emitEvent: false });
+        this.error = 'El estado se cambió a "Borrador", por lo que la visibilidad se ha desactivado automáticamente.';
+      }
     });
   }
 
@@ -89,10 +109,25 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
     }
   }
 
+  get specifications(): FormArray {
+    return this.productForm.get('specifications') as FormArray;
+  }
+
+  addSpecification(): void {
+    this.specifications.push(this.fb.group({
+      key: ['', Validators.required],
+      value: ['', Validators.required]
+    }));
+  }
+
+  removeSpecification(index: number): void {
+    this.specifications.removeAt(index);
+  }
+
   loadInitialData(): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = forkJoin({
       categories: this.categoriesService.getAll(),
       brands: this.brandsService.getAll()
@@ -100,7 +135,7 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
       next: ({ categories, brands }) => {
         this.categories = categories.map(cat => ({ id: cat.id, name: cat.name }));
         this.brands = brands.map(brand => ({ id: brand.id, name: brand.name }));
-        
+
         if (this.productId) {
           this.loadProductData();
         } else {
@@ -117,8 +152,8 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
 
   loadProductData(): void {
     if (!this.productId) return;
-    
-    this.subscription = this.productsService.getById(this.productId).subscribe({
+
+    this.subscription = this.productsService.getByIdAdmin(this.productId).subscribe({
       next: (product) => {
         if (product) {
           this.productForm.patchValue({
@@ -141,12 +176,25 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
             ...color,
             imageFiles: []
           }));
-          
+
           if (this.colors.length > 0) {
             this.imageType = 'withColor';
           } else {
             this.imageType = 'unique';
             this.uniqueImages = product.image ? [{ file: null, preview: product.image }] : [{ file: null, preview: '' }];
+          }
+
+          // Clear and reload specifications
+          while (this.specifications.length) {
+            this.specifications.removeAt(0);
+          }
+          if (product.specifications && Array.isArray(product.specifications)) {
+            product.specifications.forEach(spec => {
+              this.specifications.push(this.fb.group({
+                key: [spec.key, Validators.required],
+                value: [spec.value, Validators.required]
+              }));
+            });
           }
         }
         this.isLoading = false;
@@ -298,7 +346,7 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
 
   private uploadImages(): Observable<{ uniqueImages?: string[]; colors?: ProductColor[] }> {
     const timestamp = Date.now();
-    
+
     if (this.imageType === 'unique') {
       const imageFiles = this.uniqueImages.filter(img => img.file !== null).map(img => img.file!);
       if (imageFiles.length === 0) {
@@ -306,13 +354,13 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
         const existingUrls = this.uniqueImages.filter(img => img.preview && !img.file && img.preview.startsWith('http')).map(img => img.preview);
         return of({ uniqueImages: existingUrls.length > 0 ? existingUrls : [] });
       }
-      
+
       const uploadPromises = imageFiles.map((file, index) => {
         const fileName = `${timestamp}-${index}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
         const path = `products/${fileName}`;
         return this.storageService.uploadImage('product-images', file, path);
       });
-      
+
       return forkJoin(uploadPromises).pipe(
         map(urls => {
           // Combinar URLs nuevas con existentes
@@ -323,19 +371,19 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
     } else {
       const colorUploadPromises = this.colors.map((color, colorIndex) => {
         const imageFiles = color.imageFiles.filter(file => file !== null && file !== undefined);
-        
+
         if (imageFiles.length === 0) {
           // Si no hay archivos nuevos, usar las URLs existentes
           const existingUrls = color.images.filter(img => img.startsWith('http'));
           return of({ name: color.name, hex: color.hex, images: existingUrls });
         }
-        
+
         const uploadPromises = imageFiles.map((file, imgIndex) => {
           const fileName = `${timestamp}-color-${colorIndex}-${imgIndex}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
           const path = `products/${fileName}`;
           return this.storageService.uploadImage('product-images', file, path);
         });
-        
+
         return forkJoin(uploadPromises).pipe(
           map(urls => {
             // Combinar URLs nuevas con existentes
@@ -344,7 +392,7 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
           })
         );
       });
-      
+
       return forkJoin(colorUploadPromises).pipe(
         map(colors => ({ colors }))
       );
@@ -355,9 +403,9 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
     if (this.productForm.valid && this.selectedCategories.length > 0 && this.imageType && this.productId) {
       this.isLoading = true;
       this.error = null;
-      
+
       const formValue = this.productForm.value;
-      
+
       this.uploadImages().pipe(
         switchMap(({ uniqueImages, colors }) => {
           const productData: Partial<Product> = {
@@ -375,9 +423,10 @@ export default class ProductEditComponent implements OnInit, OnDestroy {
             recommended: formValue.recommended || false,
             categories: this.selectedCategories,
             colors: colors || (this.imageType === 'withColor' ? this.colors : undefined),
-            image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined
+            image: uniqueImages && uniqueImages.length > 0 ? uniqueImages[0] : undefined,
+            specifications: formValue.specifications
           };
-          
+
           return this.productsService.update(this.productId!, productData);
         })
       ).subscribe({

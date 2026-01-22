@@ -7,7 +7,7 @@ import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/compone
 import { ProductsService, Product, ProductColor, ClientProduct } from '../../../../core/services/products.service';
 import { CartService } from '../../../../core/services/cart.service';
 import { ProductReviewsService, ProductRatingSummary } from '../../../../core/services/product-reviews.service';
-import { ReviewListComponent } from '../../../../modules/reviews/components/review-list/review-list.component';
+import { ResenaListComponent } from '../../../../modules/resenas/components/resena-list/resena-list.component';
 import { AuthService, AuthUser } from '../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 
@@ -20,7 +20,7 @@ import { Subscription } from 'rxjs';
     FormsModule,
     ProductQuantitySelectorComponent,
     BreadcrumbsComponent,
-    ReviewListComponent
+    ResenaListComponent
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css'
@@ -203,8 +203,8 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   get productCategory(): string {
-    if (Array.isArray(this.product?.categories) && this.product.categories.length > 0) {
-      return this.product.categories[0];
+    if (Array.isArray(this.product?.category_names) && this.product.category_names.length > 0) {
+      return this.product.category_names[0];
     }
     return 'Sin categoría';
   }
@@ -214,8 +214,8 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   get productCategories(): string[] {
-    if (Array.isArray(this.product?.categories)) {
-      return this.product.categories;
+    if (Array.isArray(this.product?.category_names)) {
+      return this.product.category_names;
     }
     return [];
   }
