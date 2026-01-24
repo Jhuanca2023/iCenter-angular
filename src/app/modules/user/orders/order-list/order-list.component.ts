@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { OrdersService } from '../../../../core/services/orders.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
-import { Order } from '../../../admin/interfaces/order.interface';
+import { Order } from '../../../../core/interfaces';
 
 @Component({
   selector: 'app-order-list',
@@ -22,7 +22,7 @@ export class OrderListComponent implements OnInit, OnDestroy {
   constructor(
     private ordersService: OrdersService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadUserOrders();

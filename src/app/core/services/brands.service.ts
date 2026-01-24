@@ -3,7 +3,7 @@ import { getSupabaseClient } from '../config/supabase.config';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Observable, from, forkJoin } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { Marca } from '../../modules/admin/interfaces/marca.interface';
+import { Marca } from '../interfaces/marca.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -21,12 +21,12 @@ export class BrandsService {
       switchMap(response => {
         if (response.error) throw response.error;
         const brands = response.data || [];
-        
+
         if (brands.length === 0) {
           return from([[]]);
         }
-        
-        const brandObservables = brands.map((brand: any) => 
+
+        const brandObservables = brands.map((brand: any) =>
           forkJoin({
             categories: from(
               this.supabase
@@ -45,7 +45,7 @@ export class BrandsService {
             })
           )
         );
-        
+
         return forkJoin(brandObservables);
       })
     );
@@ -62,7 +62,7 @@ export class BrandsService {
       switchMap(response => {
         if (response.error) throw response.error;
         if (!response.data) return from([null]);
-        
+
         return forkJoin({
           categories: from(
             this.supabase

@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { CategoriesService, Category } from '../../../core/services/categories.service';
 import { AuthService, AuthUser } from '../../../core/services/auth.service';
-import { CartService, CartState } from '../../../core/services/cart.service';
+import { CartService } from '../../../core/services/cart.service';
+import { CartState } from '../../../core/interfaces/cart.interface';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({

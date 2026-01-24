@@ -32,6 +32,10 @@ export const routes: Routes = [
       {
         path: 'complaint-book',
         loadChildren: () => import('./modules/claims/claims.routes').then(m => m.claimsRoutes)
+      },
+      {
+        path: 'favoritos',
+        loadComponent: () => import('./modules/favorites/components/favorites-page/favorites-page.component').then(m => m.FavoritesPageComponent)
       }
     ]
   },

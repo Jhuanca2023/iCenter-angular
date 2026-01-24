@@ -4,7 +4,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Observable, from, BehaviorSubject, of, throwError } from 'rxjs';
 import { map, tap, switchMap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { User } from '../../modules/admin/interfaces/user.interface';
+import { User } from '../interfaces/user.interface';
 
 export interface AuthUser {
   id: string;

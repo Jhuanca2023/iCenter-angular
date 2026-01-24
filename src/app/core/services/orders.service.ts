@@ -3,7 +3,7 @@ import { getSupabaseClient } from '../config/supabase.config';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Observable, from } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { Order } from '../../modules/admin/interfaces/order.interface';
+import { Order } from '../interfaces/order.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -58,7 +58,7 @@ export class OrdersService {
     ).pipe(
       switchMap(response => {
         if (response.error) throw response.error;
-        
+
         // Guardar items del pedido
         if (order.items && order.items.length > 0) {
           const itemsData = order.items.map(item => ({
@@ -75,7 +75,7 @@ export class OrdersService {
             map(() => response.data)
           );
         }
-        
+
         return from([response.data]);
       }),
       map(orderData => this.mapToOrder(orderData))

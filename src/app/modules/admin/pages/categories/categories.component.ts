@@ -4,7 +4,8 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import { CategoriesService, Category } from '../../../../core/services/categories.service';
+import { CategoriesService } from '../../../../core/services/categories.service';
+import { Category } from '../../../../core/interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -19,17 +20,17 @@ export default class AdminCategoriesComponent implements OnInit, OnDestroy {
     { label: 'E-Commerce', route: '/admin' },
     { label: 'Categorías' }
   ];
-  
+
   searchTerm = '';
   currentPage = 1;
   itemsPerPage = 10;
-  
+
   categories: Category[] = [];
   isLoading = false;
   error: string | null = null;
   private subscription?: Subscription;
 
-  constructor(private categoriesService: CategoriesService) {}
+  constructor(private categoriesService: CategoriesService) { }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -44,7 +45,7 @@ export default class AdminCategoriesComponent implements OnInit, OnDestroy {
   loadCategories(): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = this.categoriesService.getAll().subscribe({
       next: (categories) => {
         this.categories = categories;
@@ -60,10 +61,10 @@ export default class AdminCategoriesComponent implements OnInit, OnDestroy {
 
   get filteredCategories() {
     let filtered = [...this.categories];
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(c => 
+      filtered = filtered.filter(c =>
         c.name.toLowerCase().includes(term) ||
         (c.description && c.description.toLowerCase().includes(term)) ||
         (c.brand && c.brand.toLowerCase().includes(term))

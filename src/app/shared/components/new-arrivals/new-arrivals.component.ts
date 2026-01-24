@@ -2,7 +2,8 @@ import { Component, ViewEncapsulation, ViewChild, ElementRef, HostListener, Afte
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ProductCardComponent } from '../../../modules/products/components/product-card/product-card.component';
-import { ProductsService, ClientProduct } from '../../../core/services/products.service';
+import { ProductsService } from '../../../core/services/products.service';
+import { ClientProduct } from '../../../core/interfaces';
 import { CategoriesService } from '../../../core/services/categories.service';
 import { Subscription } from 'rxjs';
 
@@ -31,7 +32,7 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private productsService: ProductsService,
     private categoriesService: CategoriesService
-  ) {}
+  ) { }
 
   ngAfterViewInit(): void {
     // Inicializar la posición de la barra morada en la categoría activa
@@ -56,7 +57,7 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
 
   loadData(): void {
     this.isLoading = true;
-    
+
     this.subscription = this.categoriesService.getAll().subscribe({
       next: (categories) => {
         const colors = [
@@ -64,7 +65,7 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
           'bg-yellow-500', 'bg-blue-500', 'bg-red-500', 'bg-indigo-500',
           'bg-pink-500', 'bg-cyan-500'
         ];
-        
+
         this.categories = categories.slice(0, 10).map((cat, index) => ({
           id: cat.id,
           name: cat.name,
@@ -72,7 +73,7 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
           color: colors[index % colors.length],
           active: index === 1
         }));
-        
+
         if (this.categories.length > 0) {
           this.loadProducts();
         }
@@ -86,16 +87,16 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
 
   loadProducts(categoryName?: string): void {
     this.isLoading = true;
-    
+
     const params: any = {
       limit: 6,
       sort: 'relevance'
     };
-    
+
     if (categoryName) {
       params.filters = { category: categoryName };
     }
-    
+
     this.subscription = this.productsService.searchProducts(params).subscribe({
       next: (response) => {
         this.products = response.products;
@@ -120,7 +121,7 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
   onCategoryClick(category: any): void {
     this.categories.forEach(c => c.active = false);
     category.active = true;
-    
+
     if (this.categoriesContainer) {
       const index = this.categories.findIndex(c => c.id === category.id);
       const container = this.categoriesContainer.nativeElement;
@@ -129,7 +130,7 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
       // Actualizar posición de la barra morada según la categoría activa
       this.scrollbarTopValue = index * 56;
     }
-    
+
     this.loadProducts(category.name);
   }
 
@@ -146,7 +147,7 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent): void {
     if (!this.isDragging || !this.categoriesContainer) return;
-    
+
     const container = this.categoriesContainer.nativeElement;
     const containerRect = container.getBoundingClientRect();
     const deltaY = event.clientY - this.startY;
@@ -154,16 +155,16 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
     const scrollbarHeight = 40;
     const maxScrollbarTop = containerHeight - scrollbarHeight;
     const scrollHeight = container.scrollHeight - container.clientHeight;
-    
+
     const scrollbarStartY = this.startY - containerRect.top;
     const currentScrollbarTop = Math.max(0, Math.min(maxScrollbarTop, scrollbarStartY - scrollbarHeight / 2));
     const newScrollbarTop = Math.max(0, Math.min(maxScrollbarTop, currentScrollbarTop + deltaY));
-    
+
     if (scrollHeight > 0 && maxScrollbarTop > 0) {
       const scrollRatio = newScrollbarTop / maxScrollbarTop;
       container.scrollTop = scrollRatio * scrollHeight;
     }
-    
+
     this.startY = event.clientY;
     this.scrollbarTopValue = newScrollbarTop;
     this.updateActiveCategoryFromScroll();
@@ -187,7 +188,7 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
     const scrollTop = container.scrollTop;
     const itemHeight = 56;
     const activeIndex = Math.round(scrollTop / itemHeight);
-    
+
     this.categories.forEach((c, i) => {
       c.active = i === activeIndex;
     });

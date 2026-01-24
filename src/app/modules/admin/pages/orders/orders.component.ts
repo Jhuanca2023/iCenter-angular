@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
-import { Order } from '../../interfaces/order.interface';
+import { Order } from '../../../../core/interfaces';
 import { OrdersService } from '../../../../core/services/orders.service';
 import { Subscription } from 'rxjs';
 
@@ -28,7 +28,7 @@ export default class AdminOrdersComponent implements OnInit, OnDestroy {
   error: string | null = null;
   private subscription?: Subscription;
 
-  constructor(private ordersService: OrdersService) {}
+  constructor(private ordersService: OrdersService) { }
 
   ngOnInit(): void {
     this.loadOrders();
@@ -43,7 +43,7 @@ export default class AdminOrdersComponent implements OnInit, OnDestroy {
   loadOrders(): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = this.ordersService.getAll().subscribe({
       next: (orders) => {
         this.orders = orders;
@@ -61,10 +61,10 @@ export default class AdminOrdersComponent implements OnInit, OnDestroy {
 
   get filteredOrders(): Order[] {
     let filtered = [...this.orders];
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(o => 
+      filtered = filtered.filter(o =>
         o.customer.toLowerCase().includes(term) ||
         o.id.toString().includes(term)
       );

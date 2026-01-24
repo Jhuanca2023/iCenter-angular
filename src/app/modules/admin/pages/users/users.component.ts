@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import { User } from '../../interfaces/user.interface';
+import { User } from '../../../../core/interfaces/user.interface';
 import { UsersService } from '../../../../core/services/users.service';
 import { Subscription } from 'rxjs';
 
@@ -30,7 +30,7 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
   error: string | null = null;
   private subscription?: Subscription;
 
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -45,7 +45,7 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
   loadUsers(): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = this.usersService.getAll().subscribe({
       next: (users) => {
         this.users = users;
@@ -63,16 +63,16 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
 
   get filteredUsers(): User[] {
     let filtered = [...this.users];
-    
+
     if (this.selectedFilter === 'activos') {
       filtered = filtered.filter(u => u.status === 'Activo');
     } else if (this.selectedFilter === 'inactivos') {
       filtered = filtered.filter(u => u.status === 'Inactivo');
     }
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(u => 
+      filtered = filtered.filter(u =>
         u.name.toLowerCase().includes(term) ||
         u.email.toLowerCase().includes(term)
       );
@@ -141,7 +141,7 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
   }
 
   getAuthProviderBadgeClass(user: User): string {
-    return user.authProvider === 'google' 
+    return user.authProvider === 'google'
       ? 'px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800'
       : 'px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800';
   }

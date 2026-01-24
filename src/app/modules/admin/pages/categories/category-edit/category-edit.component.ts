@@ -6,7 +6,7 @@ import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/comp
 import { CategoriesService } from '../../../../../core/services/categories.service';
 import { BrandsService } from '../../../../../core/services/brands.service';
 import { StorageService } from '../../../../../core/services/storage.service';
-import { Marca } from '../../../interfaces/marca.interface';
+import { Marca } from '../../../../../core/interfaces/marca.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -74,7 +74,7 @@ export default class CategoryEditComponent implements OnInit, OnDestroy {
 
   loadCategoryData(): void {
     if (!this.categoryId) return;
-    
+
     this.isLoading = true;
     this.isLoading = true;
     this.subscription = this.categoriesService.getById(this.categoryId).subscribe({
@@ -123,7 +123,7 @@ export default class CategoryEditComponent implements OnInit, OnDestroy {
           const timestamp = Date.now();
           const fileName = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
           const path = `categories/${fileName}`;
-          
+
           this.storageService.uploadImage('category-images', file, path).subscribe({
             next: (url) => {
               imageUrl = url;
@@ -153,7 +153,7 @@ export default class CategoryEditComponent implements OnInit, OnDestroy {
       brand_id: formData.brand_id,
       visible: formData.visible ?? true
     };
-    
+
     if (imageUrl) {
       categoryData.image_url = imageUrl;
     }
@@ -176,7 +176,7 @@ export default class CategoryEditComponent implements OnInit, OnDestroy {
       const arr = dataUrl.split(',');
       const mimeMatch = arr[0].match(/:(.*?);/);
       if (!mimeMatch) return null;
-      
+
       const mime = mimeMatch[1];
       const bstr = atob(arr[1]);
       let n = bstr.length;

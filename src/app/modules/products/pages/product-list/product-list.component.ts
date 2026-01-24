@@ -8,21 +8,8 @@ import { FilterBarComponent, FilterOptions } from '../../components/filter-bar/f
 import { ProductSortComponent, SortOption } from '../../components/product-sort/product-sort.component';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService } from '../../../../core/services/products.service';
+import { ClientProduct } from '../../../../core/interfaces/product.interface';
 import { Subscription } from 'rxjs';
-
-interface Product {
-  id: number | string; // Permitir string (UUID) o number
-  name: string;
-  category: string;
-  price: number;
-  originalPrice?: number;
-  salePrice?: number;
-  onSale?: boolean;
-  rating: number;
-  reviews: number;
-  image: string;
-  description?: string;
-}
 
 @Component({
   selector: 'app-product-list',
@@ -41,8 +28,8 @@ interface Product {
   changeDetection: ChangeDetectionStrategy.Default
 })
 export default class ProductListComponent implements OnInit, OnDestroy {
-  allProducts: Product[] = [];
-  filteredProducts: Product[] = [];
+  allProducts: ClientProduct[] = [];
+  filteredProducts: ClientProduct[] = [];
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'Inicio', route: '/' },
     { label: 'Productos' }
@@ -99,7 +86,9 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     const uniqueBrands = new Set<string>();
     
     this.allProducts.forEach(product => {
-      if (product.category) uniqueCategories.add(product.category);
+      if (product.category_names && product.category_names.length > 0) {
+        product.category_names.forEach((catName: string) => uniqueCategories.add(catName));
+      }
       if ((product as any).brand) uniqueBrands.add((product as any).brand);
     });
     
@@ -201,7 +190,9 @@ export default class ProductListComponent implements OnInit, OnDestroy {
 
     // Aplicar filtros
     if (this.currentFilters.categories && this.currentFilters.categories.length > 0) {
-      products = products.filter(p => this.currentFilters.categories!.includes(p.category));
+      products = products.filter(p =>
+        p.category_names && p.category_names.some(catName => this.currentFilters.categories!.includes(catName))
+      );
     }
 
     if (this.currentFilters.minPrice !== undefined) {
@@ -224,7 +215,7 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     this.filteredProducts = products;
   }
 
-  private sortProducts(products: Product[], sort: SortOption): Product[] {
+  private sortProducts(products: ClientProduct[], sort: SortOption): ClientProduct[] {
     const sorted = [...products];
     switch (sort) {
       case 'price-asc':

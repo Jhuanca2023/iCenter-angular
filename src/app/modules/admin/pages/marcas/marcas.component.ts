@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { BrandsService } from '../../../../core/services/brands.service';
-import { Marca } from '../../interfaces/marca.interface';
+import { Marca } from '../../../../core/interfaces/marca.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -31,7 +31,7 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
     { label: 'Marcas' }
   ];
 
-  constructor(private brandsService: BrandsService) {}
+  constructor(private brandsService: BrandsService) { }
 
   ngOnInit(): void {
     this.loadBrands();
@@ -46,7 +46,7 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
   loadBrands(): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = this.brandsService.getAll().subscribe({
       next: (brands) => {
         this.brands = brands;
@@ -89,10 +89,10 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
 
   get filteredBrands() {
     let filtered = [...this.brands];
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(b => 
+      filtered = filtered.filter(b =>
         b.name.toLowerCase().includes(term) ||
         (b.description && b.description.toLowerCase().includes(term)) ||
         b.categories.some(cat => cat.toLowerCase().includes(term))

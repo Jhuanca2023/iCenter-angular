@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
-import { ProductsService, Product } from '../../../../../core/services/products.service';
+import { ProductsService } from '../../../../../core/services/products.service';
+import { Product } from '../../../../../core/interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -30,7 +31,7 @@ export default class ProductDeleteComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private productsService: ProductsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.productId = this.route.snapshot.paramMap.get('id');
@@ -47,10 +48,10 @@ export default class ProductDeleteComponent implements OnInit, OnDestroy {
 
   loadProductData(): void {
     if (!this.productId) return;
-    
+
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = this.productsService.getById(this.productId).subscribe({
       next: (product) => {
         this.product = product;
@@ -66,10 +67,10 @@ export default class ProductDeleteComponent implements OnInit, OnDestroy {
 
   confirmDelete(): void {
     if (!this.productId) return;
-    
+
     this.isLoading = true;
     this.error = null;
-    
+
     this.productsService.delete(this.productId).subscribe({
       next: () => {
         this.isLoading = false;

@@ -1,7 +1,8 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ProductReviewsService, Review, ProductRatingSummary } from '../../../../core/services/product-reviews.service';
+import { ProductReviewsService } from '../../../../core/services/product-reviews.service';
+import { Review, ProductRatingSummary } from '../../../../core/interfaces/product.interface';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ResenaEditComponent } from '../resena-edit/resena-edit.component';
 import { ResenaDeleteComponent } from '../resena-delete/resena-delete.component';

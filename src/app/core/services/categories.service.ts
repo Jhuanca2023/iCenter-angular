@@ -4,18 +4,8 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { Observable, from, forkJoin } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
-export interface Category {
-  id: string;
-  name: string;
-  description?: string;
-  brand?: string;
-  brand_id?: string;
-  productCount?: number;
-  visible: boolean;
-  image_url?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+import { Category } from '../interfaces';
+export type { Category };
 
 @Injectable({
   providedIn: 'root'

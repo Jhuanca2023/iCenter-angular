@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
-import { ProductsService, Product } from '../../../../core/services/products.service';
+import { ProductsService } from '../../../../core/services/products.service';
+import { Product } from '../../../../core/interfaces';
 import { CategoriesService } from '../../../../core/services/categories.service';
 import { Subscription } from 'rxjs';
 
