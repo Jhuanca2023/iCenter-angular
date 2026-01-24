@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductQuantitySelectorComponent } from '../../components/product-quantity-selector/product-quantity-selector.component';
+import { ProductFavoriteComponent } from '../../components/product-favorite/product-favorite.component';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService } from '../../../../core/services/products.service';
 import { Product, ProductColor, ClientProduct } from '../../../../core/interfaces';
@@ -22,7 +23,8 @@ import { Subscription } from 'rxjs';
     FormsModule,
     ProductQuantitySelectorComponent,
     BreadcrumbsComponent,
-    ResenaListComponent
+    ResenaListComponent,
+    ProductFavoriteComponent
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css'

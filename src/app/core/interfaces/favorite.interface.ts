@@ -1,4 +1,4 @@
-import { ClientProduct } from '../../../core/interfaces/product.interface';
+import { ClientProduct } from './product.interface';
 
 /**
  * Interfaz para representar un producto guardado en favoritos

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FavoritesService } from '../../services/favorites.service';
-import { Favorite, FavoriteFolder } from '../../interfaces/favorite.interface';
+import { FavoritesService } from '../../../../core/services/favorites.service';
+import { Favorite, FavoriteFolder } from '../../../../core/interfaces/favorite.interface';
 import { Subject, takeUntil } from 'rxjs';
 import { ClientProduct } from '../../../../core/interfaces/product.interface';
 import { ProductCardComponent } from '../../../products/components/product-card/product-card.component';

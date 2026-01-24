@@ -146,6 +146,7 @@ export class OrdersService {
       items: (data.order_items || []).map((item: any) => ({
         productId: item.product_id,
         productName: item.products?.name || '',
+        productImage: item.products?.image || '',
         quantity: item.quantity,
         price: parseFloat(item.price),
         subtotal: parseFloat(item.price) * item.quantity,

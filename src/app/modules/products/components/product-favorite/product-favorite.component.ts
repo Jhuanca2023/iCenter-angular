@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FavoritesService } from '../../../../modules/favorites/services/favorites.service';
+import { FavoritesService } from '../../../../core/services/favorites.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -14,6 +14,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class ProductFavoriteComponent implements OnInit, OnDestroy {
   @Input() productId!: string;
   isFavorite = false;
+  favoriteId: string | null = null;
   private destroy$ = new Subject<void>();
 
   constructor(private favoritesService: FavoritesService) { }
@@ -22,7 +23,9 @@ export class ProductFavoriteComponent implements OnInit, OnDestroy {
     this.favoritesService.favorites$
       .pipe(takeUntil(this.destroy$))
       .subscribe(favorites => {
-        this.isFavorite = favorites.some(fav => fav.productId === this.productId);
+        const fav = favorites.find(f => f.productId === this.productId);
+        this.isFavorite = !!fav;
+        this.favoriteId = fav ? fav.id : null;
       });
   }
 
@@ -32,16 +35,8 @@ export class ProductFavoriteComponent implements OnInit, OnDestroy {
   }
 
   toggleFavorite(): void {
-    if (this.isFavorite) {
-      // Find the favorite entry to get its ID
-      this.favoritesService.favorites$
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(favorites => {
-          const favoriteToRemove = favorites.find(fav => fav.productId === this.productId);
-          if (favoriteToRemove) {
-            this.favoritesService.removeFavorite(favoriteToRemove.id).subscribe();
-          }
-        });
+    if (this.isFavorite && this.favoriteId) {
+      this.favoritesService.removeFavorite(this.favoriteId).subscribe();
     } else {
       this.favoritesService.addFavorite(this.productId).subscribe();
     }

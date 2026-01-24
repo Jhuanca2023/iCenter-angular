@@ -22,6 +22,10 @@ export const routes: Routes = [
         loadComponent: () => import('./modules/cart/cart.component').then(m => m.default)
       },
       {
+        path: 'checkout',
+        loadChildren: () => import('./modules/checkout/checkout.module').then(m => m.CheckoutModule)
+      },
+      {
         path: 'perfil',
         loadChildren: () => import('./modules/user/profile/profile.routes').then(m => m.profileRoutes)
       },

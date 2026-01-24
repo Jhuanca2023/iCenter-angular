@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import { AuthUser } from '../../../core/services/auth.service';
-import { getSupabaseClient } from '../../../core/config/supabase.config';
+import { AuthService, AuthUser } from './auth.service';
+import { getSupabaseClient } from '../config/supabase.config';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Observable, from, of, BehaviorSubject, combineLatest } from 'rxjs';
-import { map, switchMap, tap, catchError } from 'rxjs/operators';
-import { AuthService } from '../../../core/services/auth.service';
-import { ProductsService } from '../../../core/services/products.service';
-import { ClientProduct } from '../../../core/interfaces/product.interface';
+import { Observable, from, of, BehaviorSubject } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
+import { ProductsService } from './products.service';
+import { ClientProduct } from '../interfaces/product.interface';
 import { Favorite, FavoriteFolder } from '../interfaces/favorite.interface';
 
 @Injectable({
@@ -46,7 +45,7 @@ export class FavoritesService {
       const favoriteProductIds = data.map(fav => fav.product_id);
       if (favoriteProductIds.length > 0) {
         this.productsService.getProductsByIds(favoriteProductIds).subscribe(
-          products => {
+          (products: ClientProduct[]) => {
             const favoritesWithProducts: Favorite[] = data.map(fav => ({
               id: fav.id,
               productId: fav.product_id,
@@ -54,7 +53,7 @@ export class FavoritesService {
               folderPath: fav.folder_path || '',
               createdAt: fav.created_at,
               updatedAt: fav.updated_at,
-              product: products.find(p => p.id === fav.product_id)
+              product: products.find((p: ClientProduct) => String(p.id) === String(fav.product_id))
             }));
             this._favorites.next(favoritesWithProducts);
           },

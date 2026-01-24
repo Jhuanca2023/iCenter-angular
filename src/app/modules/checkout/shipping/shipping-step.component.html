@@ -1,0 +1,84 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="space-y-6">
+  <div>
+    <h2 class="text-lg font-semibold text-slate-900">Información del cliente</h2>
+    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Nombre completo</label>
+        <input formControlName="fullName" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        <input formControlName="email" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Teléfono</label>
+        <input formControlName="phone" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="text-lg font-semibold text-slate-900">Dirección de envío</h2>
+    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">País</label>
+        <input formControlName="country" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Ciudad</label>
+        <input formControlName="city" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Dirección</label>
+        <input formControlName="addressLine1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium text-slate-700 mb-1">Referencia (opcional)</label>
+        <input formControlName="addressLine2" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Código postal (opcional)</label>
+        <input formControlName="postalCode" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="text-lg font-semibold text-slate-900">Tipo de envío</h2>
+    <div class="mt-3 space-y-2">
+      <label class="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
+        <input type="radio" formControlName="shippingType" value="normal" />
+        <div class="flex-1">
+          <div class="text-sm font-medium text-slate-900">Envío normal</div>
+          <div class="text-xs text-slate-600">{{ shippingNormal | currency:'PEN' }}</div>
+        </div>
+      </label>
+      <label class="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
+        <input type="radio" formControlName="shippingType" value="express" />
+        <div class="flex-1">
+          <div class="text-sm font-medium text-slate-900">Envío express</div>
+          <div class="text-xs text-slate-600">{{ shippingExpress | currency:'PEN' }}</div>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <div class="rounded-lg bg-slate-50 p-4 text-sm">
+    <div class="flex items-center justify-between">
+      <span class="text-slate-600">Subtotal productos</span>
+      <span class="font-semibold text-slate-900">{{ cartTotal | currency:'PEN' }}</span>
+    </div>
+    <div class="mt-2 flex items-center justify-between">
+      <span class="text-slate-600">Envío</span>
+      <span class="font-semibold text-slate-900">{{ shippingCost | currency:'PEN' }}</span>
+    </div>
+    <div class="mt-3 border-t border-slate-200 pt-3 flex items-center justify-between">
+      <span class="text-slate-900 font-semibold">Total</span>
+      <span class="text-slate-900 font-semibold">{{ total | currency:'PEN' }}</span>
+    </div>
+  </div>
+
+  <button type="submit" class="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
+    Continuar al pago
+  </button>
+</form>

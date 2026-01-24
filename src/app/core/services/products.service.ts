@@ -527,6 +527,12 @@ export class ProductsService {
     );
   }
 
+  private getPublicUrl(filePath: string): string {
+    if (!filePath) return '';
+    const { data } = this.supabase.storage.from('products').getPublicUrl(filePath);
+    return data.publicUrl;
+  }
+
   private getProductWithDetails(productData: any): Observable<Product> {
     const productId = productData.id;
 

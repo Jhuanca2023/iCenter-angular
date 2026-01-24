@@ -15,6 +15,7 @@ export interface Order {
 export interface OrderItem {
   productId: string;
   productName: string;
+  productImage?: string;
   quantity: number;
   price: number;
   subtotal: number;
