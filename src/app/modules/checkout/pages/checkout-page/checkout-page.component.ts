@@ -43,7 +43,8 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((cart: CartState) => {
         this.cart = cart;
-        if (this.cart.totalQuantity === 0) {
+        // Solo redirigir si el carrito está vació Y estamos en el paso 1 (antes del pago)
+        if (this.cart.totalQuantity === 0 && this.step === 1) {
           this.router.navigateByUrl('/carrito');
         }
       });
@@ -90,15 +91,18 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // ACTUALIZAR ESTADO PRIMERO
     this.paymentStatus = result.status === 'succeeded' ? 'succeeded' : 'processing';
+    this.step = 3;
     this.error = null;
 
     if (result.status === 'succeeded') {
-      console.log('Payment succeeded! Clearing cart...');
-      this.cartService.clearCart();
+      console.log('Payment succeeded! Order ID:', this.initResponse?.orderId);
+      // Limpiar el carrito después de cambiar el paso para evitar redirección en ngOnInit
+      setTimeout(() => {
+        this.cartService.clearCart();
+      }, 100);
     }
-
-    this.step = 3;
   }
 
   restart(): void {

@@ -87,7 +87,11 @@ export const adminRoutes: Routes = [
   },
   {
     path: 'orders',
-    loadComponent: () => import('./pages/orders/orders.component').then(m => m.default)
+    loadComponent: () => import('./pages/orders/orders.component'),
+  },
+  {
+    path: 'orders/detail/:id',
+    loadComponent: () => import('./pages/orders/order-detail/order-detail.component').then(m => m.AdminOrderDetailComponent)
   },
   {
     path: 'reclamos',
