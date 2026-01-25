@@ -75,9 +75,10 @@
         </div>
         <div class="flex-1">
           <p class="text-sm font-bold text-slate-800">{{ customerInfo.fullName }}</p>
-          <p class="text-xs text-slate-500 leading-relaxed">{{ customerInfo.address }}</p>
-          <p class="text-xs text-slate-500">{{ customerInfo.city }}{{ customerInfo.zip ? ', ' + customerInfo.zip : '' }}
-          </p>
+          <p class="text-xs text-slate-500 leading-relaxed">{{ customerInfo.address.addressLine1 }}{{
+            customerInfo.address.addressLine2 ? ', ' + customerInfo.address.addressLine2 : '' }}</p>
+          <p class="text-xs text-slate-500">{{ customerInfo.address.city }}{{ customerInfo.address.postalCode ? ', ' +
+            customerInfo.address.postalCode : '' }}, {{ customerInfo.address.country }}</p>
           <p class="text-[10px] text-slate-400 mt-1 italic">{{ customerInfo.email }} • {{ customerInfo.phone }}</p>
         </div>
       </div>
