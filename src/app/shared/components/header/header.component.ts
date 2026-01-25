@@ -111,6 +111,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.dropdownTimeout) {
+      clearTimeout(this.dropdownTimeout);
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -157,14 +160,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }, 2000);
   }
 
+  closeCategoriesDropdownImmediately(): void {
+    if (this.dropdownTimeout) {
+      clearTimeout(this.dropdownTimeout);
+      this.dropdownTimeout = null;
+    }
+    this.isCategoriesDropdownOpen = false;
+  }
+
   navigateToCategory(categoryId: string): void {
     this.router.navigate(['/productos'], { queryParams: { categoria: categoryId } });
-    this.closeCategoriesDropdown();
+    this.closeCategoriesDropdownImmediately();
   }
 
   navigateToCategoryByName(categoryName: string): void {
     this.router.navigate(['/productos'], { queryParams: { categoria: categoryName } });
-    this.closeCategoriesDropdown();
+    this.closeCategoriesDropdownImmediately();
   }
 
   navigateToCart(fromMenu: boolean = false): void {

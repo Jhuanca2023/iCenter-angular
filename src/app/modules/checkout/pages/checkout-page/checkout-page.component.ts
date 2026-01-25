@@ -36,7 +36,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private checkoutService: CheckoutService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.cartService.cart$
@@ -81,6 +81,9 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }
 
   onPaymentResult(result: { status: 'processing' | 'succeeded' | 'failed'; message?: string }): void {
+    console.log('Payment result received:', result);
+    console.log('Current initResponse:', this.initResponse);
+
     if (result.status === 'failed') {
       this.paymentStatus = 'failed';
       this.error = result.message || 'El pago falló. Verifica tu tarjeta e intenta nuevamente.';
@@ -91,6 +94,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     this.error = null;
 
     if (result.status === 'succeeded') {
+      console.log('Payment succeeded! Clearing cart...');
       this.cartService.clearCart();
     }
 

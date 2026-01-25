@@ -118,6 +118,7 @@ serve(async (req) => {
                 data: {
                     clientSecret: paymentIntent.client_secret,
                     orderId: order.id,
+                    expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hora de expiración
                     totals: {
                         subtotal,
                         shippingCost,

@@ -37,76 +37,78 @@ serve(async (req) => {
         const paymentIntent = event.data.object
         const paymentIntentId = paymentIntent.id
 
-        console.log(`Pago exitoso: ${paymentIntentId}`)
+        console.log(`Processing successful payment: ${paymentIntentId}`)
 
         // 1. Buscar la orden
         const { data: order, error: findError } = await supabaseAdmin
             .from('orders')
-            .select('id')
+            .select('*') // Obtenemos todo para verificar status
             .eq('payment_intent_id', paymentIntentId)
             .single()
 
         if (findError || !order) {
-            console.error('Orden no encontrada para payment_intent:', paymentIntentId)
-            return new Response('Order not found', { status: 200 }) // Return 200 to acknowledge Stripe
+            console.error('Order not found in DB for PI:', paymentIntentId)
+            return new Response(JSON.stringify({ error: 'Order not found' }), { status: 200 })
+        }
+
+        // Si ya está completada, no hacer nada (prevenir doble descuento de stock)
+        if (order.status === 'Completado') {
+            console.log(`Order ${order.id} already processed. Skipping.`)
+            return new Response(JSON.stringify({ message: 'Already processed' }), { status: 200 })
         }
 
         // 2. Actualizar estado de orden
         const { error: updateError } = await supabaseAdmin
             .from('orders')
-            .update({ status: 'Completado' }) // O 'Pagado'
+            .update({ status: 'Completado' })
             .eq('id', order.id)
 
         if (updateError) {
-            console.error('Error actualizando orden:', updateError)
-            return new Response('Error updating order', { status: 500 })
+            console.error('Error updating order state:', updateError)
+            return new Response(JSON.stringify({ error: 'DB Update Error' }), { status: 500 })
         }
 
         // 3. Reducir stock
-        // Obtenemos los items de la orden
         const { data: items, error: itemsError } = await supabaseAdmin
             .from('order_items')
             .select('product_id, quantity')
             .eq('order_id', order.id)
 
         if (items && !itemsError) {
+            console.log(`Reducing stock for ${items.length} items of order ${order.id}`)
             for (const item of items) {
-                // Llamada RPC o update directo. Update directo es más simple si no hay concurrencia extrema.
-                // Mejor: usar rpc 'decrement_stock' si existiera, pero haremos update directo por ahora.
-
-                // Primero obtener stock actual para seguridad (o usar decrement sql: stock = stock - quantity)
-                // RPC es mejor para atomicidad, pero haremos una consulta simple para este ejemplo.
-
-                // Ojo: Supabase no soporta "stock = stock - x" directamente en JS client update sin rpc.
-                // Vamos a leer y escribir. (O crear una funcion RPC).
-
-                // Vamos a crear una funcion RPC en SQL si queremos ser robustos.
-                // Pero para simplificar en el código "user-side", llamaremos a una funcion RPC si puedo, 
-                // o leeremos y actualizaremos (riesgo de race condition bajo en e-commerce pequeño).
-
-                // Vamos a leer el producto actual
-                const { data: product } = await supabaseAdmin
+                // Get current product
+                const { data: product, error: pError } = await supabaseAdmin
                     .from('products')
-                    .select('stock')
+                    .select('stock, name')
                     .eq('id', item.product_id)
                     .single()
 
                 if (product) {
                     const newStock = Math.max(0, product.stock - item.quantity)
-                    await supabaseAdmin
+                    console.log(`Setting new stock for ${product.name}: ${newStock} (was ${product.stock})`)
+
+                    const { error: stockUpdateError } = await supabaseAdmin
                         .from('products')
                         .update({ stock: newStock })
                         .eq('id', item.product_id)
+
+                    if (stockUpdateError) {
+                        console.error(`Failed to update stock for ${item.product_id}:`, stockUpdateError)
+                    }
+                } else {
+                    console.error(`Product ${item.product_id} not found during stock reduction`)
                 }
             }
+        } else {
+            console.error('No items found for order or items fetch error:', itemsError)
         }
     } else if (event.type === 'payment_intent.payment_failed') {
         const paymentIntent = event.data.object
-        console.log('Pago fallido:', paymentIntent.id)
-        // Podríamos marcar la orden como cancelada o fallida
+        console.warn('Payment failed for PI:', paymentIntent.id)
         await supabaseAdmin
             .from('orders')
-            .update({ status: 'Cancelado' }) // o 'Error Pago'
+            .update({ status: 'Cancelado' })
             .eq('payment_intent_id', paymentIntent.id)
     }
 
