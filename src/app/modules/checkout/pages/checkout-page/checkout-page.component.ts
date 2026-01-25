@@ -30,6 +30,8 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   paymentStatus: 'idle' | 'processing' | 'succeeded' | 'failed' = 'idle';
 
+  orderSummary: { items: any[], customer: any } | null = null;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -44,7 +46,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
       .subscribe((cart: CartState) => {
         this.cart = cart;
         // Solo redirigir si el carrito está vació Y estamos en el paso 1 (antes del pago)
-        if (this.cart.totalQuantity === 0 && this.step === 1) {
+        if (this.cart.totalQuantity === 0 && this.step === 1 && !this.orderSummary) {
           this.router.navigateByUrl('/carrito');
         }
       });
@@ -98,6 +100,13 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
     if (result.status === 'succeeded') {
       console.log('Payment succeeded! Order ID:', this.initResponse?.orderId);
+
+      // Guardar una copia de los items y info del cliente para el resumen ANTES de limpiar el carrito
+      this.orderSummary = {
+        items: [...this.cart.items],
+        customer: { ...this.customerInfo }
+      };
+
       // Limpiar el carrito después de cambiar el paso para evitar redirección en ngOnInit
       setTimeout(() => {
         this.cartService.clearCart();
@@ -110,6 +119,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     this.initResponse = null;
     this.paymentStatus = 'idle';
     this.error = null;
+    this.orderSummary = null;
     this.step = 1;
   }
 }

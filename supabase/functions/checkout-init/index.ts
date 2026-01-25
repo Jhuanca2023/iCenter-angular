@@ -14,22 +14,29 @@ serve(async (req) => {
 
     try {
         const authHeader = req.headers.get('Authorization')
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: authHeader ?? '' } } }
-        )
-
-        let userId: string | null = null
-        if (authHeader) {
-            const { data: { user } } = await supabaseClient.auth.getUser()
-            userId = user?.id || null
-        }
 
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
+
+        let userId: string | null = null
+        if (authHeader) {
+            try {
+                const token = authHeader.replace('Bearer ', '');
+                const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
+
+                if (!userError && user) {
+                    userId = user.id
+                    console.log('User identified via Admin Client:', userId)
+                } else if (userError) {
+                    console.warn('JWT verification handled (invalid or expired):', userError.message)
+                }
+            } catch (authErr: any) {
+                console.error('Critical error during JWT verification:', authErr?.message || 'Unknown error')
+                // We continue as guest if JWT is invalid
+            }
+        }
 
         const { items, customer } = await req.json()
 
@@ -86,7 +93,7 @@ serve(async (req) => {
         const { data: order, error: orderError } = await supabaseAdmin
             .from('orders')
             .insert({
-                user_id: userId, // CRÍTICO: Vincular a usuario logueado
+                user_id: userId,
                 customer_name: customer.fullName,
                 customer_email: customer.email,
                 total: total,
@@ -118,7 +125,7 @@ serve(async (req) => {
                 data: {
                     clientSecret: paymentIntent.client_secret,
                     orderId: order.id,
-                    expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hora de expiración
+                    expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
                     totals: {
                         subtotal,
                         shippingCost,
@@ -132,9 +139,10 @@ serve(async (req) => {
                 status: 200,
             }
         )
-    } catch (error) {
+    } catch (err: any) {
+        console.error('Request processing error:', err.message)
         return new Response(
-            JSON.stringify({ error: error.message }),
+            JSON.stringify({ error: err.message || 'Internal Server Error' }),
             {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 400,

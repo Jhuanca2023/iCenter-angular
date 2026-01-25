@@ -20,29 +20,17 @@
 
       <div *ngIf="isLoading" class="mb-4 text-sm text-slate-600">Procesando...</div>
 
-      <app-shipping-step
-        *ngIf="step === 1"
-        [cartTotal]="cart.totalAmount"
-        (next)="onShippingNext($event)"
-      ></app-shipping-step>
+      <app-shipping-step *ngIf="step === 1" [cartTotal]="cart.totalAmount"
+        (next)="onShippingNext($event)"></app-shipping-step>
 
-      <app-payment-step
-        *ngIf="step === 2"
-        [clientSecret]="initResponse?.clientSecret || ''"
-        [totals]="initResponse?.totals || null"
-        [expiresAt]="initResponse?.expiresAt || ''"
-        [customerEmail]="customerInfo?.email || ''"
-        (back)="onPaymentBack()"
-        (result)="onPaymentResult($event)"
-      ></app-payment-step>
+      <app-payment-step *ngIf="step === 2" [clientSecret]="initResponse?.clientSecret || ''"
+        [totals]="initResponse?.totals || null" [expiresAt]="initResponse?.expiresAt || ''"
+        [customerEmail]="customerInfo?.email || ''" (back)="onPaymentBack()"
+        (result)="onPaymentResult($event)"></app-payment-step>
 
-      <app-review-step
-        *ngIf="step === 3"
-        [orderId]="initResponse?.orderId || ''"
-        [totals]="initResponse?.totals || null"
-        [status]="paymentStatus"
-        (restart)="restart()"
-      ></app-review-step>
+      <app-review-step *ngIf="step === 3" [orderId]="initResponse?.orderId || ''"
+        [totals]="initResponse?.totals || null" [status]="paymentStatus" [orderItems]="orderSummary?.items || []"
+        [customerInfo]="orderSummary?.customer || null" (restart)="restart()"></app-review-step>
     </div>
   </div>
 </div>

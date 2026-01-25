@@ -14,6 +14,8 @@ export class ReviewStepComponent implements OnInit {
   @Input() orderId = '';
   @Input() totals: CheckoutTotals | null = null;
   @Input() status: 'idle' | 'processing' | 'succeeded' | 'failed' = 'idle';
+  @Input() orderItems: any[] = [];
+  @Input() customerInfo: any | null = null;
 
   @Output() restart = new EventEmitter<void>();
 

@@ -28,6 +28,8 @@ export class CheckoutService {
     const session = await this.supabase.auth.getSession();
     const token = session.data.session?.access_token || '';
 
+    console.log('Initiating checkout with token present:', !!token);
+
     const res = await fetch(url, {
       method: 'POST',
       headers: {

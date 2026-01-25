@@ -143,6 +143,7 @@ export class OrdersService {
       date: data.created_at ? new Date(data.created_at).toLocaleDateString('es-PE') : '',
       createdAt: data.created_at ? new Date(data.created_at) : new Date(),
       userId: data.user_id,
+      shippingInfo: data.shipping_info,
       items: (data.order_items || []).map((item: any) => ({
         productId: item.product_id,
         productName: item.products?.name || '',

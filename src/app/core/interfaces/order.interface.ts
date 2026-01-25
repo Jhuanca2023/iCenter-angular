@@ -8,6 +8,7 @@ export interface Order {
   date: string;
   userId?: string;
   items?: OrderItem[];
+  shippingInfo?: any;
   createdAt?: Date;
   updatedAt?: Date;
 }
