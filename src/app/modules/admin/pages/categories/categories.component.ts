@@ -21,9 +21,10 @@ export default class AdminCategoriesComponent implements OnInit, OnDestroy {
     { label: 'Categorías' }
   ];
 
-  searchTerm = '';
   currentPage = 1;
   itemsPerPage = 10;
+  Math = Math;
+  searchTerm = '';
 
   categories: Category[] = [];
   isLoading = false;
@@ -59,7 +60,25 @@ export default class AdminCategoriesComponent implements OnInit, OnDestroy {
     });
   }
 
-  get filteredCategories() {
+  deleteCategory(id: string): void {
+    if (!id) return;
+    if (confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
+      this.categoriesService.delete(id).subscribe({
+        next: () => {
+          this.categories = this.categories.filter(c => c.id !== id);
+          if (this.paginatedCategories.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+          }
+        },
+        error: (err) => {
+          console.error('Error al eliminar la categoría:', err);
+          alert('No se pudo eliminar la categoría.');
+        }
+      });
+    }
+  }
+
+  get filteredCategoriesList() {
     let filtered = [...this.categories];
 
     if (this.searchTerm) {
@@ -77,11 +96,11 @@ export default class AdminCategoriesComponent implements OnInit, OnDestroy {
   get paginatedCategories() {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    return this.filteredCategories.slice(start, end);
+    return this.filteredCategoriesList.slice(start, end);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.filteredCategories.length / this.itemsPerPage);
+    return Math.ceil(this.filteredCategoriesList.length / this.itemsPerPage);
   }
 
   onPageChange(page: number): void {

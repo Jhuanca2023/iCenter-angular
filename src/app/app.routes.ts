@@ -40,6 +40,14 @@ export const routes: Routes = [
       {
         path: 'favoritos',
         loadComponent: () => import('./modules/favorites/components/favorites-page/favorites-page.component').then(m => m.FavoritesPageComponent)
+      },
+      {
+        path: 'nosotros',
+        loadComponent: () => import('./modules/public/nosotros/nosotros.component').then(m => m.default)
+      },
+      {
+        path: 'eventos',
+        loadComponent: () => import('./modules/public/eventos/eventos.component').then(m => m.default)
       }
     ]
   },

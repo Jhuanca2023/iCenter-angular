@@ -6,15 +6,17 @@ import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/compone
 import { Order } from '../../../../core/interfaces';
 import { OrdersService } from '../../../../core/services/orders.service';
 import { Subscription } from 'rxjs';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent, PaginationComponent],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
 export default class AdminOrdersComponent implements OnInit, OnDestroy {
+  Math = Math;
   searchTerm = '';
   selectedStatus = '';
 
@@ -27,6 +29,10 @@ export default class AdminOrdersComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   private subscription?: Subscription;
+
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
 
   constructor(private ordersService: OrdersService) { }
 
@@ -57,9 +63,26 @@ export default class AdminOrdersComponent implements OnInit, OnDestroy {
     });
   }
 
+  deleteOrder(id: string): void {
+    if (confirm('¿Estás seguro de que deseas eliminar este pedido?')) {
+      this.ordersService.delete(id).subscribe({
+        next: () => {
+          this.orders = this.orders.filter(o => o.id !== id);
+          if (this.pagedOrders.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+          }
+        },
+        error: (err) => {
+          console.error('Error al eliminar el pedido:', err);
+          alert('No se pudo eliminar el pedido.');
+        }
+      });
+    }
+  }
+
   statuses = ['Todos', 'Pendiente', 'Completado', 'Cancelado', 'En Proceso'];
 
-  get filteredOrders(): Order[] {
+  get filteredOrdersList(): Order[] {
     let filtered = [...this.orders];
 
     if (this.searchTerm) {
@@ -77,8 +100,32 @@ export default class AdminOrdersComponent implements OnInit, OnDestroy {
     return filtered;
   }
 
+  get pagedOrders(): Order[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredOrdersList.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredOrdersList.length / this.itemsPerPage);
+  }
+
+  get pages(): number[] {
+    const pages = [];
+    for (let i = 1; i <= this.totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedStatus = '';
+    this.currentPage = 1;
   }
 }

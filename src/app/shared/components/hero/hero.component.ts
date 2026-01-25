@@ -24,15 +24,53 @@ export class HeroComponent implements OnInit, OnDestroy {
       this.banners = banners;
       if (this.banners.length === 0) {
         // Banner por defecto si no hay configurados
-        this.banners = [{
-          id: 'default',
-          title: 'Bienvenido a iCenter',
-          subtitle: 'Descubre lo último en tecnología con envío gratis.',
-          image_url: 'assets/img/iphone-banner.png',
-          link_url: '/productos',
-          order_index: 0,
-          is_active: true
-        }];
+        this.banners = [
+          {
+            id: '1',
+            title: 'Sumérgete en el Sonido',
+            subtitle: 'Auriculares cibernéticos inalámbricos de última generación.',
+            image_url: 'https://img.freepik.com/foto-gratis/vida-muerta-auriculares-ciberneticos-inalambricos_23-2151072201.jpg?t=st=1769383787~exp=1769387387~hmac=cea1250dddf0e30d4307a1d9a70cb587e6acc31d731e31d381dc6a443c824d47&w=1060',
+            link_url: '/productos',
+            order_index: 0,
+            is_active: true
+          },
+          {
+            id: '2',
+            title: 'Domina tu Juego',
+            subtitle: 'Configuraciones de escritorio neon para gamers profesionales.',
+            image_url: 'https://img.freepik.com/foto-gratis/configuracion-escritorio-juego-neon-iluminado-gradiente-teclado_23-2149529412.jpg?semt=ais_hybrid&w=740&q=80',
+            link_url: '/productos',
+            order_index: 1,
+            is_active: true
+          },
+          {
+            id: '3',
+            title: 'Realidad Sin Límites',
+            subtitle: 'Explora nuevos mundos con nuestra tecnología de realidad virtual.',
+            image_url: 'https://img.freepik.com/foto-gratis/escuchas-realidad-virtual-juegos-futuristas-alta-tecnologia_23-2151133167.jpg?semt=ais_hybrid&w=740&q=80',
+            link_url: '/productos',
+            order_index: 2,
+            is_active: true
+          },
+          {
+            id: '4',
+            title: 'Estilo Cyberpunk',
+            subtitle: 'Iluminación neon y diseño futurista en cada componente.',
+            image_url: 'https://img.freepik.com/foto-gratis/auriculares-inalambricos-iluminacion-neon-al-estilo-cyberpunk_23-2151074303.jpg?semt=ais_hybrid&w=740&q=80',
+            link_url: '/productos',
+            order_index: 3,
+            is_active: true
+          },
+          {
+            id: '5',
+            title: 'Precisión Absoluta',
+            subtitle: 'Rastreadores y periféricos de alta gama para creadores.',
+            image_url: 'https://img.freepik.com/vector-gratis/rastreadores-estilo-realista_23-2148509776.jpg?semt=ais_hybrid&w=740&q=80',
+            link_url: '/productos',
+            order_index: 4,
+            is_active: true
+          }
+        ];
       }
       this.startAutoplay();
     });

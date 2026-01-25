@@ -25,6 +25,7 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   private subscription?: Subscription;
+  Math = Math;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -61,6 +62,24 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
     });
   }
 
+  deleteBrand(id: string): void {
+    if (!id) return;
+    if (confirm('¿Estás seguro de que deseas eliminar esta marca?')) {
+      this.brandsService.delete(id).subscribe({
+        next: () => {
+          this.brands = this.brands.filter(b => b.id !== id);
+          if (this.paginatedBrands.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+          }
+        },
+        error: (err) => {
+          console.error('Error al eliminar la marca:', err);
+          alert('No se pudo eliminar la marca.');
+        }
+      });
+    }
+  }
+
   private extractCategories(): void {
     const allCategories = new Set<string>();
     this.brands.forEach(brand => {
@@ -87,7 +106,7 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
     return colors[index];
   }
 
-  get filteredBrands() {
+  get filteredBrandsList() {
     let filtered = [...this.brands];
 
     if (this.searchTerm) {
@@ -109,11 +128,11 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
   get paginatedBrands() {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    return this.filteredBrands.slice(start, end);
+    return this.filteredBrandsList.slice(start, end);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.filteredBrands.length / this.itemsPerPage);
+    return Math.ceil(this.filteredBrandsList.length / this.itemsPerPage);
   }
 
   onPageChange(page: number): void {

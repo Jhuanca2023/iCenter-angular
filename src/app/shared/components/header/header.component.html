@@ -55,9 +55,13 @@
           </div>
         </div>
       </div>
-      <a routerLink="/events" routerLinkActive="text-slate-900 font-semibold"
+      <a routerLink="/eventos" routerLinkActive="text-slate-900 font-semibold"
         class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
         Eventos
+      </a>
+      <a routerLink="/nosotros" routerLinkActive="text-slate-900 font-semibold"
+        class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
+        Nosotros
       </a>
       <a *ngIf="!isLoggedIn() && !isAdmin()" routerLink="/auth" routerLinkActive="text-slate-900 font-semibold"
         class="text-slate-400 hover:text-slate-600 transition uppercase text-sm tracking-wide">
@@ -229,8 +233,11 @@
       </a>
     </div>
   </div>
-  <a routerLink="/events" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
+  <a routerLink="/eventos" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
     Eventos
+  </a>
+  <a routerLink="/nosotros" (click)="closeMenu()" class="hover:text-slate-900 transition uppercase">
+    Nosotros
   </a>
 
   <!-- Usuario logueado en móvil -->

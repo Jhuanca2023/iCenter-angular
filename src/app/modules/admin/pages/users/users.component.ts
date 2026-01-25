@@ -16,9 +16,10 @@ import { Subscription } from 'rxjs';
   styleUrl: './users.component.css'
 })
 export default class AdminUsersComponent implements OnInit, OnDestroy {
-  searchTerm = '';
   currentPage = 1;
   itemsPerPage = 10;
+  Math = Math;
+  searchTerm = '';
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -59,9 +60,27 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
     });
   }
 
+  deleteUser(id: string): void {
+    if (!id) return;
+    if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+      this.usersService.delete(id).subscribe({
+        next: () => {
+          this.users = this.users.filter(u => u.id.toString() !== id || u.uuid !== id);
+          if (this.paginatedUsers.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+          }
+        },
+        error: (err) => {
+          console.error('Error al eliminar el usuario:', err);
+          alert('No se pudo eliminar el usuario.');
+        }
+      });
+    }
+  }
+
   selectedFilter: 'todos' | 'activos' | 'inactivos' = 'todos';
 
-  get filteredUsers(): User[] {
+  get filteredUsersList(): User[] {
     let filtered = [...this.users];
 
     if (this.selectedFilter === 'activos') {
@@ -84,11 +103,11 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
   get paginatedUsers(): User[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    return this.filteredUsers.slice(start, end);
+    return this.filteredUsersList.slice(start, end);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.filteredUsers.length / this.itemsPerPage);
+    return Math.ceil(this.filteredUsersList.length / this.itemsPerPage);
   }
 
   onPageChange(page: number): void {

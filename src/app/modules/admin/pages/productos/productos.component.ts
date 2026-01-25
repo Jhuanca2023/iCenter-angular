@@ -7,11 +7,12 @@ import { ProductsService } from '../../../../core/services/products.service';
 import { Product } from '../../../../core/interfaces';
 import { CategoriesService } from '../../../../core/services/categories.service';
 import { Subscription } from 'rxjs';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-admin-productos',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent],
+  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbsComponent, PaginationComponent],
   templateUrl: './productos.component.html',
   styleUrl: './productos.component.css'
 })
@@ -31,6 +32,11 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   private subscription?: Subscription;
+
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+  Math = Math;
 
   constructor(
     private productsService: ProductsService,
@@ -65,6 +71,24 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
     });
   }
 
+  deleteProduct(id: string): void {
+    if (!id) return;
+    if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+      this.productsService.delete(id).subscribe({
+        next: () => {
+          this.products = this.products.filter(p => p.id !== id);
+          if (this.pagedProducts.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+          }
+        },
+        error: (err) => {
+          console.error('Error al eliminar el producto:', err);
+          alert('No se pudo eliminar el producto.');
+        }
+      });
+    }
+  }
+
   loadCategories(): void {
     this.categoriesService.getAll().subscribe({
       next: (categories) => {
@@ -80,7 +104,7 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
     });
   }
 
-  get filteredProducts() {
+  get filteredProductsList() {
     let filtered = [...this.products];
 
     if (this.searchTerm) {
@@ -104,10 +128,24 @@ export default class AdminProductosComponent implements OnInit, OnDestroy {
     return filtered;
   }
 
+  get pagedProducts(): Product[] {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredProductsList.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredProductsList.length / this.itemsPerPage);
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+  }
+
   clearFilters(): void {
     this.searchTerm = '';
     this.selectedCategory = '';
     this.selectedStatus = '';
+    this.currentPage = 1;
   }
 
   getCategory(product: Product): string {
