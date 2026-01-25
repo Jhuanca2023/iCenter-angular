@@ -21,21 +21,25 @@ export class CheckoutService {
 
     const url = `${environment.supabaseUrl}/functions/v1/checkout-init`;
 
-    // Usamos fetch directo para evitar que el cliente de Supabase inyecte un token de sesión roto/expirado
-    // que está causando el error 401 Unauthorized.
-    return from(
-      fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': environment.supabaseAnonKey
-        },
-        body: JSON.stringify({ customer, items })
-      }).then(async (res) => {
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.error || 'Error en el servidor');
-        return result.data as CheckoutInitResponse;
-      })
-    );
+    return from(this.getInitCheckoutRequest(url, customer, items));
+  }
+
+  private async getInitCheckoutRequest(url: string, customer: any, items: any[]): Promise<CheckoutInitResponse> {
+    const session = await this.supabase.auth.getSession();
+    const token = session.data.session?.access_token || '';
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': environment.supabaseAnonKey,
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ customer, items })
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Error en el servidor');
+    return result.data as CheckoutInitResponse;
   }
 }

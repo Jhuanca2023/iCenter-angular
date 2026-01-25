@@ -13,15 +13,19 @@ serve(async (req) => {
     }
 
     try {
+        const authHeader = req.headers.get('Authorization')
         const supabaseClient = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '', // Usar Service Role key si es necesario insertar orders protegidas, pero anon suele bastar si RLS lo permite. Mejor usar Service Role para backend operations
-            { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } } }
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            { global: { headers: { Authorization: authHeader ?? '' } } }
         )
 
-        // Para operaciones administrativas (insertar orden, reducir stock), a veces es mejor usar el Service Role client
-        // Pero aquí usaremos el cliente con contexto de usuario, o service role si el usuario es anonimo.
-        // Usaremos Service Role para asegurar acceso a DB
+        let userId: string | null = null
+        if (authHeader) {
+            const { data: { user } } = await supabaseClient.auth.getUser()
+            userId = user?.id || null
+        }
+
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -30,7 +34,7 @@ serve(async (req) => {
         const { items, customer } = await req.json()
 
         // 1. Validar items y calcular precio real desde la base de datos
-        let calculatedTotal = 0
+        let subtotal = 0
         const orderItemsData = []
 
         for (const item of items) {
@@ -47,7 +51,7 @@ serve(async (req) => {
             const unitPrice = (product.on_sale && product.sale_price) ? product.sale_price : product.price
             const quantity = item.quantity
 
-            calculatedTotal += Number(unitPrice) * quantity
+            subtotal += Number(unitPrice) * quantity
 
             orderItemsData.push({
                 product_id: product.id,
@@ -58,7 +62,7 @@ serve(async (req) => {
 
         // 2. Calcular envío
         const shippingCost = customer.shippingType === 'express' ? 25.00 : 15.00
-        calculatedTotal += shippingCost
+        const total = subtotal + shippingCost
 
         // 3. Inicializar Stripe
         const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
@@ -68,32 +72,34 @@ serve(async (req) => {
 
         // 4. Crear PaymentIntent
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(calculatedTotal * 100), // En centavos
-            currency: 'pen', // O la moneda que usen (USD, PEN, etc). Asumimos Soles o USD. El prompt no especifica moneda, pero 'country: Peru' sugiere PEN o USD.
+            amount: Math.round(total * 100),
+            currency: 'pen',
             automatic_payment_methods: { enabled: true },
             metadata: {
                 customer_email: customer.email,
-                customer_name: customer.fullName
+                customer_name: customer.fullName,
+                user_id: userId || 'anonymous'
             }
         })
 
-        // 5. Crear la orden en Supabase (Estado Pendiente)
+        // 5. Crear la orden en Supabase (Incluyendo user_id)
         const { data: order, error: orderError } = await supabaseAdmin
             .from('orders')
             .insert({
+                user_id: userId, // CRÍTICO: Vincular a usuario logueado
                 customer_name: customer.fullName,
                 customer_email: customer.email,
-                total: calculatedTotal,
-                status: 'Pendiente', // O 'En proceso'
+                total: total,
+                status: 'Pendiente',
                 payment_intent_id: paymentIntent.id,
-                shipping_info: customer // Guardamos todo el objeto de envío
+                shipping_info: customer
             })
             .select()
             .single()
 
         if (orderError) throw new Error(`Error creando orden: ${orderError.message}`)
 
-        // 6. Insertar items de la orden
+        // 6. Insertar items
         const itemsToInsert = orderItemsData.map(i => ({
             order_id: order.id,
             product_id: i.product_id,
@@ -112,7 +118,12 @@ serve(async (req) => {
                 data: {
                     clientSecret: paymentIntent.client_secret,
                     orderId: order.id,
-                    amount: calculatedTotal
+                    totals: {
+                        subtotal,
+                        shippingCost,
+                        total,
+                        currency: 'PEN'
+                    }
                 }
             }),
             {

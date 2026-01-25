@@ -18,6 +18,7 @@ export class AdminLayoutComponent implements OnInit {
     { name: 'Marcas', path: '/admin/marcas', icon: 'brands' },
     { name: 'Usuarios', path: '/admin/users', icon: 'users' },
     { name: 'Pedidos', path: '/admin/orders', icon: 'orders' },
+    { name: 'Banners', path: '/admin/banners', icon: 'banners' },
     {
       name: 'Reclamos',
       path: '/admin/reclamos',
@@ -132,7 +133,7 @@ export class AdminLayoutComponent implements OnInit {
     }
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize(): void {
     if (window.innerWidth >= 768) {
       this.isSidebarOpen = false;

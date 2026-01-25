@@ -23,6 +23,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: AuthUser | null = null;
   cartQuantity = 0;
   cartTotal = 0;
+  private dropdownTimeout: any;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -136,15 +137,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   toggleCategoriesDropdown(): void {
-    this.isCategoriesDropdownOpen = !this.isCategoriesDropdownOpen;
+    if (this.isCategoriesDropdownOpen) {
+      this.closeCategoriesDropdown();
+    } else {
+      this.isCategoriesDropdownOpen = true;
+      if (this.dropdownTimeout) clearTimeout(this.dropdownTimeout);
+    }
   }
 
   openCategoriesDropdown(): void {
+    if (this.dropdownTimeout) clearTimeout(this.dropdownTimeout);
     this.isCategoriesDropdownOpen = true;
   }
 
   closeCategoriesDropdown(): void {
-    this.isCategoriesDropdownOpen = false;
+    if (this.dropdownTimeout) clearTimeout(this.dropdownTimeout);
+    this.dropdownTimeout = setTimeout(() => {
+      this.isCategoriesDropdownOpen = false;
+    }, 2000);
   }
 
   navigateToCategory(categoryId: string): void {

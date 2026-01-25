@@ -135,5 +135,9 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/profile/profile-security/profile-security.component').then(m => m.AdminProfileSecurityComponent)
       }
     ]
+  },
+  {
+    path: 'banners',
+    loadComponent: () => import('./pages/banners/banners.component').then(m => m.BannersComponent)
   }
 ];
