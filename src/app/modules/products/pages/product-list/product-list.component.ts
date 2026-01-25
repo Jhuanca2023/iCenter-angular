@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 import { ProductSearchComponent } from '../../components/product-search/product-search.component';
@@ -44,16 +44,28 @@ export default class ProductListComponent implements OnInit, OnDestroy {
 
   categories: string[] = [];
   brands: string[] = [];
-  
+
   // Estado temporal para el modal
   tempSelectedCategories: string[] = [];
   tempSelectedBrands: string[] = [];
-  tempPriceRange = { min: 0, max: 5000 };
+  tempPriceRange = { min: 0, max: 10000 };
 
-  constructor(private productsService: ProductsService) {}
+  constructor(
+    private productsService: ProductsService,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit(): void {
-    this.loadProducts();
+    // Escuchar cambios en query params
+    this.subscription = this.route.queryParams.subscribe(params => {
+      const categoryFromUrl = params['categoria'];
+      if (categoryFromUrl) {
+        // Asumimos que es un ID o Nombre. El servicio searchProducts filtra por nombres.
+        // Si queremos filtrar por ID necesitamos ajustar la lógica de applyFilters.
+        this.currentFilters.categories = [categoryFromUrl];
+      }
+      this.loadProducts();
+    });
   }
 
   ngOnDestroy(): void {
@@ -65,12 +77,12 @@ export default class ProductListComponent implements OnInit, OnDestroy {
   loadProducts(): void {
     this.isLoading = true;
     this.error = null;
-    
-    this.subscription = this.productsService.searchProducts().subscribe({
+
+    this.productsService.searchProducts().subscribe({
       next: (response) => {
         this.allProducts = response.products;
-        this.filteredProducts = [...this.allProducts];
         this.extractCategoriesAndBrands();
+        this.applyFilters(); // Aplicar filtros iniciales (incluyendo los de URL)
         this.isLoading = false;
       },
       error: (err) => {
@@ -84,14 +96,14 @@ export default class ProductListComponent implements OnInit, OnDestroy {
   private extractCategoriesAndBrands(): void {
     const uniqueCategories = new Set<string>();
     const uniqueBrands = new Set<string>();
-    
+
     this.allProducts.forEach(product => {
       if (product.category_names && product.category_names.length > 0) {
         product.category_names.forEach((catName: string) => uniqueCategories.add(catName));
       }
       if ((product as any).brand) uniqueBrands.add((product as any).brand);
     });
-    
+
     this.categories = Array.from(uniqueCategories).sort();
     this.brands = Array.from(uniqueBrands).sort();
   }
@@ -119,18 +131,17 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     this.currentFilters = {};
     this.tempSelectedCategories = [];
     this.tempSelectedBrands = [];
-    this.tempPriceRange = { min: 0, max: 5000 };
+    this.tempPriceRange = { min: 0, max: 10000 };
     this.applyFilters();
   }
 
   openFilterModal(): void {
     this.isFilterModalOpen = true;
-    // Sincronizar estado temporal con filtros actuales
     this.tempSelectedCategories = [...(this.currentFilters.categories || [])];
     this.tempSelectedBrands = [...(this.currentFilters.brands || [])];
     this.tempPriceRange = {
       min: this.currentFilters.minPrice || 0,
-      max: this.currentFilters.maxPrice || 5000
+      max: this.currentFilters.maxPrice || 10000
     };
   }
 
@@ -188,11 +199,14 @@ export default class ProductListComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Aplicar filtros
+    // Aplicar filtros de categoría (soporta ID o nombre)
     if (this.currentFilters.categories && this.currentFilters.categories.length > 0) {
-      products = products.filter(p =>
-        p.category_names && p.category_names.some(catName => this.currentFilters.categories!.includes(catName))
-      );
+      products = products.filter(p => {
+        // Verificar contra nombres
+        const matchesName = p.category_names && p.category_names.some(catName => this.currentFilters.categories!.includes(catName));
+        // Verificar contra ID (si el servicio lo incluyera en ClientProduct, por ahora usamos category_names)
+        return matchesName;
+      });
     }
 
     if (this.currentFilters.minPrice !== undefined) {
