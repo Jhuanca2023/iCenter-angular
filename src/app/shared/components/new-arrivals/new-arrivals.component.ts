@@ -69,13 +69,13 @@ export class NewArrivalsComponent implements AfterViewInit, OnInit, OnDestroy {
         this.categories = categories.slice(0, 10).map((cat, index) => ({
           id: cat.id,
           name: cat.name,
-          count: 0,
+          count: cat.productCount || 0,
           color: colors[index % colors.length],
-          active: index === 1
+          active: index === 0
         }));
 
         if (this.categories.length > 0) {
-          this.loadProducts();
+          this.loadProducts(this.categories[0].name);
         }
       },
       error: (err) => {
