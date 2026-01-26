@@ -166,7 +166,7 @@
         </div>
     </section>
 
-    <!-- Gallery Section (Improved from previous) -->
+    <!-- Gallery Section (Improved for Mobile - Side by Side) -->
     <section class="py-32 bg-slate-900 overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 mb-20 text-center">
             <h2 class="text-4xl md:text-5xl font-black text-white mb-4">Capturando la <span
@@ -174,23 +174,42 @@
             <p class="text-slate-400 text-lg">Revive los momentos más impactantes de nuestra historia.</p>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-4 h-[600px] px-4">
-            <div class="flex-1 rounded-[2rem] overflow-hidden group relative">
+        <!-- Horizontal Scrollable / Two columns on mobile -->
+        <div class="flex flex-row md:flex-row gap-4 h-[300px] md:h-[600px] px-4 overflow-x-auto snap-x no-scrollbar">
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
                 <img src="https://images.unsplash.com/photo-119368472026-dc26f70a9b76?auto=format&fit=crop&q=80&w=800"
                     alt="Gallery 1" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
                 <div class="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
                 </div>
             </div>
-            <div class="flex-[1.5] rounded-[2rem] overflow-hidden group relative">
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-[1.5] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
                 <img src="https://img.freepik.com/vector-gratis/rastreadores-estilo-realista_23-2148509776.jpg?semt=ais_hybrid&w=740&q=80"
                     alt="Gallery 2" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
                 <div class="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
                 </div>
             </div>
-            <div class="flex-1 rounded-[2rem] overflow-hidden group relative">
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
                 <img src="https://images.unsplash.com/photo-1555212697-194d092e3b8f?auto=format&fit=crop&q=80&w=800"
                     alt="Gallery 3" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
                 <div class="absolute inset-0 bg-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+            </div>
+            <!-- Extra images for more content -->
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
+                <img src="https://images.unsplash.com/photo-1540575861501-7ad0582373f2?auto=format&fit=crop&q=80&w=800"
+                    alt="Gallery 4" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                <div class="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+            </div>
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
+                <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800"
+                    alt="Gallery 5" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                <div class="absolute inset-0 bg-fuchsia-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
                 </div>
             </div>
         </div>
