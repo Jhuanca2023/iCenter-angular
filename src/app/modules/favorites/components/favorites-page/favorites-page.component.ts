@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+// Re-importing to clear potential compilation cache issues
 import { CommonModule } from '@angular/common';
 import { FavoritesService } from '../../../../core/services/favorites.service';
 import { Favorite, FavoriteFolder } from '../../../../core/interfaces/favorite.interface';

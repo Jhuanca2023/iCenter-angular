@@ -1,8 +1,10 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
+// Force rebuild
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ProductFavoriteComponent } from '../product-favorite/product-favorite.component';
 import { CartService } from '../../../../core/services/cart.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { ClientProduct } from '../../../../core/interfaces/product.interface';
 
 @Component({
@@ -16,7 +18,11 @@ import { ClientProduct } from '../../../../core/interfaces/product.interface';
 export class ProductCardComponent {
   @Input() product!: ClientProduct;
 
-  constructor(private cartService: CartService) { }
+  constructor(
+    private cartService: CartService,
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   get hasDiscount(): boolean {
     return !!(this.product.onSale && this.product.salePrice);
@@ -49,6 +55,12 @@ export class ProductCardComponent {
   }
 
   addToCart(): void {
+    if (!this.authService.isAuthenticated()) {
+      alert('Debes iniciar sesión para agregar productos al carrito.');
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
     this.cartService.addItem(
       {
         id: this.product.id,

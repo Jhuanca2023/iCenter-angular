@@ -8,6 +8,8 @@ import { FilterBarComponent, FilterOptions } from '../../components/filter-bar/f
 import { ProductSortComponent, SortOption } from '../../components/product-sort/product-sort.component';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService } from '../../../../core/services/products.service';
+import { CategoriesService } from '../../../../core/services/categories.service';
+import { BrandsService } from '../../../../core/services/brands.service';
 import { ClientProduct } from '../../../../core/interfaces/product.interface';
 import { Subscription } from 'rxjs';
 
@@ -52,10 +54,14 @@ export default class ProductListComponent implements OnInit, OnDestroy {
 
   constructor(
     private productsService: ProductsService,
+    private categoriesService: CategoriesService,
+    private brandsService: BrandsService,
     private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
+    this.loadFiltersData();
+
     // Escuchar cambios en query params
     this.subscription = this.route.queryParams.subscribe(params => {
       const categoryFromUrl = params['categoria'];
@@ -74,6 +80,24 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadFiltersData(): void {
+    // Cargar todas las categorías
+    this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.categories = categories.map(c => c.name).sort();
+      },
+      error: (err) => console.error('Error cargando categorías para filtros:', err)
+    });
+
+    // Cargar todas las marcas
+    this.brandsService.getAll().subscribe({
+      next: (brands) => {
+        this.brands = brands.map(b => b.name).sort();
+      },
+      error: (err) => console.error('Error cargando marcas para filtros:', err)
+    });
+  }
+
   loadProducts(): void {
     this.isLoading = true;
     this.error = null;
@@ -81,7 +105,7 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     this.productsService.searchProducts().subscribe({
       next: (response) => {
         this.allProducts = response.products;
-        this.extractCategoriesAndBrands();
+        // Ya no extraemos de los productos, usamos la lista maestra cargada en loadFiltersData
         this.applyFilters(); // Aplicar filtros iniciales (incluyendo los de URL)
         this.isLoading = false;
       },
@@ -91,21 +115,6 @@ export default class ProductListComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
-  }
-
-  private extractCategoriesAndBrands(): void {
-    const uniqueCategories = new Set<string>();
-    const uniqueBrands = new Set<string>();
-
-    this.allProducts.forEach(product => {
-      if (product.category_names && product.category_names.length > 0) {
-        product.category_names.forEach((catName: string) => uniqueCategories.add(catName));
-      }
-      if ((product as any).brand) uniqueBrands.add((product as any).brand);
-    });
-
-    this.categories = Array.from(uniqueCategories).sort();
-    this.brands = Array.from(uniqueBrands).sort();
   }
 
   onSearchChange(term: string): void {
@@ -220,6 +229,13 @@ export default class ProductListComponent implements OnInit, OnDestroy {
       products = products.filter(p => {
         const finalPrice = p.onSale && p.salePrice ? p.salePrice : p.price;
         return finalPrice <= this.currentFilters.maxPrice!;
+      });
+    }
+
+    // Aplicar filtros de marca
+    if (this.currentFilters.brands && this.currentFilters.brands.length > 0) {
+      products = products.filter(p => {
+        return p.brand && this.currentFilters.brands!.includes(p.brand);
       });
     }
 
