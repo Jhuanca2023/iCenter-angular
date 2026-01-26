@@ -157,7 +157,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.dropdownTimeout) clearTimeout(this.dropdownTimeout);
     this.dropdownTimeout = setTimeout(() => {
       this.isCategoriesDropdownOpen = false;
-    }, 2000);
+    }, 300);
   }
 
   closeCategoriesDropdownImmediately(): void {
@@ -193,6 +193,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   navigateToRegister(): void {
     this.router.navigate(['/auth/register']);
     this.closeMenu();
+  }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    if (this.isCategoriesDropdownOpen) {
+      this.closeCategoriesDropdownImmediately();
+    }
   }
 
   @HostListener('document:click', ['$event'])
