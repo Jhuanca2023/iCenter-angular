@@ -256,7 +256,6 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
 
   addItemToCart(): void {
     if (!this.authService.isAuthenticated()) {
-      alert('Debes iniciar sesión para agregar productos al carrito.');
       this.router.navigate(['/auth/login']);
       return;
     }
@@ -279,7 +278,6 @@ export default class ProductDetailComponent implements OnInit, OnDestroy {
 
   buyNow(): void {
     if (!this.authService.isAuthenticated()) {
-      alert('Debes iniciar sesión para comprar.');
       this.router.navigate(['/auth/login']);
       return;
     }

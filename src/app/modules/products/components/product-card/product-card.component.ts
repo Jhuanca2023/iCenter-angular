@@ -56,7 +56,6 @@ export class ProductCardComponent {
 
   addToCart(): void {
     if (!this.authService.isAuthenticated()) {
-      alert('Debes iniciar sesión para agregar productos al carrito.');
       this.router.navigate(['/auth/login']);
       return;
     }
