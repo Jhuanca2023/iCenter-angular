@@ -1,27 +1,17 @@
 import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 import { ProductSearchComponent } from '../../components/product-search/product-search.component';
 import { FilterBarComponent, FilterOptions } from '../../components/filter-bar/filter-bar.component';
 import { ProductSortComponent, SortOption } from '../../components/product-sort/product-sort.component';
+import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { ProductsService } from '../../../../core/services/products.service';
+import { CategoriesService } from '../../../../core/services/categories.service';
+import { BrandsService } from '../../../../core/services/brands.service';
+import { ClientProduct } from '../../../../core/interfaces/product.interface';
 import { Subscription } from 'rxjs';
-
-interface Product {
-  id: number | string; // Permitir string (UUID) o number
-  name: string;
-  category: string;
-  price: number;
-  originalPrice?: number;
-  salePrice?: number;
-  onSale?: boolean;
-  rating: number;
-  reviews: number;
-  image: string;
-  description?: string;
-}
 
 @Component({
   selector: 'app-product-list',
@@ -33,14 +23,19 @@ interface Product {
     ProductCardComponent,
     ProductSearchComponent,
     FilterBarComponent,
-    ProductSortComponent
+    ProductSortComponent,
+    BreadcrumbsComponent
   ],
   templateUrl: './product-list.component.html',
   changeDetection: ChangeDetectionStrategy.Default
 })
 export default class ProductListComponent implements OnInit, OnDestroy {
-  allProducts: Product[] = [];
-  filteredProducts: Product[] = [];
+  allProducts: ClientProduct[] = [];
+  filteredProducts: ClientProduct[] = [];
+  breadcrumbs: BreadcrumbItem[] = [
+    { label: 'Inicio', route: '/' },
+    { label: 'Productos' }
+  ];
   isLoading = false;
   error: string | null = null;
   private subscription?: Subscription;
@@ -51,16 +46,32 @@ export default class ProductListComponent implements OnInit, OnDestroy {
 
   categories: string[] = [];
   brands: string[] = [];
-  
+
   // Estado temporal para el modal
   tempSelectedCategories: string[] = [];
   tempSelectedBrands: string[] = [];
-  tempPriceRange = { min: 0, max: 5000 };
+  tempPriceRange = { min: 0, max: 10000 };
 
-  constructor(private productsService: ProductsService) {}
+  constructor(
+    private productsService: ProductsService,
+    private categoriesService: CategoriesService,
+    private brandsService: BrandsService,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit(): void {
-    this.loadProducts();
+    this.loadFiltersData();
+
+    // Escuchar cambios en query params
+    this.subscription = this.route.queryParams.subscribe(params => {
+      const categoryFromUrl = params['categoria'];
+      if (categoryFromUrl) {
+        // Asumimos que es un ID o Nombre. El servicio searchProducts filtra por nombres.
+        // Si queremos filtrar por ID necesitamos ajustar la lógica de applyFilters.
+        this.currentFilters.categories = [categoryFromUrl];
+      }
+      this.loadProducts();
+    });
   }
 
   ngOnDestroy(): void {
@@ -69,15 +80,33 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     }
   }
 
+  loadFiltersData(): void {
+    // Cargar todas las categorías
+    this.categoriesService.getAll().subscribe({
+      next: (categories) => {
+        this.categories = categories.map(c => c.name).sort();
+      },
+      error: (err) => console.error('Error cargando categorías para filtros:', err)
+    });
+
+    // Cargar todas las marcas
+    this.brandsService.getAll().subscribe({
+      next: (brands) => {
+        this.brands = brands.map(b => b.name).sort();
+      },
+      error: (err) => console.error('Error cargando marcas para filtros:', err)
+    });
+  }
+
   loadProducts(): void {
     this.isLoading = true;
     this.error = null;
-    
-    this.subscription = this.productsService.searchProducts().subscribe({
+
+    this.productsService.searchProducts().subscribe({
       next: (response) => {
         this.allProducts = response.products;
-        this.filteredProducts = [...this.allProducts];
-        this.extractCategoriesAndBrands();
+        // Ya no extraemos de los productos, usamos la lista maestra cargada en loadFiltersData
+        this.applyFilters(); // Aplicar filtros iniciales (incluyendo los de URL)
         this.isLoading = false;
       },
       error: (err) => {
@@ -86,19 +115,6 @@ export default class ProductListComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
-  }
-
-  private extractCategoriesAndBrands(): void {
-    const uniqueCategories = new Set<string>();
-    const uniqueBrands = new Set<string>();
-    
-    this.allProducts.forEach(product => {
-      if (product.category) uniqueCategories.add(product.category);
-      if ((product as any).brand) uniqueBrands.add((product as any).brand);
-    });
-    
-    this.categories = Array.from(uniqueCategories).sort();
-    this.brands = Array.from(uniqueBrands).sort();
   }
 
   onSearchChange(term: string): void {
@@ -111,8 +127,7 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  onFavoriteToggle(event: { productId: number; isFavorite: boolean }): void {
-    // TODO: Implementar lógica de favoritos cuando conectemos backend
+  onFavoriteToggle(event: { productId: number | string; isFavorite: boolean }): void {
     console.log('Favorite toggled:', event);
   }
 
@@ -125,18 +140,17 @@ export default class ProductListComponent implements OnInit, OnDestroy {
     this.currentFilters = {};
     this.tempSelectedCategories = [];
     this.tempSelectedBrands = [];
-    this.tempPriceRange = { min: 0, max: 5000 };
+    this.tempPriceRange = { min: 0, max: 10000 };
     this.applyFilters();
   }
 
   openFilterModal(): void {
     this.isFilterModalOpen = true;
-    // Sincronizar estado temporal con filtros actuales
     this.tempSelectedCategories = [...(this.currentFilters.categories || [])];
     this.tempSelectedBrands = [...(this.currentFilters.brands || [])];
     this.tempPriceRange = {
       min: this.currentFilters.minPrice || 0,
-      max: this.currentFilters.maxPrice || 5000
+      max: this.currentFilters.maxPrice || 10000
     };
   }
 
@@ -194,9 +208,14 @@ export default class ProductListComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Aplicar filtros
+    // Aplicar filtros de categoría (soporta ID o nombre)
     if (this.currentFilters.categories && this.currentFilters.categories.length > 0) {
-      products = products.filter(p => this.currentFilters.categories!.includes(p.category));
+      products = products.filter(p => {
+        // Verificar contra nombres
+        const matchesName = p.category_names && p.category_names.some(catName => this.currentFilters.categories!.includes(catName));
+        // Verificar contra ID (si el servicio lo incluyera en ClientProduct, por ahora usamos category_names)
+        return matchesName;
+      });
     }
 
     if (this.currentFilters.minPrice !== undefined) {
@@ -213,13 +232,20 @@ export default class ProductListComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Aplicar filtros de marca
+    if (this.currentFilters.brands && this.currentFilters.brands.length > 0) {
+      products = products.filter(p => {
+        return p.brand && this.currentFilters.brands!.includes(p.brand);
+      });
+    }
+
     // Aplicar ordenamiento
     products = this.sortProducts(products, this.currentSort);
 
     this.filteredProducts = products;
   }
 
-  private sortProducts(products: Product[], sort: SortOption): Product[] {
+  private sortProducts(products: ClientProduct[], sort: SortOption): ClientProduct[] {
     const sorted = [...products];
     switch (sort) {
       case 'price-asc':

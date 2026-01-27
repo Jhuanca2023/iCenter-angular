@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
-import { User } from '../../interfaces/user.interface';
+import { User } from '../../../../core/interfaces/user.interface';
 import { UsersService } from '../../../../core/services/users.service';
 import { Subscription } from 'rxjs';
 
@@ -16,9 +16,10 @@ import { Subscription } from 'rxjs';
   styleUrl: './users.component.css'
 })
 export default class AdminUsersComponent implements OnInit, OnDestroy {
-  searchTerm = '';
   currentPage = 1;
   itemsPerPage = 10;
+  Math = Math;
+  searchTerm = '';
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
@@ -30,7 +31,7 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
   error: string | null = null;
   private subscription?: Subscription;
 
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -45,7 +46,7 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
   loadUsers(): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = this.usersService.getAll().subscribe({
       next: (users) => {
         this.users = users;
@@ -59,20 +60,38 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
     });
   }
 
+  deleteUser(id: string): void {
+    if (!id) return;
+    if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+      this.usersService.delete(id).subscribe({
+        next: () => {
+          this.users = this.users.filter(u => u.id.toString() !== id || u.uuid !== id);
+          if (this.paginatedUsers.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+          }
+        },
+        error: (err) => {
+          console.error('Error al eliminar el usuario:', err);
+          alert('No se pudo eliminar el usuario.');
+        }
+      });
+    }
+  }
+
   selectedFilter: 'todos' | 'activos' | 'inactivos' = 'todos';
 
-  get filteredUsers(): User[] {
+  get filteredUsersList(): User[] {
     let filtered = [...this.users];
-    
+
     if (this.selectedFilter === 'activos') {
       filtered = filtered.filter(u => u.status === 'Activo');
     } else if (this.selectedFilter === 'inactivos') {
       filtered = filtered.filter(u => u.status === 'Inactivo');
     }
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(u => 
+      filtered = filtered.filter(u =>
         u.name.toLowerCase().includes(term) ||
         u.email.toLowerCase().includes(term)
       );
@@ -84,11 +103,11 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
   get paginatedUsers(): User[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    return this.filteredUsers.slice(start, end);
+    return this.filteredUsersList.slice(start, end);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.filteredUsers.length / this.itemsPerPage);
+    return Math.ceil(this.filteredUsersList.length / this.itemsPerPage);
   }
 
   onPageChange(page: number): void {
@@ -141,7 +160,7 @@ export default class AdminUsersComponent implements OnInit, OnDestroy {
   }
 
   getAuthProviderBadgeClass(user: User): string {
-    return user.authProvider === 'google' 
+    return user.authProvider === 'google'
       ? 'px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800'
       : 'px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800';
   }

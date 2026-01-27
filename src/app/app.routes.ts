@@ -18,12 +18,36 @@ export const routes: Routes = [
         children: productsRoutes
       },
       {
+        path: 'carrito',
+        loadComponent: () => import('./modules/cart/cart.component').then(m => m.default)
+      },
+      {
+        path: 'checkout',
+        loadChildren: () => import('./modules/checkout/checkout.module').then(m => m.CheckoutModule)
+      },
+      {
         path: 'perfil',
         loadChildren: () => import('./modules/user/profile/profile.routes').then(m => m.profileRoutes)
       },
       {
         path: 'pedidos',
         loadChildren: () => import('./modules/user/orders/orders.routes').then(m => m.ordersRoutes)
+      },
+      {
+        path: 'complaint-book',
+        loadChildren: () => import('./modules/claims/claims.routes').then(m => m.claimsRoutes)
+      },
+      {
+        path: 'favoritos',
+        loadComponent: () => import('./modules/favorites/components/favorites-page/favorites-page.component').then(m => m.FavoritesPageComponent)
+      },
+      {
+        path: 'nosotros',
+        loadComponent: () => import('./modules/public/nosotros/nosotros.component').then(m => m.default)
+      },
+      {
+        path: 'eventos',
+        loadComponent: () => import('./modules/public/eventos/eventos.component').then(m => m.default)
       }
     ]
   },

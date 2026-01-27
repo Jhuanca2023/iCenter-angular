@@ -1,21 +1,11 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
+// Force rebuild
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ProductFavoriteComponent } from '../product-favorite/product-favorite.component';
-
-interface Product {
-  id: number | string; // Permitir string (UUID) o number
-  name: string;
-  category: string;
-  price: number;
-  originalPrice?: number;
-  salePrice?: number;
-  onSale?: boolean;
-  rating: number;
-  reviews: number;
-  image: string;
-  description?: string;
-}
+import { CartService } from '../../../../core/services/cart.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { ClientProduct } from '../../../../core/interfaces/product.interface';
 
 @Component({
   selector: 'app-product-card',
@@ -26,29 +16,26 @@ interface Product {
   encapsulation: ViewEncapsulation.None
 })
 export class ProductCardComponent {
-  @Input() product!: Product;
+  @Input() product!: ClientProduct;
 
-  getStarsArray(rating: number): number[] {
-    return Array.from({ length: 5 }, (_, i) => i < rating ? 1 : 0);
-  }
+  constructor(
+    private cartService: CartService,
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   get hasDiscount(): boolean {
-    // Si tiene onSale y salePrice, hay descuento
     return !!(this.product.onSale && this.product.salePrice);
   }
 
   get originalPrice(): number {
-    // Si tiene descuento, el precio original es price (precio regular)
-    // Si no tiene descuento pero tiene originalPrice, usarlo
     if (this.hasDiscount) {
-      return this.product.price; // price es el precio regular
+      return this.product.price;
     }
     return this.product.originalPrice || this.product.price;
   }
 
   get finalPrice(): number {
-    // Si tiene descuento, el precio final es salePrice
-    // Si no tiene descuento, el precio final es price
     if (this.hasDiscount && this.product.salePrice) {
       return this.product.salePrice;
     }
@@ -56,11 +43,32 @@ export class ProductCardComponent {
   }
 
   get discountPercentage(): number {
-    // Calcular descuento: ((precio_regular - precio_descuento) / precio_regular) * 100
-    // price es el precio regular, salePrice es el precio con descuento
     if (this.hasDiscount && this.product.salePrice && this.product.price) {
       return Math.round(((this.product.price - this.product.salePrice) / this.product.price) * 100);
     }
     return 0;
+  }
+
+  getStarsArray(rating: number): number[] {
+    const roundedRating = Math.max(0, Math.min(5, Math.round(rating || 0)));
+    return Array.from({ length: 5 }, (_, i) => i < roundedRating ? 1 : 0);
+  }
+
+  addToCart(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    this.cartService.addItem(
+      {
+        id: this.product.id,
+        name: this.product.name,
+        price: this.finalPrice,
+        originalPrice: this.originalPrice,
+        image: this.product.image
+      },
+      1
+    );
   }
 }

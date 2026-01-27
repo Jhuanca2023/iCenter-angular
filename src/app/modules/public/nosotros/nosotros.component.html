@@ -1,0 +1,234 @@
+<div class="min-h-screen bg-white">
+    <!-- Hero Section -->
+    <section class="relative py-20 overflow-hidden">
+        <div class="absolute -z-10 size-[600px] -top-20 -left-40 aspect-square rounded-full bg-indigo-100/50 blur-3xl">
+        </div>
+        <div class="absolute -z-10 size-[400px] bottom-0 right-0 aspect-square rounded-full bg-purple-50/50 blur-3xl">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 text-center">
+            <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tight mb-8">
+                Sobre <span
+                    class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">iCenter</span>
+            </h1>
+            <p class="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed mb-16 italic">
+                "Nuestra pasión es conectar a las personas con la tecnología que transforma sus vidas."
+            </p>
+
+            <!-- Navigation Buttons (Carousel on Mobile) -->
+            <div
+                class="flex flex-row md:flex-wrap justify-start md:justify-center gap-4 mb-20 overflow-x-auto no-scrollbar snap-x px-4 md:px-0 scroll-smooth">
+                <button (click)="setActiveSection('esencia')"
+                    [class]="activeSection === 'esencia' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'bg-white text-slate-900 border-2 border-slate-100 hover:border-indigo-600'"
+                    class="min-w-fit px-10 py-4 rounded-full font-black transition-all hover:scale-105 active:scale-95 text-xs md:text-sm uppercase tracking-widest snap-center">Nuestra
+                    Esencia</button>
+                <button (click)="setActiveSection('valores')"
+                    [class]="activeSection === 'valores' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'bg-white text-slate-900 border-2 border-slate-100 hover:border-indigo-600'"
+                    class="min-w-fit px-10 py-4 rounded-full font-black transition-all hover:scale-105 active:scale-95 text-xs md:text-sm uppercase tracking-widest snap-center">Valores</button>
+                <button (click)="setActiveSection('trayectoria')"
+                    [class]="activeSection === 'trayectoria' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'bg-white text-slate-900 border-2 border-slate-100 hover:border-indigo-600'"
+                    class="min-w-fit px-10 py-4 rounded-full font-black transition-all hover:scale-105 active:scale-95 text-xs md:text-sm uppercase tracking-widest snap-center">Trayectoria</button>
+                <button (click)="setActiveSection('alianzas')"
+                    [class]="activeSection === 'alianzas' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'bg-white text-slate-900 border-2 border-slate-100 hover:border-indigo-600'"
+                    class="min-w-fit px-10 py-4 rounded-full font-black transition-all hover:scale-105 active:scale-95 text-xs md:text-sm uppercase tracking-widest snap-center">Alianzas</button>
+            </div>
+
+            <!-- Dynamic Content Area -->
+            <div class="max-w-7xl mx-auto mb-32 min-h-[500px]">
+                <div [ngSwitch]="activeSection">
+
+                    <!-- ESENCIA SECTION (Original Cards Style) -->
+                    <div *ngSwitchCase="'esencia'"
+                        class="grid grid-cols-1 md:grid-cols-3 gap-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+                        <!-- Misión -->
+                        <div
+                            class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100 group hover:-translate-y-3 transition-all duration-500 text-left h-full flex flex-col">
+                            <div class="h-64 overflow-hidden relative">
+                                <div
+                                    class="absolute inset-0 bg-indigo-600/10 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=800"
+                                    alt="Misión"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">
+                                <div class="absolute top-6 left-6 z-20">
+                                    <span
+                                        class="px-4 py-1.5 bg-white/90 backdrop-blur text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm">Misión</span>
+                                </div>
+                            </div>
+                            <div class="p-10 flex-1">
+                                <h3 class="text-2xl font-black text-slate-900 mb-6 leading-tight">Empoderar la <span
+                                        class="text-indigo-600">creatividad</span> sin límites</h3>
+                                <p class="text-slate-500 font-medium leading-relaxed">Brindamos acceso democratizado a
+                                    las herramientas Apple más avanzadas, acompañadas de un soporte técnico humano y
+                                    experto.</p>
+                            </div>
+                        </div>
+
+                        <!-- Visión -->
+                        <div
+                            class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100 group hover:-translate-y-3 transition-all duration-500 text-left h-full flex flex-col">
+                            <div class="h-64 overflow-hidden relative">
+                                <div
+                                    class="absolute inset-0 bg-fuchsia-600/10 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800"
+                                    alt="Visión"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">
+                                <div class="absolute top-6 left-6 z-20">
+                                    <span
+                                        class="px-4 py-1.5 bg-white/90 backdrop-blur text-fuchsia-500 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm">Visión</span>
+                                </div>
+                            </div>
+                            <div class="p-10 flex-1">
+                                <h3 class="text-2xl font-black text-slate-900 mb-6 leading-tight">Liderar el ecosistema
+                                    <span class="text-fuchsia-500">Apple</span> en la región
+                                </h3>
+                                <p class="text-slate-500 font-medium leading-relaxed">Trabajamos para posicionarnos como
+                                    el socio tecnológico más confiable del Perú, elevando los estándares de calidad.</p>
+                            </div>
+                        </div>
+
+                        <!-- Alcance -->
+                        <div
+                            class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden border border-slate-100 group hover:-translate-y-3 transition-all duration-500 text-left h-full flex flex-col">
+                            <div class="h-64 overflow-hidden relative">
+                                <div
+                                    class="absolute inset-0 bg-purple-600/10 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80&w=800"
+                                    alt="Alcance"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">
+                                <div class="absolute top-6 left-6 z-20">
+                                    <span
+                                        class="px-4 py-1.5 bg-white/90 backdrop-blur text-purple-600 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-sm">Alcance</span>
+                                </div>
+                            </div>
+                            <div class="p-10 flex-1">
+                                <h3 class="text-2xl font-black text-slate-900 mb-6 leading-tight">Conectividad total
+                                    <span class="text-purple-600">nacional</span>
+                                </h3>
+                                <p class="text-slate-500 font-medium leading-relaxed">Nuestra red garantiza que nadie se
+                                    quede atrás en la revolución digital que estamos impulsando desde Trujillo para todo
+                                    el país.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VALORES SECTION -->
+                    <div *ngSwitchCase="'valores'"
+                        class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center animate-in fade-in slide-in-from-bottom-10 duration-700">
+                        <div class="h-[400px] rounded-[3rem] overflow-hidden shadow-2xl relative group">
+                            <img src="https://img.freepik.com/foto-gratis/hombre-negocios-escena-tecnologica_1134-492.jpg?semt=ais_hybrid&w=740&q=80"
+                                alt="Valores"
+                                class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                            <div class="absolute inset-0 bg-purple-600/10"></div>
+                        </div>
+                        <div class="text-left space-y-6">
+                            <h2 class="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Nuestros <span
+                                    class="text-purple-600">Valores</span></h2>
+                            <p class="text-slate-500 text-lg font-medium leading-relaxed">Construimos confianza a través
+                                de la transparencia y la pasión por lo que hacemos.</p>
+                            <ul class="space-y-4">
+                                <li class="flex items-center gap-3">
+                                    <div class="size-2 rounded-full bg-indigo-600"></div><span class="font-bold">Ética
+                                        en cada venta</span>
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <div class="size-2 rounded-full bg-purple-600"></div><span
+                                        class="font-bold">Excelencia en soporte técnico</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- TRAYECTORIA SECTION -->
+                    <div *ngSwitchCase="'trayectoria'"
+                        class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center animate-in fade-in slide-in-from-bottom-10 duration-700">
+                        <div class="h-[400px] rounded-[3rem] overflow-hidden shadow-2xl relative group md:order-2">
+                            <img src="https://img.freepik.com/foto-gratis/persona-que-usa-gafas-futuristas-realidad-virtual-jugar_23-2151133152.jpg?semt=ais_hybrid&w=740&q=80"
+                                alt="Trayectoria"
+                                class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                            <div class="absolute inset-0 bg-indigo-600/10"></div>
+                        </div>
+                        <div class="text-left space-y-6 md:order-1">
+                            <h2 class="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Nuestra <span
+                                    class="text-indigo-600">Historia</span></h2>
+                            <p class="text-slate-500 text-lg font-medium leading-relaxed">Más de una década conectando a
+                                Trujillo y el Perú con lo mejor de la tecnología mundial.</p>
+                            <div class="pt-4 border-t border-slate-100">
+                                <p class="font-black text-slate-900">2014 - 2024</p>
+                                <p class="text-slate-400">Evolucionando junto a ti.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ALIANZAS SECTION -->
+                    <div *ngSwitchCase="'alianzas'"
+                        class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center animate-in fade-in slide-in-from-bottom-10 duration-700">
+                        <div class="h-[400px] rounded-[3rem] overflow-hidden shadow-2xl relative group">
+                            <img src="https://img.freepik.com/foto-gratis/proyecto-inicio_1098-18062.jpg?semt=ais_hybrid&w=740&q=80"
+                                alt="Alianzas"
+                                class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                        </div>
+                        <div class="text-left space-y-6">
+                            <h2 class="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Alianzas <span
+                                    class="text-indigo-600">Estratégicas</span></h2>
+                            <p class="text-slate-500 text-lg font-medium leading-relaxed">Trabajamos con los partners
+                                logísticos y técnicos más importantes para asegurar que tu experiencia sea impecable.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Why choose us section (Original Footer) -->
+            <div
+                class="bg-slate-950 rounded-[4rem] p-12 md:p-24 relative overflow-hidden text-left border border-white/5">
+                <div
+                    class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_30%,#312e81,transparent)] opacity-20">
+                </div>
+                <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                    <div>
+                        <h2 class="text-4xl md:text-6xl font-black text-white leading-tight mb-8">¿Por qué miles eligen
+                            iCenter?</h2>
+                        <div class="space-y-10">
+                            <div class="flex gap-6">
+                                <div
+                                    class="size-14 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0 text-indigo-400">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-white mb-2">Garantía Real</h4>
+                                    <p class="text-slate-400 font-medium">Soporte post-venta directo y repuestos
+                                        originales.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-6">
+                                <div
+                                    class="size-14 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0 text-purple-400">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-white mb-2">Envíos Flash</h4>
+                                    <p class="text-slate-400 font-medium">Recibe tu equipo en la puerta de tu casa en
+                                        tiempo récord.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden lg:block relative text-center">
+                        <img src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/image-5.svg"
+                            alt="stats"
+                            class="w-full max-w-sm mx-auto animate-float opacity-80 filter drop-shadow-[0_0_50px_rgba(99,102,241,0.2)]">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

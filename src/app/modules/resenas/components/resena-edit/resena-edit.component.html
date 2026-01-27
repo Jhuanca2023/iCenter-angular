@@ -1,0 +1,38 @@
+<div id="review-form" class="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-100">
+    <div class="flex justify-between items-center mb-3">
+        <h4 class="font-black text-gray-800 uppercase tracking-wider text-sm">
+            {{ isEditing ? 'Editar mi opinión' : 'Escribir una reseña' }}
+        </h4>
+        <button *ngIf="isEditing" (click)="onCancel()"
+            class="text-[10px] text-gray-400 hover:text-red-500 font-black uppercase tracking-[0.2em] transition-colors">
+            Cancelar edición
+        </button>
+    </div>
+
+    <div class="flex items-center gap-3 mb-4">
+        <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Calificación:</span>
+        <div class="flex gap-1">
+            <button *ngFor="let s of [1,2,3,4,5]" (click)="setRating(s)" type="button"
+                class="transition-transform active:scale-90">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                        [attr.fill]="s <= rating ? '#facc15' : '#e5e7eb'" class="transition-colors duration-200" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <textarea [ngModel]="comment" (ngModelChange)="commentChange.emit($event)" rows="3"
+        class="w-full p-4 border-2 border-gray-100 rounded-2xl mb-4 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all text-gray-700 resize-none"
+        [placeholder]="isEditing ? 'Actualiza tu comentario...' : '¿Qué te pareció este producto? Comparte tu experiencia...'"></textarea>
+
+    <button (click)="onSubmit()" [disabled]="isSubmitting || !comment.trim()"
+        class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:grayscale font-black uppercase tracking-widest text-xs transition-all active:scale-[0.98] shadow-lg shadow-indigo-100">
+        <span *ngIf="!isSubmitting">{{ isEditing ? 'Guardar Cambios' : 'Publicar Reseña' }}</span>
+        <span *ngIf="isSubmitting" class="flex items-center justify-center gap-2">
+            <div class="w-4 h-4 border-2 border-white/30 border-t-white animate-spin rounded-full"></div>
+            Enviando...
+        </span>
+    </button>
+</div>

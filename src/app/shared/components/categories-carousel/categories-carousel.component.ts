@@ -33,7 +33,7 @@ export class CategoriesCarouselComponent implements OnInit, OnDestroy {
 
   private defaultImage = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop';
 
-  constructor(private categoriesService: CategoriesService) {}
+  constructor(private categoriesService: CategoriesService) { }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -47,12 +47,11 @@ export class CategoriesCarouselComponent implements OnInit, OnDestroy {
 
   loadCategories(): void {
     this.isLoading = true;
-    
+
     this.subscription = this.categoriesService.getAll().subscribe({
       next: (categories) => {
         this.categories = categories
           .filter(cat => cat.visible)
-          .slice(0, 8)
           .map(cat => ({
             id: cat.id,
             name: cat.name,

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
-import { User } from '../../../interfaces/user.interface';
+import { User } from '../../../../../core/interfaces/user.interface';
 import { UsersService } from '../../../../../core/services/users.service';
 import { AuthService } from '../../../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
@@ -73,10 +73,10 @@ export default class UserEditComponent implements OnInit, OnDestroy {
 
   loadUserData(): void {
     if (!this.userId) return;
-    
+
     this.isLoading = true;
     this.error = null;
-    
+
     this.dataSubscription = this.usersService.getById(this.userId).subscribe({
       next: (user) => {
         if (user) {
@@ -103,7 +103,7 @@ export default class UserEditComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
   get isAdmin(): boolean {
     return this.authService.isAdmin();
   }
@@ -112,14 +112,14 @@ export default class UserEditComponent implements OnInit, OnDestroy {
     if (this.userForm.valid && this.userId) {
       this.isLoading = true;
       this.error = null;
-      
+
       // Solo permitir cambiar rol si es administrador
       const formData = { ...this.userForm.value };
       if (!this.isAdmin) {
         // Si no es admin, no permitir cambiar el rol
         delete formData.role;
       }
-      
+
       this.usersService.update(this.userId, formData).subscribe({
         next: () => {
           this.isLoading = false;

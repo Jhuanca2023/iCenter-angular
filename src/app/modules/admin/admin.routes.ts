@@ -87,7 +87,35 @@ export const adminRoutes: Routes = [
   },
   {
     path: 'orders',
-    loadComponent: () => import('./pages/orders/orders.component').then(m => m.default)
+    loadComponent: () => import('./pages/orders/orders.component'),
+  },
+  {
+    path: 'orders/detail/:id',
+    loadComponent: () => import('./pages/orders/order-detail/order-detail.component').then(m => m.AdminOrderDetailComponent)
+  },
+  {
+    path: 'reclamos',
+    loadComponent: () => import('./pages/reclamos/claims-list/claims-list.component').then(m => m.ClaimsListComponent)
+  },
+  {
+    path: 'reclamos/pendientes',
+    loadComponent: () => import('./pages/reclamos/pendientes/pendientes.component').then(m => m.ClaimsPendientesComponent)
+  },
+  {
+    path: 'reclamos/en-proceso',
+    loadComponent: () => import('./pages/reclamos/en-proceso/en-proceso.component').then(m => m.ClaimsEnProcesoComponent)
+  },
+  {
+    path: 'reclamos/completados',
+    loadComponent: () => import('./pages/reclamos/completados/completados.component').then(m => m.ClaimsCompletadosComponent)
+  },
+  {
+    path: 'reclamos/archivados',
+    loadComponent: () => import('./pages/reclamos/archivados/archivados.component').then(m => m.ArchivadosComponent)
+  },
+  {
+    path: 'reclamos/:id',
+    loadComponent: () => import('./pages/reclamos/claim-detail/claim-detail.component').then(m => m.ClaimDetailComponent)
   },
   {
     path: 'profile',
@@ -111,5 +139,9 @@ export const adminRoutes: Routes = [
         loadComponent: () => import('./pages/profile/profile-security/profile-security.component').then(m => m.AdminProfileSecurityComponent)
       }
     ]
+  },
+  {
+    path: 'banners',
+    loadComponent: () => import('./pages/banners/banners.component').then(m => m.BannersComponent)
   }
 ];

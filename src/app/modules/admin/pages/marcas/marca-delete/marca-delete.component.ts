@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { BrandsService } from '../../../../../core/services/brands.service';
-import { Marca } from '../../../interfaces/marca.interface';
+import { Marca } from '../../../../../core/interfaces/marca.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -32,7 +32,7 @@ export default class MarcaDeleteComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private brandsService: BrandsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.marcaId = this.route.snapshot.paramMap.get('id');
@@ -47,7 +47,7 @@ export default class MarcaDeleteComponent implements OnInit, OnDestroy {
 
   loadMarcaData(): void {
     if (!this.marcaId) return;
-    
+
     this.isLoading = true;
     this.error = null;
 

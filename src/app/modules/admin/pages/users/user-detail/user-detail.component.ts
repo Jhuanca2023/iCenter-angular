@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
-import { User } from '../../../interfaces/user.interface';
+import { User } from '../../../../../core/interfaces/user.interface';
 import { UsersService } from '../../../../../core/services/users.service';
 import { Subscription } from 'rxjs';
 
@@ -30,7 +30,7 @@ export default class UserDetailComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private usersService: UsersService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap.subscribe(params => {
@@ -52,10 +52,10 @@ export default class UserDetailComponent implements OnInit, OnDestroy {
 
   loadUserData(): void {
     if (!this.userId) return;
-    
+
     this.isLoading = true;
     this.error = null;
-    
+
     this.dataSubscription = this.usersService.getById(this.userId).subscribe({
       next: (user) => {
         this.user = user;
@@ -105,7 +105,7 @@ export default class UserDetailComponent implements OnInit, OnDestroy {
 
   getAuthProviderBadgeClass(): string {
     if (!this.user) return '';
-    return this.user.authProvider === 'google' 
+    return this.user.authProvider === 'google'
       ? 'px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800'
       : 'px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-800';
   }

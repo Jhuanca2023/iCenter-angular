@@ -1,0 +1,36 @@
+<div *ngIf="show" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <!-- Fondo oscuro con desenfoque -->
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" (click)="onCancel()"></div>
+
+    <!-- Contenido del Modal -->
+    <div
+        class="relative bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="text-center">
+            <div
+                class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+            </div>
+
+            <h3 class="text-2xl font-black text-gray-900 mb-2">¿Eliminar reseña?</h3>
+            <p class="text-gray-600 mb-8 leading-relaxed">Esta acción es permanente y no se puede deshacer. ¿Estás
+                seguro de que deseas eliminar tu comentario?</p>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button (click)="onCancel()"
+                    class="flex-1 order-2 sm:order-1 px-6 py-3.5 border-2 border-gray-100 text-gray-700 font-bold rounded-2xl hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-[0.98]">
+                    No, cancelar
+                </button>
+                <button (click)="onConfirm()"
+                    class="flex-1 order-1 sm:order-2 px-6 py-3.5 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 transition-all shadow-lg shadow-red-200 active:scale-[0.98]">
+                    Sí, eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

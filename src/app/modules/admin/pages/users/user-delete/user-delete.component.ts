@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
-import { User } from '../../../interfaces/user.interface';
+import { User } from '../../../../../core/interfaces/user.interface';
 import { UsersService } from '../../../../../core/services/users.service';
 import { Subscription } from 'rxjs';
 
@@ -32,7 +32,7 @@ export default class UserDeleteComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private usersService: UsersService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap.subscribe(params => {
@@ -54,10 +54,10 @@ export default class UserDeleteComponent implements OnInit, OnDestroy {
 
   loadUserData(): void {
     if (!this.userId) return;
-    
+
     this.isLoading = true;
     this.error = null;
-    
+
     this.dataSubscription = this.usersService.getById(this.userId).subscribe({
       next: (user) => {
         this.user = user;
@@ -73,10 +73,10 @@ export default class UserDeleteComponent implements OnInit, OnDestroy {
 
   confirmDelete(): void {
     if (!this.userId) return;
-    
+
     this.isLoading = true;
     this.error = null;
-    
+
     this.usersService.delete(this.userId).subscribe({
       next: () => {
         this.isLoading = false;

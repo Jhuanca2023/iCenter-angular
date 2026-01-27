@@ -1,0 +1,65 @@
+<div class="container mx-auto px-4 py-20 max-w-4xl">
+    <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
+
+    <div class="text-center mt-12 mb-16 animate-fadeIn">
+        <div class="flex justify-center mb-6">
+            <img src="https://mac-center.com.pe/cdn/shop/files/Nuevo_Logo_LR_105x.webp?v=1763656722"
+                alt="Libro de Reclamaciones" class="h-20 object-contain">
+        </div>
+        <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-6">Libro de Reclamaciones</h1>
+        <p class="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
+            Estamos aquí para escucharte. Ayúdanos a mejorar brindándonos tus comentarios o informándonos sobre
+            cualquier inconveniente.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Option 1: Create New -->
+        <a routerLink="new"
+            class="group bg-white p-10 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100 hover:shadow-2xl hover:shadow-indigo-100 hover:-translate-y-2 transition-all duration-500 text-center flex flex-col items-center">
+            <div
+                class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-3">Nuevo Reclamo o Queja</h2>
+            <p class="text-slate-500 text-sm mb-6">Registra una nueva incidencia sobre un producto o servicio.</p>
+            <span class="inline-flex items-center text-indigo-600 font-bold group-hover:gap-2 transition-all">
+                Comenzar registro <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </span>
+        </a>
+
+        <!-- Option 2: Track Existing -->
+        <a routerLink="track"
+            class="group bg-white p-10 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100 hover:shadow-2xl hover:shadow-slate-200 hover:-translate-y-2 transition-all duration-500 text-center flex flex-col items-center">
+            <div
+                class="w-20 h-20 bg-slate-50 text-slate-800 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-3">Seguimiento de Reclamo</h2>
+            <p class="text-slate-500 text-sm mb-6">Verifica el estado de un reclamo que ya registraste anteriormente.
+            </p>
+            <span class="inline-flex items-center text-slate-900 font-bold group-hover:gap-2 transition-all">
+                Consultar estado <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </span>
+        </a>
+    </div>
+
+    <div class="mt-20 p-8 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-center">
+        <p class="text-sm text-slate-500 italic">
+            "Tu satisfacción es nuestra prioridad. Responderemos a tu solicitud en un plazo máximo de 15 días hábiles."
+        </p>
+    </div>
+</div>

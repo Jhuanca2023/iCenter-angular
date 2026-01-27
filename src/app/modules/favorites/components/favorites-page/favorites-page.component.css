@@ -1,0 +1,21 @@
+.favorites-page-container {
+  /* Add any specific styles for the favorites page container */
+}
+
+.folder-list-item button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.folder-list-item button:hover {
+  background-color: #fff7ed; /* A light orange for hover */
+}
+
+.folder-list-item button.font-bold {
+  background-color: #fed7aa; /* A slightly darker orange for active folder */
+  color: #9a3412; /* Darker text for active folder */
+}

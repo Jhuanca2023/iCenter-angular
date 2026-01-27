@@ -3,7 +3,8 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { CategoriesService } from '../../../../../core/services/categories.service';
-import { ProductsService, Product } from '../../../../../core/services/products.service';
+import { ProductsService } from '../../../../../core/services/products.service';
+import { Product } from '../../../../../core/interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -33,7 +34,7 @@ export default class CategoryDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private categoriesService: CategoriesService,
     private productsService: ProductsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.categoryId = this.route.snapshot.paramMap.get('id');
@@ -53,7 +54,7 @@ export default class CategoryDetailComponent implements OnInit, OnDestroy {
 
   loadCategoryData(): void {
     if (!this.categoryId) return;
-    
+
     this.isLoading = true;
     this.subscription = this.categoriesService.getById(this.categoryId).subscribe({
       next: (category) => {
@@ -73,7 +74,7 @@ export default class CategoryDetailComponent implements OnInit, OnDestroy {
 
   loadProducts(): void {
     if (!this.categoryId) return;
-    
+
     this.isLoadingProducts = true;
     this.productsSubscription = this.productsService.getByCategoryId(this.categoryId).subscribe({
       next: (products) => {

@@ -10,3 +10,17 @@
 .scroll-smooth {
   scroll-behavior: smooth;
 }
+
+.group:hover div {
+  transform: translateY(-5px);
+}
+
+.snap-center {
+  scroll-snap-align: center;
+}
+
+@media (max-width: 640px) {
+  .gap-4 {
+    gap: 1.5rem;
+  }
+}

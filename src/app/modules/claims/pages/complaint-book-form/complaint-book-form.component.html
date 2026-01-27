@@ -1,0 +1,257 @@
+<div class="container mx-auto px-4 py-12 max-w-4xl">
+  <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
+
+  <div class="bg-white rounded-2xl shadow-xl overflow-hidden mt-8 border border-slate-100">
+    <!-- Header with Progress Bar -->
+    <div class="bg-slate-50 px-8 py-6 border-b border-slate-100">
+      <div class="flex justify-center mb-4">
+        <img src="https://mac-center.com.pe/cdn/shop/files/Nuevo_Logo_LR_105x.webp?v=1763656722"
+          alt="Libro de Reclamaciones" class="h-16 object-contain">
+      </div>
+      <h1 class="text-2xl font-bold text-slate-800 mb-6 text-center">Libro de Reclamaciones</h1>
+
+      <div class="flex items-center justify-between max-w-md mx-auto relative">
+        <!-- Progress Line -->
+        <div class="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -translate-y-1/2 z-0"></div>
+        <div class="absolute top-1/2 left-0 h-0.5 bg-indigo-600 -translate-y-1/2 z-0 transition-all duration-500"
+          [style.width]="((currentStep - 1) / 2 * 100) + '%'"></div>
+
+        <!-- Step 1 -->
+        <div class="z-10 flex flex-col items-center">
+          <div
+            class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 shadow-sm"
+            [ngClass]="currentStep >= 1 ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400 border border-slate-200'">
+            1</div>
+          <span class="text-[10px] uppercase tracking-wider mt-2 font-bold text-slate-500">Cliente</span>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="z-10 flex flex-col items-center">
+          <div
+            class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 shadow-sm"
+            [ngClass]="currentStep >= 2 ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400 border border-slate-200'">
+            2</div>
+          <span class="text-[10px] uppercase tracking-wider mt-2 font-bold text-slate-500">Detalle</span>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="z-10 flex flex-col items-center">
+          <div
+            class="w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 shadow-sm"
+            [ngClass]="currentStep >= 3 ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400 border border-slate-200'">
+            3</div>
+          <span class="text-[10px] uppercase tracking-wider mt-2 font-bold text-slate-500">Listo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="p-8 sm:p-12">
+      <form [formGroup]="complaintForm" (ngSubmit)="onSubmit()">
+
+        <!-- STEP 1: INFORMACIÓN DEL CLIENTE -->
+        <div *ngIf="currentStep === 1" class="space-y-6 animate-fadeIn">
+          <div class="border-b border-slate-100 pb-2 mb-6">
+            <h2 class="text-lg font-bold text-slate-800">Identificación del Consumidor</h2>
+            <p class="text-xs text-slate-500">Ingrese sus datos personales básicos.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Nombres *</label>
+              <input formControlName="first_name" type="text" placeholder="Ej. Juan"
+                [class.border-red-500]="complaintForm.get('first_name')?.invalid && complaintForm.get('first_name')?.touched"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none">
+              <p *ngIf="complaintForm.get('first_name')?.invalid && complaintForm.get('first_name')?.touched"
+                class="text-[10px] text-red-500 font-bold ml-1 uppercase">El nombre es obligatorio</p>
+            </div>
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Apellidos *</label>
+              <input formControlName="last_name" type="text" placeholder="Ej. Perez"
+                [class.border-red-500]="complaintForm.get('last_name')?.invalid && complaintForm.get('last_name')?.touched"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none">
+              <p *ngIf="complaintForm.get('last_name')?.invalid && complaintForm.get('last_name')?.touched"
+                class="text-[10px] text-red-500 font-bold ml-1 uppercase">El apellido es obligatorio</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Tipo Documento *</label>
+              <select formControlName="document_type"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none bg-white">
+                <option value="">Seleccione...</option>
+                <option value="DNI">DNI</option>
+                <option value="CE">Carnet de Extranjería</option>
+                <option value="Pasaporte">Pasaporte</option>
+              </select>
+            </div>
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Número Documento *</label>
+              <input formControlName="document_number" type="text" placeholder="Número de 8-12 dígitos"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Correo Electrónico *</label>
+              <input formControlName="email" type="email" placeholder="ejemplo@correo.com"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Teléfono *</label>
+              <input formControlName="phone" type="text" placeholder="9 dígitos"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none">
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-semibold text-slate-700">Dirección Domiciliaria *</label>
+            <input formControlName="address" type="text" placeholder="Av. Ejemplo 123, Distrito, Ciudad"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none">
+          </div>
+
+          <!-- Minor Checkbox -->
+          <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <input id="is_minor" type="checkbox" formControlName="is_minor" class="w-5 h-5 text-indigo-600 rounded">
+            <label for="is_minor" class="text-sm font-medium text-slate-700 cursor-pointer">Soy menor de edad (Requiere
+              datos de apoderado)</label>
+          </div>
+
+          <!-- Guardian Section -->
+          <div *ngIf="complaintForm.get('is_minor')?.value" class="space-y-6 pt-4 animate-fadeIn">
+            <h3 class="text-md font-bold text-slate-700">Datos del Apoderado</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input formControlName="guardian_name" placeholder="Nombres apoderado"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200">
+              <input formControlName="guardian_lastname" placeholder="Apellidos apoderado"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200">
+            </div>
+          </div>
+
+          <div class="pt-6 flex justify-end">
+            <button type="button" (click)="nextStep()"
+              class="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95">
+              Siguiente Paso
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: DETALLE DEL RECLAMO -->
+        <div *ngIf="currentStep === 2" class="space-y-6 animate-fadeIn">
+          <div class="border-b border-slate-100 pb-2 mb-6">
+            <h2 class="text-lg font-bold text-slate-800">Detalle de la Reclamación</h2>
+            <p class="text-xs text-slate-500">Explíquenos lo sucedido y qué espera de nosotros.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Tipo de Registro *</label>
+              <select formControlName="record_type"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none bg-white">
+                <option value="">Seleccione...</option>
+                <option value="Reclamo">Reclamo</option>
+                <option value="Queja">Queja</option>
+              </select>
+              <p *ngIf="complaintForm.get('record_type')?.invalid && complaintForm.get('record_type')?.touched"
+                class="text-[10px] text-red-500 font-bold ml-1 uppercase">Seleccione un tipo</p>
+            </div>
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Motivo *</label>
+              <select formControlName="motive"
+                [class.border-red-500]="complaintForm.get('motive')?.invalid && complaintForm.get('motive')?.touched"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none bg-white">
+                <option value="">Seleccione...</option>
+                <option value="ATENCIÓN AL CLIENTE">Atención al Cliente</option>
+                <option value="PRODUCTO O SERVICIO">Producto o Servicio</option>
+                <option value="SISTEMA TÉCNICO">Sistema Técnico / Web</option>
+                <option value="OTROS">Otros</option>
+              </select>
+              <p *ngIf="complaintForm.get('motive')?.invalid && complaintForm.get('motive')?.touched"
+                class="text-[10px] text-red-500 font-bold ml-1 uppercase">Seleccione un motivo</p>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-semibold text-slate-700">Fecha del Incidente *</label>
+            <input formControlName="incident_date" type="date"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none bg-white">
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-semibold text-slate-700">Detalle del Reclamo *</label>
+            <textarea formControlName="description" rows="4" placeholder="Describa claramente los hechos..."
+              [class.border-red-500]="complaintForm.get('description')?.invalid && complaintForm.get('description')?.touched"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"></textarea>
+            <p *ngIf="complaintForm.get('description')?.hasError('required') && complaintForm.get('description')?.touched"
+              class="text-[10px] text-red-500 font-bold ml-1 uppercase">El detalle es obligatorio</p>
+            <p *ngIf="complaintForm.get('description')?.hasError('minlength') && complaintForm.get('description')?.touched"
+              class="text-[10px] text-red-500 font-bold ml-1 uppercase">Debe tener al menos 10 caracteres</p>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-semibold text-slate-700">Solución Esperada *</label>
+            <textarea formControlName="customer_request" rows="3" placeholder="¿Cómo podemos solucionar este problema?"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Número Pedido (Opcional)</label>
+              <input formControlName="order_number" type="text" placeholder="Ej. PED-12345"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-sm font-semibold text-slate-700">Boleta/Factura (Opcional)</label>
+              <input formControlName="receipt_number" type="text" placeholder="Ej. B001-0001"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 transition-all outline-none">
+            </div>
+          </div>
+
+          <div *ngIf="errorMessage" class="p-4 bg-red-50 text-red-700 rounded-xl text-sm border border-red-100 italic">
+            {{ errorMessage }}
+          </div>
+
+          <div class="pt-6 flex justify-between gap-4">
+            <button type="button" (click)="prevStep()"
+              class="px-8 py-4 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all active:scale-95">
+              Volver
+            </button>
+            <button type="submit" [disabled]="isLoading"
+              class="flex-1 px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 active:scale-95">
+              {{ isLoading ? 'Enviando...' : 'Enviar Reclamación' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: CONFIRMACIÓN -->
+        <div *ngIf="currentStep === 3" class="text-center space-y-8 animate-fadeIn">
+          <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+
+          <h2 class="text-3xl font-bold text-slate-800">¡Registro Exitoso!</h2>
+          <p class="text-slate-600 max-w-md mx-auto">Su solitud ha sido recibida correctamente. Pronto nos pondremos en
+            contacto con usted.</p>
+
+          <div class="bg-indigo-50 rounded-2xl p-6 border border-indigo-100 max-w-sm mx-auto">
+            <p class="text-xs text-indigo-500 uppercase font-bold tracking-widest mb-1">Tu Código de Seguimiento</p>
+            <p class="text-2xl font-black text-indigo-700">{{ successMessage?.split(': ')?.pop() }}</p>
+          </div>
+
+          <div class="pt-8">
+            <button type="button" (click)="finish()"
+              class="px-10 py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg active:scale-95">
+              Ir a Mis Reclamos
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

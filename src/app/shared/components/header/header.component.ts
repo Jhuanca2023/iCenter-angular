@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { CategoriesService, Category } from '../../../core/services/categories.service';
 import { AuthService, AuthUser } from '../../../core/services/auth.service';
+import { CartService } from '../../../core/services/cart.service';
+import { CartState } from '../../../core/interfaces/cart.interface';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -19,17 +21,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isUserMenuOpen = false;
   categories: Category[] = [];
   currentUser: AuthUser | null = null;
+  cartQuantity = 0;
+  cartTotal = 0;
+  private dropdownTimeout: any;
   private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
     private categoriesService: CategoriesService,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private cartService: CartService
+  ) { }
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadCurrentUser();
+    this.loadCart();
   }
 
   loadCurrentUser(): void {
@@ -37,6 +44,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(user => {
         this.currentUser = user;
+      });
+  }
+
+  loadCart(): void {
+    this.cartService.cart$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((cart: CartState) => {
+        this.cartQuantity = cart.totalQuantity;
+        this.cartTotal = cart.totalAmount;
       });
   }
 
@@ -95,6 +111,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.dropdownTimeout) {
+      clearTimeout(this.dropdownTimeout);
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -121,25 +140,49 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   toggleCategoriesDropdown(): void {
-    this.isCategoriesDropdownOpen = !this.isCategoriesDropdownOpen;
+    if (this.isCategoriesDropdownOpen) {
+      this.closeCategoriesDropdown();
+    } else {
+      this.isCategoriesDropdownOpen = true;
+      if (this.dropdownTimeout) clearTimeout(this.dropdownTimeout);
+    }
   }
 
   openCategoriesDropdown(): void {
+    if (this.dropdownTimeout) clearTimeout(this.dropdownTimeout);
     this.isCategoriesDropdownOpen = true;
   }
 
   closeCategoriesDropdown(): void {
+    if (this.dropdownTimeout) clearTimeout(this.dropdownTimeout);
+    this.dropdownTimeout = setTimeout(() => {
+      this.isCategoriesDropdownOpen = false;
+    }, 300);
+  }
+
+  closeCategoriesDropdownImmediately(): void {
+    if (this.dropdownTimeout) {
+      clearTimeout(this.dropdownTimeout);
+      this.dropdownTimeout = null;
+    }
     this.isCategoriesDropdownOpen = false;
   }
 
   navigateToCategory(categoryId: string): void {
     this.router.navigate(['/productos'], { queryParams: { categoria: categoryId } });
-    this.closeCategoriesDropdown();
+    this.closeCategoriesDropdownImmediately();
   }
 
   navigateToCategoryByName(categoryName: string): void {
     this.router.navigate(['/productos'], { queryParams: { categoria: categoryName } });
-    this.closeCategoriesDropdown();
+    this.closeCategoriesDropdownImmediately();
+  }
+
+  navigateToCart(fromMenu: boolean = false): void {
+    this.router.navigate(['/carrito']);
+    if (fromMenu) {
+      this.closeMenu();
+    }
   }
 
   navigateToLogin(): void {
@@ -150,6 +193,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   navigateToRegister(): void {
     this.router.navigate(['/auth/register']);
     this.closeMenu();
+  }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    if (this.isCategoriesDropdownOpen) {
+      this.closeCategoriesDropdownImmediately();
+    }
   }
 
   @HostListener('document:click', ['$event'])

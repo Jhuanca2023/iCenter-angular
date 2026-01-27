@@ -17,13 +17,26 @@ export class AdminLayoutComponent implements OnInit {
     { name: 'Categorías', path: '/admin/categories', icon: 'categories' },
     { name: 'Marcas', path: '/admin/marcas', icon: 'brands' },
     { name: 'Usuarios', path: '/admin/users', icon: 'users' },
-    { name: 'Pedidos', path: '/admin/orders', icon: 'orders' }
+    { name: 'Pedidos', path: '/admin/orders', icon: 'orders' },
+    { name: 'Banners', path: '/admin/banners', icon: 'banners' },
+    {
+      name: 'Reclamos',
+      path: '/admin/reclamos',
+      icon: 'claims',
+      isOpen: true,
+      children: [
+        { name: 'Pendientes', path: '/admin/reclamos/pendientes' },
+        { name: 'En Proceso', path: '/admin/reclamos/en-proceso' },
+        { name: 'Completados', path: '/admin/reclamos/completados' },
+        { name: 'Archivados', path: '/admin/reclamos/archivados' }
+      ]
+    }
   ];
 
   activeLink = this.sidebarLinks[0].path;
   isUserMenuOpen = false;
   isSidebarOpen = false;
-  
+
   adminInfo = {
     name: 'Admin',
     email: 'admin@icenter.com',
@@ -33,7 +46,7 @@ export class AdminLayoutComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe((user: any) => {
@@ -99,6 +112,14 @@ export class AdminLayoutComponent implements OnInit {
     this.isSidebarOpen = false;
   }
 
+  toggleSubmenu(item: any, event: Event): void {
+    if (item.children) {
+      event.preventDefault();
+      event.stopPropagation();
+      item.isOpen = !item.isOpen;
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
@@ -112,7 +133,7 @@ export class AdminLayoutComponent implements OnInit {
     }
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize(): void {
     if (window.innerWidth >= 768) {
       this.isSidebarOpen = false;

@@ -2,7 +2,8 @@ import { Component, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ProductCardComponent } from '../../../modules/products/components/product-card/product-card.component';
-import { ProductsService, Product, ClientProduct } from '../../../core/services/products.service';
+import { ProductsService } from '../../../core/services/products.service';
+import { Product, ClientProduct } from '../../../core/interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -18,7 +19,7 @@ export class FlashSaleComponent implements OnInit, OnDestroy {
   isLoading = false;
   private subscription?: Subscription;
 
-  constructor(private productsService: ProductsService) {}
+  constructor(private productsService: ProductsService) { }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -32,21 +33,13 @@ export class FlashSaleComponent implements OnInit, OnDestroy {
 
   loadProducts(): void {
     this.isLoading = true;
-    
-    this.subscription = this.productsService.getAll().subscribe({
+
+    this.subscription = this.productsService.getRecommended().subscribe({
       next: (products) => {
         this.products = products
-          .filter(p => p.on_sale && p.visible && p.stock > 0)
+          .filter(p => p.visible && p.stock > 0)
           .slice(0, 3)
-          .map(p => {
-            const clientProduct = this.mapToClientProduct(p);
-            return {
-              ...clientProduct,
-              discount: p.sale_price && p.price 
-                ? Math.round(((p.price - p.sale_price) / p.price) * 100) 
-                : 0
-            };
-          });
+          .map(p => this.mapToClientProduct(p));
         this.isLoading = false;
       },
       error: (err) => {
@@ -59,19 +52,20 @@ export class FlashSaleComponent implements OnInit, OnDestroy {
   private mapToClientProduct(product: Product): ClientProduct {
     // Mantener el ID como string si es UUID, convertir a número solo si es numérico
     const productId = typeof product.id === 'string' ? product.id : (Number(product.id) || 0);
-    
+
     return {
       id: productId as any, // Permitir string o number para compatibilidad
       name: product.name,
-      category: Array.isArray(product.categories) && product.categories.length > 0 
-        ? product.categories[0] 
+      category: Array.isArray(product.category_names) && product.category_names.length > 0
+        ? product.category_names[0]
         : 'Sin categoría',
+      category_names: product.category_names || [],
       price: product.price, // Precio original
       originalPrice: product.on_sale && product.sale_price ? product.price : undefined,
       salePrice: product.on_sale && product.sale_price ? product.sale_price : undefined,
       onSale: product.on_sale || false,
-      rating: 4,
-      reviews: 0,
+      rating: product.rating || 0,
+      reviews: product.reviews || 0,
       image: product.image || (product.colors && product.colors[0]?.images?.[0]) || '',
       description: product.description,
       stock: product.stock || 0,

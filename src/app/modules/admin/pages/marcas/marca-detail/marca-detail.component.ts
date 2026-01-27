@@ -3,8 +3,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { BrandsService } from '../../../../../core/services/brands.service';
-import { ProductsService, Product } from '../../../../../core/services/products.service';
-import { Marca } from '../../../interfaces/marca.interface';
+import { ProductsService } from '../../../../../core/services/products.service';
+import { Product } from '../../../../../core/interfaces';
+import { Marca } from '../../../../../core/interfaces/marca.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -34,7 +35,7 @@ export default class MarcaDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private brandsService: BrandsService,
     private productsService: ProductsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -56,7 +57,7 @@ export default class MarcaDetailComponent implements OnInit, OnDestroy {
 
   loadMarcaData(): void {
     if (!this.marcaId) return;
-    
+
     this.isLoading = true;
     this.error = null;
 
@@ -78,7 +79,7 @@ export default class MarcaDetailComponent implements OnInit, OnDestroy {
 
   loadProducts(): void {
     if (!this.marcaId) return;
-    
+
     this.isLoadingProducts = true;
     this.productsSubscription = this.productsService.getByBrandId(this.marcaId).subscribe({
       next: (products) => {
