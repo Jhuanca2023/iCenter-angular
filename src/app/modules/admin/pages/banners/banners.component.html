@@ -1,0 +1,265 @@
+<div class="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+    <div class="max-w-7xl mx-auto">
+        <app-breadcrumbs [items]="breadcrumbs"></app-breadcrumbs>
+
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 mb-1">Banner & Publicidad</h1>
+                <p class="text-slate-500">Gestiona los banners del carrusel y anuncios promocionales.</p>
+            </div>
+            <button (click)="openBannerModal()"
+                class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-lg active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+                Nuevo Banner
+            </button>
+        </div>
+
+        <!-- Banners Table -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mb-12">
+            <div class="p-6 border-b border-slate-50">
+                <h2 class="font-bold text-slate-800">Carrusel Principal (Home)</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/50">
+                            <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Imagen
+                            </th>
+                            <th class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Título /
+                                Link</th>
+                            <th
+                                class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-center">
+                                Orden</th>
+                            <th
+                                class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-center">
+                                Estado</th>
+                            <th
+                                class="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">
+                                Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        <tr *ngFor="let banner of banners" class="hover:bg-slate-50/50 transition-colors">
+                            <td class="px-6 py-4">
+                                <img [src]="banner.image_url"
+                                    class="w-24 h-12 object-cover rounded-lg shadow-sm border border-slate-100" />
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="font-bold text-slate-800">{{ banner.title || 'Sin título' }}</p>
+                                <p class="text-xs text-slate-400 truncate max-w-[200px]">{{ banner.link_url || 'Sin
+                                    link' }}</p>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span
+                                    class="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-mono font-bold text-xs">{{
+                                    banner.order_index }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span
+                                    [class]="banner.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                                    class="px-3 py-1 rounded-full text-[10px] font-black uppercase">
+                                    {{ banner.is_active ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2 text-slate-400">
+                                    <button (click)="openBannerModal(banner)" class="hover:text-indigo-600 p-2"><svg
+                                            xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path
+                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                        </svg></button>
+                                    <button (click)="deleteBanner(banner.id)" class="hover:text-red-600 p-2"><svg
+                                            xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Promotions Section -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-slate-900">Anuncios Popup (Modals)</h2>
+            <button (click)="openPromoModal()"
+                class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all active:scale-95 shadow-lg">
+                Nueva Promoción
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div *ngFor="let promo of promotions"
+                class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm relative group overflow-hidden">
+                <div class="relative aspect-video rounded-2xl overflow-hidden mb-4 border border-slate-50">
+                    <img [src]="promo.image_url"
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div [class]="promo.is_active ? 'bg-green-500' : 'bg-slate-400'"
+                        class="absolute top-3 right-3 px-3 py-1 rounded-lg text-white text-[10px] font-black uppercase shadow-lg">
+                        {{ promo.is_active ? 'Activa' : 'Off' }}
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-slate-800 text-sm truncate pr-4">{{ promo.title || 'Promo sin nombre' }}
+                    </h3>
+                    <div class="flex gap-1">
+                        <button (click)="openPromoModal(promo)" class="text-slate-400 hover:text-indigo-600 p-2"><svg
+                                xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg></button>
+                        <button (click)="deletePromo(promo.id)" class="text-slate-400 hover:text-red-500 p-2"><svg
+                                xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner Modal -->
+    <div *ngIf="showBannerModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-lg w-full">
+            <h2 class="text-2xl font-black text-slate-900 mb-6">{{ editingBanner ? 'Editar Banner' : 'Añadir Banner' }}
+            </h2>
+
+            <form [formGroup]="bannerForm" (ngSubmit)="saveBanner()" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label
+                            class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Imagen
+                            del Banner</label>
+                        <div (click)="fileInput.click()"
+                            class="w-full h-40 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all overflow-hidden relative">
+                            <img *ngIf="previewUrl" [src]="previewUrl"
+                                class="absolute inset-0 w-full h-full object-cover">
+                            <div *ngIf="!previewUrl" class="text-center">
+                                <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span class="text-slate-400 text-xs font-bold">Subir imagen</span>
+                            </div>
+                        </div>
+                        <input #fileInput type="file" (change)="onFileSelected($event)" hidden accept="image/*">
+                    </div>
+
+                    <div class="col-span-2">
+                        <label
+                            class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Título</label>
+                        <input type="text" formControlName="title"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:bg-white focus:border-indigo-500 transition-all">
+                    </div>
+
+                    <div class="col-span-2">
+                        <label
+                            class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Subtítulo
+                            / Texto Corto</label>
+                        <input type="text" formControlName="subtitle"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:bg-white focus:border-indigo-500 transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Link
+                            de Destino</label>
+                        <input type="text" formControlName="link_url" placeholder="/productos"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:bg-white focus:border-indigo-500 transition-all">
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Orden</label>
+                        <input type="number" formControlName="order_index"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:bg-white focus:border-indigo-500 transition-all">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 pt-4">
+                    <input type="checkbox" id="is_active" formControlName="is_active"
+                        class="w-5 h-5 rounded-lg border-slate-300 text-indigo-600">
+                    <label for="is_active" class="text-sm font-bold text-slate-700">Activo e inmediatamente
+                        visible</label>
+                </div>
+
+                <div class="flex gap-4 pt-6">
+                    <button type="button" (click)="showBannerModal = false"
+                        class="flex-1 py-4 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">Cancelar</button>
+                    <button type="submit" [disabled]="isSaving || (bannerForm.invalid && !editingBanner)"
+                        class="flex-1 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50">
+                        {{ isSaving ? 'Guardando...' : 'Guardar Banner' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Promo Modal -->
+    <div *ngIf="showPromoModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-lg w-full">
+            <h2 class="text-2xl font-black text-slate-900 mb-6">{{ editingPromo ? 'Editar Promoción' : 'Nueva Promoción'
+                }}</h2>
+
+            <form [formGroup]="promoForm" (ngSubmit)="savePromo()" class="space-y-4">
+                <div class="col-span-2">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Imagen
+                        del Anuncio</label>
+                    <div (click)="promoFileInput.click()"
+                        class="w-full aspect-video border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all overflow-hidden relative">
+                        <img *ngIf="previewUrl" [src]="previewUrl" class="absolute inset-0 w-full h-full object-cover">
+                        <div *ngIf="!previewUrl" class="text-center">
+                            <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span class="text-slate-400 text-xs font-bold">Subir Banner</span>
+                        </div>
+                    </div>
+                    <input #promoFileInput type="file" (change)="onFileSelected($event)" hidden accept="image/*">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Título
+                        de la Promo</label>
+                    <input type="text" formControlName="title" placeholder="Black Friday 2026"
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:bg-white focus:border-indigo-500 transition-all">
+                </div>
+
+                <div class="flex items-center gap-3 pt-4">
+                    <input type="checkbox" id="promo_is_active" formControlName="is_active"
+                        class="w-5 h-5 rounded-lg border-slate-300 text-indigo-600">
+                    <label for="promo_is_active" class="text-sm font-bold text-slate-700">Activar anuncio (Solo uno a la
+                        vez)</label>
+                </div>
+
+                <div class="flex gap-4 pt-6">
+                    <button type="button" (click)="showPromoModal = false"
+                        class="flex-1 py-4 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">Cancelar</button>
+                    <button type="submit" [disabled]="isSaving"
+                        class="flex-1 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50">
+                        {{ isSaving ? 'Guardando...' : 'Guardar' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading / Error States -->
+    <div *ngIf="isLoading" class="fixed inset-0 z-[100] bg-white/80 flex items-center justify-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-slate-100 border-t-slate-900"></div>
+    </div>
+</div>

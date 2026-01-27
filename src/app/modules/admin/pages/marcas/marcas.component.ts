@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { BrandsService } from '../../../../core/services/brands.service';
-import { Marca } from '../../interfaces/marca.interface';
+import { Marca } from '../../../../core/interfaces/marca.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -25,13 +25,14 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   private subscription?: Subscription;
+  Math = Math;
 
   breadcrumbs: BreadcrumbItem[] = [
     { label: 'E-Commerce', route: '/admin' },
     { label: 'Marcas' }
   ];
 
-  constructor(private brandsService: BrandsService) {}
+  constructor(private brandsService: BrandsService) { }
 
   ngOnInit(): void {
     this.loadBrands();
@@ -46,7 +47,7 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
   loadBrands(): void {
     this.isLoading = true;
     this.error = null;
-    
+
     this.subscription = this.brandsService.getAll().subscribe({
       next: (brands) => {
         this.brands = brands;
@@ -59,6 +60,24 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
+  }
+
+  deleteBrand(id: string): void {
+    if (!id) return;
+    if (confirm('¿Estás seguro de que deseas eliminar esta marca?')) {
+      this.brandsService.delete(id).subscribe({
+        next: () => {
+          this.brands = this.brands.filter(b => b.id !== id);
+          if (this.paginatedBrands.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+          }
+        },
+        error: (err) => {
+          console.error('Error al eliminar la marca:', err);
+          alert('No se pudo eliminar la marca.');
+        }
+      });
+    }
   }
 
   private extractCategories(): void {
@@ -87,12 +106,12 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
     return colors[index];
   }
 
-  get filteredBrands() {
+  get filteredBrandsList() {
     let filtered = [...this.brands];
-    
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(b => 
+      filtered = filtered.filter(b =>
         b.name.toLowerCase().includes(term) ||
         (b.description && b.description.toLowerCase().includes(term)) ||
         b.categories.some(cat => cat.toLowerCase().includes(term))
@@ -109,11 +128,11 @@ export default class AdminMarcasComponent implements OnInit, OnDestroy {
   get paginatedBrands() {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
-    return this.filteredBrands.slice(start, end);
+    return this.filteredBrandsList.slice(start, end);
   }
 
   get totalPages(): number {
-    return Math.ceil(this.filteredBrands.length / this.itemsPerPage);
+    return Math.ceil(this.filteredBrandsList.length / this.itemsPerPage);
   }
 
   onPageChange(page: number): void {

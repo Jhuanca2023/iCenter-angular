@@ -4,9 +4,7 @@
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 mt-4">
     <h1 class="text-2xl font-bold text-gray-900">Pedidos</h1>
     <div class="flex gap-3">
-      <button
-        type="button"
-        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+      <button type="button" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
         Descargar Reporte
       </button>
     </div>
@@ -16,26 +14,19 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
-        <input
-          type="text"
-          [(ngModel)]="searchTerm"
-          placeholder="Buscar pedidos..."
+        <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar pedidos..."
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-        <select
-          [(ngModel)]="selectedStatus"
+        <select [(ngModel)]="selectedStatus"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
           <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
         </select>
       </div>
     </div>
     <div class="mt-4">
-      <button
-        type="button"
-        (click)="clearFilters()"
-        class="text-sm text-indigo-600 hover:text-indigo-800">
+      <button type="button" (click)="clearFilters()" class="text-sm text-indigo-600 hover:text-indigo-800">
         Limpiar filtros
       </button>
     </div>
@@ -51,69 +42,128 @@
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-            <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Fecha</th>
+            <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">
+              Fecha</th>
             <th class="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let order of filteredOrders" class="hover:bg-gray-50">
-            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.id }}</td>
-            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.customer }}</td>
-            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${{ order.total }}</td>
+          <tr *ngFor="let order of pagedOrders" class="hover:bg-gray-50 transition-colors">
+            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">#{{
+              order.id.substring(0,8).toUpperCase() }}</td>
+            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ order.customer }}</td>
+            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ (order.total || 0) |
+              currency:'PEN' }}</td>
             <td class="px-4 lg:px-6 py-4 whitespace-nowrap">
               <span [class]="
-                order.status === 'Completado' ? 'px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800' :
-                order.status === 'Pendiente' ? 'px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800' :
-                order.status === 'Cancelado' ? 'px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800' :
-                'px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800'
+                order.status === 'Completado' ? 'px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full bg-green-100 text-green-700 border border-green-200' :
+                order.status === 'Pendiente' ? 'px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full bg-amber-100 text-amber-700 border border-amber-200' :
+                order.status === 'Cancelado' ? 'px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full bg-rose-100 text-rose-700 border border-rose-200' :
+                'px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200'
               ">
                 {{ order.status }}
               </span>
             </td>
-            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden lg:table-cell">{{ order.date }}</td>
+            <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden lg:table-cell">{{ order.date }}
+            </td>
             <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <a [routerLink]="['/admin/orders/detail', order.id]" class="text-indigo-600 hover:text-indigo-900">Ver Detalles</a>
+              <div class="flex items-center gap-3">
+                <a [routerLink]="['/admin/orders/detail', order.id]"
+                  class="text-indigo-600 hover:text-indigo-900 flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  Ver
+                </a>
+                <button (click)="deleteOrder(order.id)"
+                  class="text-rose-600 hover:text-rose-900 flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Eliminar
+                </button>
+              </div>
             </td>
           </tr>
-          <tr *ngIf="filteredOrders.length === 0">
-            <td colspan="6" class="px-6 py-8 text-center text-gray-500">No se encontraron pedidos</td>
+          <tr *ngIf="pagedOrders.length === 0">
+            <td colspan="6" class="px-6 py-12 text-center text-gray-500">No se encontraron pedidos</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Paginación Desktop -->
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+      <div class="text-xs text-gray-500 font-medium">
+        Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} a {{ Math.min(currentPage * itemsPerPage,
+        filteredOrdersList.length) }} de {{ filteredOrdersList.length }} pedidos
+      </div>
+      <app-pagination [currentPage]="currentPage" [totalPages]="totalPages"
+        (pageChange)="setPage($event)"></app-pagination>
     </div>
   </div>
 
   <!-- Cards Mobile -->
   <div class="md:hidden space-y-4">
-    <div *ngFor="let order of filteredOrders" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div *ngFor="let order of pagedOrders" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
       <div class="flex items-start justify-between mb-3">
         <div class="flex-1 min-w-0">
-          <div class="text-base font-semibold text-gray-900">Pedido #{{ order.id }}</div>
-          <div class="text-sm text-gray-600 mt-1">{{ order.customer }}</div>
-          <div class="text-xs text-gray-500 mt-1">{{ order.date }}</div>
+          <div class="text-base font-black text-gray-900 font-mono">#{{ order.id.substring(0,8).toUpperCase() }}</div>
+          <div class="text-sm text-gray-600 mt-1 font-bold">{{ order.customer }}</div>
+          <div class="text-xs text-gray-400 mt-1">{{ order.date }}</div>
         </div>
         <span [class]="
-          order.status === 'Completado' ? 'px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 flex-shrink-0' :
-          order.status === 'Pendiente' ? 'px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 flex-shrink-0' :
-          order.status === 'Cancelado' ? 'px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 flex-shrink-0' :
-          'px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 flex-shrink-0'
+          order.status === 'Completado' ? 'px-3 py-1 text-[10px] font-black uppercase rounded-full bg-green-100 text-green-700' :
+          order.status === 'Pendiente' ? 'px-3 py-1 text-[10px] font-black uppercase rounded-full bg-amber-100 text-amber-700' :
+          order.status === 'Cancelado' ? 'px-3 py-1 text-[10px] font-black uppercase rounded-full bg-rose-100 text-rose-700' :
+          'px-3 py-1 text-[10px] font-black uppercase rounded-full bg-indigo-100 text-indigo-700'
         ">
           {{ order.status }}
         </span>
       </div>
       <div class="flex items-center justify-between pt-3 border-t border-gray-200">
         <div>
-          <div class="text-xs text-gray-500">Total</div>
-          <div class="text-lg font-bold text-gray-900">${{ order.total }}</div>
+          <div class="text-xs text-gray-400 font-bold uppercase tracking-widest">Total</div>
+          <div class="text-lg font-black text-gray-900">{{ (order.total || 0) | currency:'PEN' }}</div>
         </div>
-        <a [routerLink]="['/admin/orders/detail', order.id]" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition">
-          Ver Detalles
-        </a>
+        <div class="flex gap-2">
+          <a [routerLink]="['/admin/orders/detail', order.id]"
+            class="p-2 bg-indigo-50 text-indigo-600 rounded-lg transition active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </a>
+          <button (click)="deleteOrder(order.id)"
+            class="p-2 bg-rose-50 text-rose-600 rounded-lg transition active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
-    <div *ngIf="filteredOrders.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-500">
+
+    <!-- Paginación Mobile -->
+    <div *ngIf="totalPages > 1" class="flex justify-center py-4 border-t border-gray-100 mt-4">
+      <app-pagination [currentPage]="currentPage" [totalPages]="totalPages"
+        (pageChange)="setPage($event)"></app-pagination>
+    </div>
+
+    <div *ngIf="pagedOrders.length === 0"
+      class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-500 font-medium">
       No se encontraron pedidos
     </div>
   </div>
 </div>
-

@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { CartService } from '../../../../core/services/cart.service';
 import { OrdersService } from '../../../../core/services/orders.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
-import { Order } from '../../../admin/interfaces/order.interface';
+import { Order } from '../../../../core/interfaces';
 
 @Component({
   selector: 'app-order-list',
@@ -21,8 +22,10 @@ export class OrderListComponent implements OnInit, OnDestroy {
 
   constructor(
     private ordersService: OrdersService,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private cartService: CartService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.loadUserOrders();
@@ -73,7 +76,9 @@ export class OrderListComponent implements OnInit, OnDestroy {
     return d.toLocaleDateString('es-PE', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   }
 
@@ -82,5 +87,21 @@ export class OrderListComponent implements OnInit, OnDestroy {
       style: 'currency',
       currency: 'PEN'
     }).format(amount);
+  }
+
+  resumeOrder(order: Order): void {
+    this.cartService.clearCart();
+    if (order.items) {
+      order.items.forEach(item => {
+        this.cartService.addItem({
+          id: item.productId,
+          name: item.productName,
+          price: item.price,
+          originalPrice: item.price,
+          image: item.productImage || ''
+        }, item.quantity);
+      });
+      this.router.navigate(['/checkout']);
+    }
   }
 }

@@ -38,6 +38,10 @@
               class="absolute bottom-6 right-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 opacity-0 group-hover:opacity-100 transition-all shadow-sm pointer-events-none">
               Explorar Detalles
             </div>
+
+            <div class="absolute top-6 right-6 z-20">
+              <app-product-favorite [productId]="product.id!"></app-product-favorite>
+            </div>
           </div>
 
           <!-- Thumbnails Carousel -->

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { OrdersService } from '../../../../core/services/orders.service';
-import { Order } from '../../../admin/interfaces/order.interface';
+import { Order } from '../../../../core/interfaces';
 
 @Component({
   selector: 'app-order-detail',
@@ -19,7 +19,7 @@ export class OrderDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private ordersService: OrdersService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('id');
@@ -30,7 +30,7 @@ export class OrderDetailComponent implements OnInit {
 
   loadOrder(): void {
     if (!this.orderId) return;
-    
+
     this.ordersService.getById(this.orderId).subscribe({
       next: (order) => {
         this.order = order;

@@ -1,22 +1,11 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
+// Force rebuild
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ProductFavoriteComponent } from '../product-favorite/product-favorite.component';
 import { CartService } from '../../../../core/services/cart.service';
-
-interface Product {
-  id: number | string;
-  name: string;
-  category: string;
-  price: number;
-  originalPrice?: number;
-  salePrice?: number;
-  onSale?: boolean;
-  rating: number;
-  reviews: number;
-  image: string;
-  description?: string;
-}
+import { AuthService } from '../../../../core/services/auth.service';
+import { ClientProduct } from '../../../../core/interfaces/product.interface';
 
 @Component({
   selector: 'app-product-card',
@@ -27,9 +16,13 @@ interface Product {
   encapsulation: ViewEncapsulation.None
 })
 export class ProductCardComponent {
-  @Input() product!: Product;
+  @Input() product!: ClientProduct;
 
-  constructor(private cartService: CartService) { }
+  constructor(
+    private cartService: CartService,
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   get hasDiscount(): boolean {
     return !!(this.product.onSale && this.product.salePrice);
@@ -57,10 +50,16 @@ export class ProductCardComponent {
   }
 
   getStarsArray(rating: number): number[] {
-    return Array.from({ length: 5 }, (_, i) => i < rating ? 1 : 0);
+    const roundedRating = Math.max(0, Math.min(5, Math.round(rating || 0)));
+    return Array.from({ length: 5 }, (_, i) => i < roundedRating ? 1 : 0);
   }
 
   addToCart(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
     this.cartService.addItem(
       {
         id: this.product.id,

@@ -216,14 +216,33 @@ ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE brand_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_categories ENABLE ROW LEVEL SECURITY;
 
--- Políticas básicas (ajustar según necesidades de seguridad)
--- Por ahora, permitir lectura pública para productos visibles
+-- Políticas básicas
 CREATE POLICY "Productos públicos visibles" ON products
   FOR SELECT USING (visible = true AND status = 'Activo');
 
--- Los administradores pueden hacer todo (ajustar con auth)
--- CREATE POLICY "Admin full access" ON products
---   FOR ALL USING (auth.role() = 'administrator');
+-- 1. Usuarios pueden ver sus propios pedidos
+CREATE POLICY "Usuarios ven sus propios pedidos" ON orders
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- 2. Usuarios pueden ver los items de sus propios pedidos
+CREATE POLICY "Usuarios ven items de sus pedidos" ON order_items
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM orders 
+      WHERE orders.id = order_items.order_id 
+      AND orders.user_id = auth.uid()
+    )
+  );
+
+-- 3. Los administradores pueden ver todos los pedidos (opcional, ajusta según tu rol en la tabla users)
+CREATE POLICY "Admin ven todos los pedidos" ON orders
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM users 
+      WHERE users.id = auth.uid() 
+      AND users.role = 'Administrador'
+    )
+  );
 
 -- ============================================
 -- VISTAS ÚTILES

@@ -5,7 +5,7 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbsComponent, BreadcrumbItem } from '../../../../../shared/components/breadcrumbs/breadcrumbs.component';
 import { BrandsService } from '../../../../../core/services/brands.service';
 import { CategoriesService } from '../../../../../core/services/categories.service';
-import { Marca } from '../../../interfaces/marca.interface';
+import { Marca } from '../../../../../core/interfaces/marca.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -77,7 +77,7 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
 
   loadCategories(): void {
     if (!this.marcaId) return;
-    
+
     // Cargar solo las categorías que pertenecen a esta marca
     this.categoriesService.getAll().subscribe({
       next: (categories) => {
@@ -92,7 +92,7 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
 
   loadMarcaData(): void {
     if (!this.marcaId) return;
-    
+
     this.isLoadingData = true;
     this.error = null;
 
@@ -104,7 +104,7 @@ export default class MarcaEditComponent implements OnInit, OnDestroy {
             description: marca.description || '',
             visible: marca.visible
           });
-          
+
           // Convertir nombres de categorías a IDs
           if (marca.categories && marca.categories.length > 0 && this.availableCategories.length > 0) {
             this.selectedCategories = this.availableCategories

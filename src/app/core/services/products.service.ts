@@ -1,84 +1,20 @@
 import { Injectable } from '@angular/core';
 import { getSupabaseClient } from '../config/supabase.config';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { Observable, from, forkJoin } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { SupabaseClient, PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { Observable, from, forkJoin, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
+import { ProductReviewsService } from './product-reviews.service';
 
-export interface ProductSearchParams {
-  query?: string;
-  filters?: {
-    category?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    brand?: string;
-    rating?: number;
-    inStock?: boolean;
-  };
-  sort?: 'relevance' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc' | 'rating';
-  page?: number;
-  limit?: number;
-}
-
-export interface ProductListResponse {
-  products: ClientProduct[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-export interface ClientProduct {
-  id: number | string; // Permitir string (UUID) o number
-  name: string;
-  category: string;
-  price: number;
-  originalPrice?: number;
-  salePrice?: number;
-  onSale?: boolean;
-  rating: number;
-  reviews: number;
-  image: string;
-  description?: string;
-  stock?: number;
-  brand?: string;
-}
-
-export interface ProductColor {
-  id?: string;
-  name: string;
-  hex: string;
-  images: string[];
-}
-
-export interface Product {
-  id?: string;
-  name: string;
-  description: string;
-  brand_id: string;
-  brand?: string;
-  price: number;
-  sale_price?: number;
-  on_sale?: boolean;
-  stock: number;
-  weight: string;
-  status: string;
-  visible: boolean;
-  featured?: boolean;
-  recommended?: boolean;
-  categories?: string[];
-  category_names?: string[];
-  colors?: ProductColor[];
-  image?: string;
-  specifications?: { key: string; value: string }[];
-  created_at?: string;
-  updated_at?: string;
-}
+import { Product, ProductSearchParams, ProductListResponse, ClientProduct, ProductColor, ProductRatingSummary, ProductColorResponse, ProductCategoryResponse } from '../interfaces';
+export type { Product, ProductSearchParams, ProductListResponse, ClientProduct, ProductColor };
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductsService {
   private supabase: SupabaseClient = getSupabaseClient();
+
+  constructor(private productReviewsService: ProductReviewsService) { }
 
   getAll(): Observable<Product[]> {
     return from(
@@ -365,7 +301,7 @@ export class ProductsService {
           const filters = params.filters;
           if (filters.category) {
             filtered = filtered.filter(p =>
-              Array.isArray(p.categories) && p.categories.includes(filters.category!)
+              Array.isArray(p.category_names) && p.category_names.includes(filters.category!)
             );
           }
           if (filters.minPrice !== undefined) {
@@ -406,17 +342,56 @@ export class ProductsService {
 
   getProductByIdForClient(id: number | string): Observable<ClientProduct | undefined> {
     return this.getById(String(id)).pipe(
-      map(product => product ? this.mapToClientProduct(product) : undefined)
+      map(product => {
+        if (!product) {
+          return undefined;
+        }
+        const ratingSummary: ProductRatingSummary = {
+          productId: product.id!,
+          average: product.rating || 0,
+          count: product.reviews || 0
+        };
+        return this.mapToClientProduct(product, ratingSummary);
+      })
+    );
+  }
+
+  getProductsByIds(ids: string[]): Observable<ClientProduct[]> {
+    if (ids.length === 0) {
+      return of([]);
+    }
+    return from(
+      this.supabase
+        .from('products')
+        .select('*, brands(name)')
+        .in('id', ids)
+    ).pipe(
+      switchMap(response => {
+        if (response.error) throw response.error;
+        const products = response.data || [];
+        if (products.length === 0) return of([]);
+
+        const productDetailObservables = products.map(product =>
+          this.getProductWithDetails(product)
+        );
+        return forkJoin(productDetailObservables).pipe(
+          map(detailedProducts => this.mapToClientProducts(detailedProducts))
+        );
+      }),
+      catchError((error: any) => {
+        console.error('Error fetching products by IDs:', error);
+        return of([]);
+      })
     );
   }
 
   private mapToClientProducts(products: Product[]): ClientProduct[] {
     return products
-      .map(p => this.mapToClientProduct(p))
+      .map(p => this.mapToClientProduct(p, { productId: p.id!, average: p.rating || 0, count: p.reviews || 0 }))
       .filter(p => p !== null); // Filtrar productos no visibles
   }
 
-  private mapToClientProduct(product: Product): ClientProduct {
+  private mapToClientProduct(product: Product, ratingSummary?: ProductRatingSummary): ClientProduct {
     // Solo mostrar productos visibles
     if (!product.visible) {
       return null as any;
@@ -428,15 +403,16 @@ export class ProductsService {
     return {
       id: productId as any, // Permitir string o number para compatibilidad
       name: product.name,
-      category: Array.isArray(product.categories) && product.categories.length > 0
-        ? product.categories[0]
+      category: Array.isArray(product.category_names) && product.category_names.length > 0
+        ? product.category_names[0]
         : 'Sin categoría',
+      category_names: product.category_names || [],
       price: product.price, // Precio original/regular
       originalPrice: product.on_sale && product.sale_price ? product.price : undefined,
       salePrice: product.on_sale && product.sale_price ? product.sale_price : undefined,
       onSale: product.on_sale || false,
-      rating: 4,
-      reviews: 0,
+      rating: ratingSummary?.average || 0,
+      reviews: ratingSummary?.count || 0,
       image: product.image || (product.colors && product.colors[0]?.images?.[0]) || '',
       description: product.description,
       stock: product.stock || 0,
@@ -551,17 +527,33 @@ export class ProductsService {
     );
   }
 
+  private getPublicUrl(filePath: string): string {
+    if (!filePath) return '';
+    const { data } = this.supabase.storage.from('products').getPublicUrl(filePath);
+    return data.publicUrl;
+  }
+
   private getProductWithDetails(productData: any): Observable<Product> {
     const productId = productData.id;
 
-    return from(
-      this.supabase
-        .from('product_colors')
-        .select('*, product_color_images(*)')
-        .eq('product_id', productId)
-    ).pipe(
-      switchMap(colorsResponse => {
-        const colors: ProductColor[] = (colorsResponse.data || []).map((color: any) => ({
+    return forkJoin([
+      from(
+        this.supabase
+          .from('product_colors')
+          .select('*, product_color_images(*)')
+          .eq('product_id', productId)
+      ),
+      from(
+        this.supabase
+          .from('product_categories')
+          .select('category_id, categories(name)')
+          .eq('product_id', productId)
+      ),
+      this.productReviewsService.getRating(productId)
+    ]).pipe(
+      map(([colorsResponse, categoriesResponse, ratingSummary]: [PostgrestSingleResponse<ProductColorResponse[]>, PostgrestSingleResponse<ProductCategoryResponse[]>, ProductRatingSummary]) => {
+        const rawColors: ProductColorResponse[] = colorsResponse.data || [];
+        const colors: ProductColor[] = rawColors.map((color: ProductColorResponse) => ({
           id: color.id,
           name: color.name,
           hex: color.hex,
@@ -569,42 +561,40 @@ export class ProductsService {
             .sort((a: any, b: any) => a.order_index - b.order_index)
             .map((img: any) => img.image_url)
         }));
+        const rawCategories: ProductCategoryResponse[] = categoriesResponse.data || [];
+        const categoryIds = rawCategories.map((pc: ProductCategoryResponse) => pc.category_id);
+        const categoryNames = rawCategories.map((pc: ProductCategoryResponse) => {
+          if (Array.isArray(pc.categories)) {
+            return pc.categories[0]?.name || 'Categoría desconocida';
+          }
+          return pc.categories?.name || 'Categoría desconocida';
+        });
 
-        return from(
-          this.supabase
-            .from('product_categories')
-            .select('category_id, categories(name)')
-            .eq('product_id', productId)
-        ).pipe(
-          map(categoriesResponse => {
-            const categoryIds = (categoriesResponse.data || []).map((pc: any) => pc.category_id);
-            const categoryNames = (categoriesResponse.data || []).map((pc: any) => pc.categories?.name || 'Categoría desconocida');
-
-            return {
-              id: productData.id,
-              name: productData.name,
-              description: productData.description,
-              brand_id: productData.brand_id,
-              brand: productData.brands?.name,
-              price: productData.price,
-              sale_price: productData.sale_price,
-              on_sale: productData.on_sale,
-              stock: productData.stock,
-              weight: productData.weight,
-              status: productData.status,
-              visible: productData.visible,
-              featured: productData.featured,
-              recommended: productData.recommended,
-              categories: categoryIds,
-              category_names: categoryNames,
-              colors,
-              image: colors[0]?.images[0] || productData.image || null,
-              specifications: productData.specifications || [],
-              created_at: productData.created_at,
-              updated_at: productData.updated_at
-            } as Product;
-          })
-        );
+        return {
+          id: productData.id,
+          name: productData.name,
+          description: productData.description,
+          brand_id: productData.brand_id,
+          brand: productData.brands?.name,
+          price: productData.price,
+          sale_price: productData.sale_price,
+          on_sale: productData.on_sale,
+          stock: productData.stock,
+          weight: productData.weight,
+          status: productData.status,
+          visible: productData.visible,
+          featured: productData.featured,
+          recommended: productData.recommended,
+          categories: categoryIds,
+          category_names: categoryNames,
+          colors,
+          image: colors[0]?.images[0] || productData.image || null,
+          specifications: productData.specifications || [],
+          created_at: productData.created_at,
+          updated_at: productData.updated_at,
+          rating: ratingSummary.average,
+          reviews: ratingSummary.count
+        } as Product;
       })
     );
   }

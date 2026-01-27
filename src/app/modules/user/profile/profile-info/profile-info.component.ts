@@ -48,10 +48,10 @@ import { Subject, takeUntil } from 'rxjs';
           </div>
         </div>
         
-        <div class="pt-4 border-t border-gray-200">
+        <div class="pt-6 border-t border-slate-100">
           <a 
             routerLink="/perfil/editar"
-            class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+            class="inline-flex items-center px-8 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg shadow-slate-200 active:scale-95">
             Editar Información
           </a>
         </div>
@@ -67,7 +67,7 @@ export class ProfileInfoComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private usersService: UsersService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.authService.currentUser$

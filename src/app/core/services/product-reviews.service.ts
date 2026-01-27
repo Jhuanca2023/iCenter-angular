@@ -3,26 +3,9 @@ import { getSupabaseClient } from '../config/supabase.config';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Observable, from } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { ProductRatingSummary, Review } from '../interfaces/product.interface';
 
-export interface ProductRatingSummary {
-  productId: string;
-  average: number;
-  count: number;
-  userRating?: number;
-}
 
-export interface Review {
-  id: string;
-  product_id: string;
-  user_id: string;
-  rating: number;
-  comment?: string;
-  created_at: Date;
-  user?: {
-    name: string;
-    avatar?: string;
-  };
-}
 
 @Injectable({
   providedIn: 'root'

@@ -13,12 +13,12 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  user: User;
+  user: AuthUserLegacy;
   token: string;
   refreshToken?: string;
 }
 
-export interface User {
+export interface AuthUserLegacy {
   id: string;
   email: string;
   firstName?: string;

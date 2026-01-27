@@ -1,0 +1,172 @@
+<div class="overflow-x-hidden min-h-screen bg-[#FDFDFF]">
+    <!-- Refined Hero Section -->
+    <section class="relative py-24 md:py-32 overflow-hidden bg-white">
+        <div
+            class="absolute -top-20 -right-20 w-[600px] h-[600px] bg-indigo-50/50 rounded-full blur-[120px] -z-10 animate-pulse">
+        </div>
+        <div class="absolute bottom-0 -left-20 w-[400px] h-[400px] bg-purple-50/40 rounded-full blur-[100px] -z-10">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div
+                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full font-black text-[10px] uppercase tracking-widest mb-10 shadow-sm border border-indigo-100/50">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
+                </span>
+                Próximo Lanzamiento: Apple Vision Pro 2
+            </div>
+
+            <h1 class="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[0.95] mb-8">
+                Vive la experiencia <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">iCenter
+                    Events</span>
+            </h1>
+
+            <p class="text-slate-500 text-xl md:text-2xl max-w-3xl mx-auto font-medium leading-relaxed mb-12">
+                Sé el primero en probar la innovación. Únete a nuestros lanzamientos exclusivos y masterclasses
+                certificadas.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-5 justify-center">
+                <button (click)="navigateToContact()"
+                    class="px-12 py-5 bg-slate-900 text-white font-black rounded-2xl shadow-2xl shadow-slate-200 transition hover:scale-105 active:scale-95 text-lg cursor-pointer">
+                    Reserva tu Invitación
+                </button>
+                <button
+                    class="px-12 py-5 bg-white text-slate-900 border-2 border-slate-900 font-black rounded-2xl transition hover:bg-slate-900 hover:text-white active:scale-95 text-lg">
+                    Calendario 2026
+                </button>
+            </div>
+
+            <div class="relative mt-24 max-w-6xl mx-auto px-4 group">
+                <div
+                    class="absolute -inset-2 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-[3rem] blur-2xl group-hover:opacity-100 transition duration-1000">
+                </div>
+                <img class="relative rounded-[3rem] object-cover w-full h-[500px] shadow-2xl shadow-indigo-100 border-4 border-white"
+                    src="https://img.freepik.com/foto-gratis/configuracion-escritorio-juego-neon-iluminado-gradiente-teclado_23-2149529412.jpg?semt=ais_hybrid&w=740&q=80"
+                    alt="Auditorio iCenter" />
+
+                <div
+                    class="absolute -bottom-10 -right-5 md:right-10 bg-white p-8 rounded-[2rem] shadow-2xl shadow-indigo-200/50 max-w-xs text-left animate-float">
+                    <div class="text-indigo-600 font-black text-4xl mb-2">15</div>
+                    <div class="text-slate-900 font-bold text-xl mb-2">Diciembre</div>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed">Presentación exclusiva de la nueva
+                        línea MacBook Air M3.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Event Cards Section -->
+    <section class="py-32">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
+                <div class="text-left flex-1 max-w-2xl">
+                    <span class="text-indigo-600 font-black text-xs uppercase tracking-[0.4em] mb-4 block">Agenda
+                        2026</span>
+                    <h2 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">Diseñamos espacios para la
+                        <span class="text-purple-600">inspiración</span>
+                    </h2>
+                </div>
+                <div class="flex gap-2">
+                    <button (click)="prevEvent()"
+                        class="p-4 rounded-full border border-slate-200 hover:bg-indigo-600 hover:text-white transition group cursor-pointer active:scale-95"
+                        aria-label="Evento anterior">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 rotate-180" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                    <button (click)="nextEvent()"
+                        class="p-4 rounded-full border border-slate-200 hover:bg-indigo-600 hover:text-white transition group cursor-pointer active:scale-95"
+                        aria-label="Siguiente evento">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <!-- Event Cards Loop -->
+                <div *ngFor="let event of events; let i = index" [class.hidden]="i !== currentEventIndex"
+                    class="md:block group h-[500px] overflow-hidden rounded-[3rem] relative shadow-2xl shadow-indigo-100 hover:-translate-y-2 transition-all duration-500">
+                    <img [src]="event.image" [alt]="event.title"
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent p-10 flex flex-col justify-end">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span
+                                [class]="'px-3 py-1 text-white font-black text-[10px] uppercase rounded-full ' + event.color">
+                                {{ event.tag }}
+                            </span>
+                            <span class="text-white/60 font-bold text-xs uppercase">{{ event.subTag }}</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-3">{{ event.title }}</h3>
+                        <p class="text-white/70 text-sm font-medium line-clamp-2">{{ event.description }}</p>
+                        <div class="mt-6 flex items-center justify-between">
+                            <button [class]="'text-white font-black border-b-2 pb-1 text-sm ' + event.buttonBorder">
+                                {{ event.btnText }}
+                            </button>
+                            <span [class]="'font-bold text-sm ' + event.textAccent">{{ event.msgHighlight }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section (Improved for Mobile - Side by Side) -->
+    <section class="py-32 bg-white overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 mb-20 text-center">
+            <h2 class="text-4xl md:text-5xl font-black text-slate-900 mb-4">Capturando la <span
+                    class="text-indigo-600 italic">energía</span></h2>
+            <p class="text-slate-500 text-lg">Revive los momentos más impactantes de nuestra historia.</p>
+        </div>
+
+        <!-- Horizontal Scrollable / Two columns on mobile -->
+        <div class="flex flex-row md:flex-row gap-4 h-[300px] md:h-[600px] px-4 overflow-x-auto snap-x no-scrollbar">
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
+                <img src="https://img.freepik.com/foto-gratis/vida-muerta-auriculares-ciberneticos-inalambricos_23-2151072182.jpg?semt=ais_hybrid&w=740&q=80"
+                    alt="Gallery 1" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                <div class="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+            </div>
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-[1.5] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
+                <img src="https://img.freepik.com/vector-gratis/rastreadores-estilo-realista_23-2148509776.jpg?semt=ais_hybrid&w=740&q=80"
+                    alt="Gallery 2" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                <div class="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+            </div>
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
+                <img src="https://img.freepik.com/foto-gratis/vista-configuracion-teclado-controlador-juegos-neon-iluminados_23-2149529357.jpg?t=st=1769388757~exp=1769389357~hmac=509c7d3ee199776e1ca23460b2c2d7d722533ee557af68f2edc988f2e01edac7&w=1060"
+                    alt="Gallery 3" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                <div class="absolute inset-0 bg-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+            </div>
+            <!-- Extra images for more content -->
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
+                <img src="https://img.freepik.com/foto-gratis/simulador-realidad-virtual-vista-superior-laptop_23-2148912817.jpg?t=st=1769388962~exp=1769392562~hmac=f4b99107f1d291e10a06f0a7aaf0ec76ecfb215dd7f4802ebcba6e7558958fe5&w=1060"
+                    alt="Gallery 4" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                <div class="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+            </div>
+            <div
+                class="min-w-[280px] md:min-w-0 md:flex-1 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden group relative snap-center">
+                <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=800"
+                    alt="Gallery 5" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000">
+                <div class="absolute inset-0 bg-fuchsia-600/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

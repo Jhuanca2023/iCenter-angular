@@ -1,60 +1,70 @@
-<section class="w-full bg-slate-100 pt-0 pb-6 sm:pb-8 md:pt-2 md:pb-12 px-4 sm:px-6 md:px-16 lg:px-24 xl:px-32 relative overflow-hidden rounded-b-[40px] sm:rounded-b-[60px] md:rounded-b-[90px]">
-  <div class="max-w-7xl mx-auto relative z-10">
-    <div class="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 md:gap-12 relative">
-      <!-- Contenido izquierdo -->
-      <div class="flex-1 max-w-2xl w-full">
-        <!-- Headline con badge -->
-        <div class="mb-4 sm:mb-6">
-          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-slate-900 leading-tight">
-            Obtén<br>
-            <span class="relative inline-block">
-              <span class="inline">Descuento en Smartphones</span>
-              <span class="absolute -top-2 -right-6 sm:-top-3 sm:-right-8 md:-right-12 bg-purple-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-lg sm:text-xl md:text-2xl font-bold shadow-lg z-10">
-                50%
-              </span>
-            </span><br>
-            Colección
-          </h1>
-        </div>
+<section class="hero-carousel-container w-full bg-slate-100 relative overflow-hidden">
+  <div *ngIf="banners.length > 0; else loader"
+    class="relative w-full overflow-hidden min-h-[400px] md:min-h-[500px] lg:min-h-[600px]">
 
-        <!-- Descripción -->
-        <p class="text-slate-600 text-sm sm:text-base md:text-lg mb-6 sm:mb-8 leading-relaxed max-w-lg">
-          Descubre nuestra increíble colección de smartphones con los mejores precios y calidad garantizada.
-        </p>
+    <!-- Slides -->
+    <div class="slides-container flex transition-transform duration-700 ease-in-out h-full"
+      [style.transform]="'translateX(-' + currentIndex * 100 + '%)'">
+      <div *ngFor="let banner of banners" class="slide w-full flex-shrink-0 flex items-center justify-center relative">
+        <div
+          class="max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-16 lg:px-24 xl:px-32 flex flex-col md:flex-row items-center justify-between gap-12 py-12">
 
-        <!-- Product Highlight -->
-        <div class="flex items-center gap-3 sm:gap-4">
-          <div class="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-lg flex items-center justify-center shadow-md flex-shrink-0">
-            <img src="assets/img/factura.png" alt="Smartphone icon" class="w-8 h-8 sm:w-12 sm:h-12 object-contain">
+          <!-- Content -->
+          <div class="flex-1 text-center md:text-left z-10 animate-fade-in-up">
+            <h1 *ngIf="banner.title"
+              class="text-4xl sm:text-5xl lg:text-7xl font-black text-slate-900 leading-none mb-6">
+              {{ banner.title }}
+            </h1>
+            <p *ngIf="banner.subtitle" class="text-slate-600 text-lg md:text-xl mb-10 max-w-lg">
+              {{ banner.subtitle }}
+            </p>
+            <a *ngIf="banner.link_url" [routerLink]="banner.link_url"
+              class="hidden sm:inline-block bg-slate-900 text-white px-10 py-4 rounded-2xl font-bold hover:bg-black transition-all shadow-xl active:scale-95">
+              Explorar ahora
+            </a>
           </div>
-          <div>
-            <p class="text-slate-900 font-semibold text-base sm:text-lg">Xiphone 14 Edition</p>
+
+          <!-- Image -->
+          <div class="flex-1 relative flex justify-center items-center h-full">
+            <div class="absolute w-[120%] aspect-square bg-slate-200/50 rounded-full blur-3xl -z-10 animate-pulse">
+            </div>
+            <img [src]="banner.image_url" [alt]="banner.title"
+              class="w-full max-w-[500px] h-auto object-contain drop-shadow-2xl animate-float">
           </div>
-        </div>
-      </div>
-
-      <!-- Sección derecha con imagen -->
-      <div class="flex-1 relative min-h-[300px] sm:min-h-[400px] md:min-h-[600px] lg:min-h-[700px] flex items-center justify-end w-full">
-        <!-- Overlay gris rotado -->
-        <div class="absolute top-0 right-0 w-32 h-40 sm:w-48 sm:h-56 md:w-64 md:h-72 lg:w-72 lg:h-80 bg-slate-200 transform rotate-12 opacity-60 -z-10 rounded-lg"></div>
-        
-        <!-- Imagen del smartphone -->
-        <div class="relative z-10 w-full flex justify-end items-center">
-          <img src="assets/img/iphone-banner.png" 
-               alt="Smartphone" 
-               class="w-full max-w-[400px] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[700px] xl:max-w-[800px] h-auto object-contain transform scale-100 sm:scale-110 md:scale-125">
-        </div>
-      </div>
-
-      <!-- Tags en el centro entre texto e imagen -->
-      <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col gap-2 sm:gap-3 z-20 hidden sm:flex">
-        <div class="bg-white px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-lg shadow-lg">
-          <span class="text-slate-900 font-semibold text-xs sm:text-sm">Mejor</span>
-        </div>
-        <div class="bg-yellow-400 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-lg shadow-lg">
-          <span class="text-slate-900 font-semibold text-xs sm:text-sm">Calidad</span>
         </div>
       </div>
     </div>
+
+    <!-- Controls -->
+    <div *ngIf="banners.length > 1"
+      class="absolute inset-0 pointer-events-none flex items-center justify-between px-4 sm:px-8">
+      <button (click)="prev()"
+        class="pointer-events-auto bg-white/80 hover:bg-white p-3 rounded-full shadow-lg transition-all active:scale-90">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button (click)="next()"
+        class="pointer-events-auto bg-white/80 hover:bg-white p-3 rounded-full shadow-lg transition-all active:scale-90">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Indicators -->
+    <div *ngIf="banners.length > 1" class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2.5">
+      <button *ngFor="let b of banners; let i = index" (click)="goTo(i)"
+        [class]="i === currentIndex ? 'w-10 bg-slate-900' : 'w-2.5 bg-slate-300 hover:bg-slate-400'"
+        class="h-2.5 rounded-full transition-all duration-300"></button>
+    </div>
   </div>
+
+  <ng-template #loader>
+    <div class="w-full h-[500px] flex items-center justify-center">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-slate-900"></div>
+    </div>
+  </ng-template>
 </section>
