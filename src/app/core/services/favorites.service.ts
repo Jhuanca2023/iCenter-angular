@@ -137,8 +137,16 @@ export class FavoritesService {
 
   isFavorite(productId: string): Observable<boolean> {
     return this.favorites$.pipe(
-      map(favorites => favorites.some(fav => fav.productId === productId))
+      map(favorites => favorites.some(fav => String(fav.productId) === String(productId)))
     );
+  }
+
+  toggleFavorite(productId: string, currentIsFavorite: boolean, favoriteId: string | null): Observable<any> {
+    if (currentIsFavorite && favoriteId) {
+      return this.removeFavorite(favoriteId);
+    } else {
+      return this.addFavorite(productId);
+    }
   }
 
   getFavoriteFolders(): Observable<FavoriteFolder[]> {
