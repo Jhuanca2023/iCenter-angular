@@ -1,13 +1,28 @@
+.favorite-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
 
-.favorite-btn svg.is-favorite {
+/* Selector ultra específico para evitar conflictos con Tailwind */
+.favorite-btn svg.favorite-icon.is-favorite {
   color: #22c55e !important;
   fill: #22c55e !important;
+  stroke: #22c55e !important;
+  filter: drop-shadow(0 0 2px rgba(34, 197, 94, 0.4)) !important;
+  transform: scale(1.1);
 }
 
-.favorite-btn:hover svg:not(.is-favorite) {
+.favorite-btn:hover svg.favorite-icon:not(.is-favorite) {
   color: #10b981 !important;
+  stroke: #10b981 !important;
 }
 
-.favorite-btn svg {
-  transition: all 0.3s ease;
+.favorite-btn svg.favorite-icon {
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.favorite-btn svg.favorite-icon:not(.is-favorite) {
+  color: #d1d5db !important;
+  fill: transparent !important;
 }
