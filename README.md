@@ -28,22 +28,33 @@ Aplicación de e-commerce completa desarrollada con Angular 19 y Supabase, que i
 
 ## Requisitos Previos
 
+Antes de comenzar, asegúrate de tener instalado:
 - Node.js 18.0 o superior
-- Administrador de paquetes npm o Bun
+- Angular CLI: `npm install -g @angular/cli`
+- Administrador de paquetes npm o Bun (recomendado)
 - Cuenta activa en Supabase
 - Cuenta de desarrollador en Stripe (para pagos)
 
 ## Configuración del Proyecto
 
-### 1. Instalación de dependencias
+### 1. Clonar el repositorio
 
-Clonar el repositorio y ejecutar:
+bash
+git clone https://github.com/Jhuanca2023/iCenter-angular.git
+cd iCenter-angular
+
+
+### 2. Instalación de dependencias
+
+Ejecuta el siguiente comando para instalar todas las dependencias necesarias:
 
 bash
 npm install
+# o si usas Bun
+bun install
 
 
-### 2. Configuración de Variables de Entorno
+### 3. Configuración de Variables de Entorno
 
 Crear o editar el archivo `src/environments/environment.ts` con tus credenciales:
 
@@ -112,7 +123,6 @@ database/                    # Scripts SQL para la configuración de Supabase
 supabase/                    # Configuración adicional de Supabase (opcional)
 ```
 
-
 ## Ejecución
 
 ### Modo Desarrollo
@@ -150,6 +160,34 @@ Si tienes alguna duda o sugerencia, puedes contactarme en:
 
 Este proyecto está bajo la **Apache License 2.0**. Consulta el archivo [LICENSE](./LICENSE) para más detalles.
 
+## Screenshots
+
+### Vista de Cliente
+![Home](./public/home1.png)
+![Detalle de Producto](./public/detalleproducto.png)
+![Carrito de Compras](./public/carrito-compras.png)
+![Checkout](./public/checkout.png)
+![Confirmación de Pago](./public/confirmacion-checkout.png)
+![Mis Pedidos](./public/mis-pedidos.png)
+![Eventos](./public/Eventos.png)
+![Nosotros](./public/nosotros.png)
+![Libro de Reclamaciones](./public/libro-reclamaciones.png)
+
+### Panel de Administración
+![Dashboard](./public/Dashboard-admin.png)
+![Categorías](./public/admin-categorias.png)
+![Detalle de Categoría](./public/admin-categoria-detalle.png)
+![Marcas](./public/admin-marcas.png)
+![Productos](./public/admin-productos.png)
+![Detalle de Producto](./public/admin-producto-detalle.png)
+![Pedidos](./public/admin-pedidos.png)
+![Detalle de Pedido](./public/admin-pedidos-detalle.png)
+![Usuarios](./public/Admin-Usuarios.png)
+![Detalle de Usuario](./public/admin-usuarios-detalle.png)
+![Banners](./public/admin-banners.png)
+![Reclamos](./public/admin-reclamos.png)
+![Detalle de Reclamo](./public/admin-reclamos-detalle.png)
+![Perfil Admin](./public/admin-perfil.png)
+
 ---
 Desarrollado para el sistema de gestión iCenter.
-
