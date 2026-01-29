@@ -1,9 +1,9 @@
 <button type="button" (click)="$event.stopPropagation(); toggleFavorite()"
-  class="absolute top-3 right-3 z-10 p-1 transition-transform active:scale-95 hover:scale-110 focus:outline-none"
+  class="absolute top-3 right-3 z-10 p-1 transition-transform active:scale-95 hover:scale-110 focus:outline-none favorite-btn"
   [attr.aria-label]="isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'">
   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-colors duration-300"
-    [class.text-green-500]="isFavorite" [class.text-gray-300]="!isFavorite" [class.fill-current]="isFavorite">
+    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.is-favorite]="isFavorite"
+    [class.text-gray-300]="!isFavorite">
     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
     </polygon>
   </svg>

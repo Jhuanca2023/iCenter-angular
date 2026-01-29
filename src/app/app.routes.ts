@@ -43,11 +43,11 @@ export const routes: Routes = [
       },
       {
         path: 'nosotros',
-        loadComponent: () => import('./modules/public/nosotros/nosotros.component').then(m => m.default)
+        loadComponent: () => import('./modules/nosotros/nosotros.component').then(m => m.default)
       },
       {
         path: 'eventos',
-        loadComponent: () => import('./modules/public/eventos/eventos.component').then(m => m.default)
+        loadComponent: () => import('./modules/eventos/eventos.component').then(m => m.default)
       }
     ]
   },
