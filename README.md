@@ -1,170 +1,155 @@
-# 🛒 iCenter E-Commerce - Angular + Supabase
+# iCenter E-Commerce - Angular + Supabase
 
-Aplicación de e-commerce completa desarrollada con Angular y Supabase, con panel de administración y vista de cliente.
+Aplicación de e-commerce completa desarrollada con Angular 19 y Supabase, que incluye panel de administración, vista de cliente, pasarela de pagos con Stripe y sistema de gestión integral.
 
-## 🚀 Características
+## Tecnologías Utilizadas
 
-- ✅ Autenticación segura (Email/Password y Google OAuth)
-- ✅ Panel de administración completo
-- ✅ Gestión de productos, categorías, marcas y usuarios
-- ✅ Almacenamiento de imágenes en Supabase Storage
-- ✅ Vista de cliente con catálogo de productos
-- ✅ Sistema de roles (Administrador/Usuario)
-- ✅ Políticas de seguridad RLS (Row Level Security)
+- Angular 19 (Uso de Signals, SSR y Control Flow Syntax)
+- Supabase (PostgreSQL, Autenticación, Storage y RLS)
+- Stripe JS (Pasarela de pagos segura)
+- Tailwind CSS (Diseño responsivo y moderno)
+- Chart.js (Visualización de datos y estadísticas)
+- Canvas-confetti (Efectos visuales de experiencia de usuario)
+- TypeScript (Lenguaje de programación principal)
+- Netlify (Plataforma de despliegue y hosting)
+- RxJS (Programación reactiva)
+- PostCSS (Procesamiento de estilos)
 
-## 📋 Requisitos Previos
+## Características Principales
 
-- Node.js 18+ y npm
-- Cuenta en Supabase ([app.supabase.com](https://app.supabase.com))
-- Angular CLI: `npm install -g @angular/cli`
+- Autenticación segura: Soporte para Email/Password y Google OAuth a través de Supabase.
+- Panel de Administración: Gestión completa de productos, categorías, marcas, usuarios y pedidos.
+- Pasarela de Pagos: Integración completa con Stripe para transacciones reales y seguras.
+- Libro de Reclamaciones: Sistema digital para gestión de quejas y reclamos.
+- Sistema de Favoritos: Los usuarios pueden guardar productos de su interés.
+- Reseñas y Especificaciones: Soporte para comentarios de clientes y detalles técnicos de productos.
+- Banners y Promociones: Gestión dinámica de publicidad en la plataforma.
+- Seguridad RLS: Protección de datos a nivel de fila mediante políticas de Supabase.
 
-## ⚙️ Configuración Inicial
+## Requisitos Previos
 
-### 1. Clonar e Instalar
+- Node.js 18.0 o superior
+- Administrador de paquetes npm o Bun
+- Cuenta activa en Supabase
+- Cuenta de desarrollador en Stripe (para pagos)
 
-```bash
-git clone <tu-repositorio>
-cd ecommerce-angular
+## Configuración del Proyecto
+
+### 1. Instalación de dependencias
+
+Clonar el repositorio y ejecutar:
+
+bash
 npm install
-```
 
-### 2. Configurar Supabase
 
-#### 2.1 Crear Proyecto en Supabase
-1. Ve a [app.supabase.com](https://app.supabase.com)
-2. Crea un nuevo proyecto
-3. Guarda la **Project URL** y **anon key**
+### 2. Configuración de Variables de Entorno
 
-#### 2.2 Configurar Base de Datos
-1. En Supabase Dashboard, ve a **SQL Editor**
-2. Ejecuta `database/schema-fixed.sql` (crea todas las tablas)
-3. Ejecuta `database/POLICIES.sql` (configura políticas de seguridad)
+Crear o editar el archivo `src/environments/environment.ts` con tus credenciales:
 
-#### 2.3 Configurar Storage
-1. Ve a **Storage** en Supabase Dashboard
-2. Crea bucket `product-images` (público)
-3. Crea bucket `category-images` (público)
-
-#### 2.4 Crear Usuario Administrador
-1. Ve a **Authentication > Users**
-2. Crea usuario con email `admin@icenter.com`
-3. Copia el **UUID** del usuario
-4. En **SQL Editor**, ejecuta:
-```sql
-INSERT INTO users (id, email, name, role, status)
-VALUES (
-  'PEGA_EL_UUID_AQUI',
-  'admin@icenter.com',
-  'Administrador',
-  'Administrador',
-  'Activo'
-);
-```
-
-#### 2.5 Configurar Google OAuth (Opcional)
-1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
-2. Crea OAuth Client ID
-3. Agrega redirect URI: `https://TU_PROYECTO.supabase.co/auth/v1/callback`
-4. En Supabase: **Authentication > Providers > Google**
-5. Pega Client ID y Secret
-
-### 3. Configurar Variables de Entorno
-
-Edita `src/environments/environment.ts`:
-
-```typescript
+typescript
 export const environment = {
   production: false,
   supabaseUrl: 'https://TU_PROYECTO.supabase.co',
-  supabaseAnonKey: 'tu_anon_key_aqui'
+  supabaseAnonKey: 'TU_ANON_KEY',
+  stripePublicKey: 'TU_STRIPE_PUBLIC_KEY'
 };
-```
 
-## 🏃 Ejecutar la Aplicación
 
-### Desarrollo
-```bash
-npm start
-# o
-ng serve
-```
+## Configuración de Base de Datos (Supabase)
 
-La aplicación estará disponible en `http://localhost:4200`
+Para el correcto funcionamiento del sistema, debes ejecutar los scripts SQL en el Editor SQL de Supabase en el siguiente orden estricto:
 
-### Producción
-```bash
-npm run build
-```
+1. database/schema-fixed.sql - Inicializa la estructura base del sistema (Tablas de usuarios, marcas, categorías y productos).
+2. database/POLICIES.sql - Configura las reglas de seguridad RLS para proteger los datos.
+3. database/add-user-fields.sql - Agrega campos adicionales necesarios para el perfil de usuario.
+4. database/add-auth-provider.sql - Configura el soporte para proveedores de autenticación externos.
+5. database/banners-promotions-schema.sql - Crea las tablas para la gestión de publicidad y promociones.
+6. database/create-claims-schema.sql - Establece la estructura para el libro de reclamaciones.
+7. database/create-favorites.sql - Activa la funcionalidad de lista de deseos para los usuarios.
+8. database/update-schema-reviews-specs.sql - Agrega soporte para reseñas de clientes y fichas técnicas.
+9. database/add-stripe-columns.sql - Prepara la base de datos para la integración con Stripe.
+10. database/create-admin-user.sql - Script de ayuda para la creación del primer administrador.
 
-## 📁 Estructura del Proyecto
+### Configuración de Storage en Supabase
 
-```
+Es necesario crear los siguientes buckets en la sección de Storage y marcarlos como públicos:
+- product-images: Para las fotografías de los productos.
+- category-images: Para los iconos e imágenes de categorías.
+- avatars: Para las fotos de perfil de los usuarios.
+
+## Estructura de Módulos
+
+El proyecto está organizado siguiendo una arquitectura modular:
+
+- src/app/modules/admin: Módulo de administración para gestión interna.
+- src/app/modules/auth: Gestión de inicio de sesión, registro y recuperación.
+- src/app/modules/products: Catálogo, filtros y detalles de productos.
+- src/app/modules/cart: Gestión del carrito de compras local y persistente.
+- src/app/modules/checkout: Proceso de pago e integración con Stripe.
+- src/app/modules/user: Perfil de usuario, historial de pedidos y direcciones.
+- src/app/modules/claims: Módulo dedicado al libro de reclamaciones.
+- src/app/modules/nosotros: Información corporativa del proyecto.
+- src/app/modules/eventos: Sección de noticias y eventos destacados.
+- src/app/modules/favorites: Almacenamiento de productos preferidos.
+
+## Estructura del Proyecto
+
+```text
 src/
 ├── app/
-│   ├── core/
-│   │   ├── config/          # Configuración de Supabase
-│   │   ├── guards/          # Guards de autenticación
-│   │   └── services/        # Servicios principales
-│   ├── modules/
-│   │   ├── admin/           # Panel de administración
-│   │   ├── auth/            # Autenticación
-│   │   └── products/        # Vista de productos
-│   └── shared/              # Componentes compartidos
-├── environments/             # Variables de entorno
-database/
-├── schema-fixed.sql         # Esquema de base de datos
-└── POLICIES.sql            # Políticas RLS
+│   ├── core/                # Configuración, guards, interceptores y servicios globales
+│   ├── modules/             # Módulos funcionales de la aplicación
+│   │   ├── admin/           # Gestión administrativa
+│   │   ├── auth/            # Autenticación y registro
+│   │   ├── products/        # Catálogo y detalle de productos
+│   │   └── ...              # Otros módulos funcionales
+│   └── shared/              # Componentes, layouts y pipes compartidos
+├── assets/                  # Recursos estáticos (imágenes, fuentes)
+└── environments/            # Variables de entorno (Desarrollo/Producción)
+
+database/                    # Scripts SQL para la configuración de Supabase
+supabase/                    # Configuración adicional de Supabase (opcional)
 ```
 
-## 🔐 Credenciales por Defecto
 
-**Usuario Administrador:**
-- Email: `admin@icenter.com`
-- Password: (la que configuraste en Supabase Auth)
+## Ejecución
 
-## 🛠️ Tecnologías Utilizadas
+### Modo Desarrollo
+Ejecuta el servidor de desarrollo local:
 
-- **Angular** 17+
-- **Supabase** (Backend as a Service)
-- **TypeScript**
-- **Tailwind CSS**
-- **RxJS**
+bash
+npm start
 
-## 📚 Documentación Adicional
 
-- [Documentación de Supabase](https://supabase.com/docs)
-- [Documentación de Angular](https://angular.io/docs)
+La aplicación se abrirá en `http://localhost:4200`.
 
-## 🐛 Solución de Problemas
+### Construcción para Producción
+Para generar el paquete optimizado de producción:
 
-### Error: "Invalid API key"
-- Verifica que la `anon key` en `environment.ts` sea correcta
-- Asegúrate de usar la **anon key**, NO la service_role key
+bash
+npm run build
 
-### Error: "Failed to fetch"
-- Verifica que la URL de Supabase sea correcta
-- Revisa la consola del navegador para errores de CORS
 
-### No puedo iniciar sesión
-- Verifica que el usuario exista en Supabase Auth
-- Verifica que el usuario tenga rol "Administrador" en la tabla `users`
-- Revisa la consola del navegador para errores
+## Despliegue
 
-### Las imágenes no se suben
-- Verifica que los buckets estén creados y sean públicos
-- Verifica que las políticas de Storage permitan inserción
+Este proyecto está configurado para desplegarse fácilmente en Netlify. Solo necesitas conectar tu repositorio a un nuevo sitio en Netlify y configurar las variables de entorno correspondientes.
 
-## 📝 Notas Importantes
+## Notas de Seguridad
 
-- ⚠️ **NUNCA** compartas la `service_role key` públicamente
-- ✅ Usa siempre la `anon key` en el frontend
-- ✅ Las políticas RLS protegen los datos en el backend
-- ✅ El usuario administrador debe tener rol "Administrador" en la tabla `users`
+- Nunca expongas tu `service_role key` de Supabase en el frontend.
+- Asegúrate de que las políticas RLS estén siempre activas en producción.
+- Valida los webhooks de Stripe solo mediante firmas oficiales.
 
-## 📄 Licencia
+## Contacto
 
-Este proyecto es privado y confidencial.
+Si tienes alguna duda o sugerencia, puedes contactarme en:
+- **Email**: [josehuanca612@gmail.com](mailto:josehuanca612@gmail.com)
+
+## Licencia
+
+Este proyecto está bajo la **Apache License 2.0**. Consulta el archivo [LICENSE](./LICENSE) para más detalles.
 
 ---
+Desarrollado para el sistema de gestión iCenter.
 
-**Desarrollado con ❤️ usando Angular y Supabase**

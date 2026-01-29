@@ -1,0 +1,13 @@
+
+.favorite-btn svg.is-favorite {
+  color: #22c55e !important;
+  fill: #22c55e !important;
+}
+
+.favorite-btn:hover svg:not(.is-favorite) {
+  color: #10b981 !important;
+}
+
+.favorite-btn svg {
+  transition: all 0.3s ease;
+}
