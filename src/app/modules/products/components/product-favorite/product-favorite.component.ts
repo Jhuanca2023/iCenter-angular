@@ -23,7 +23,8 @@ export class ProductFavoriteComponent implements OnInit, OnDestroy {
     this.favoritesService.favorites$
       .pipe(takeUntil(this.destroy$))
       .subscribe(favorites => {
-        const fav = favorites.find(f => f.productId === this.productId);
+        // Enforce string comparison to avoid type mismatches
+        const fav = favorites.find(f => String(f.productId) === String(this.productId));
         this.isFavorite = !!fav;
         this.favoriteId = fav ? fav.id : null;
       });
@@ -35,10 +36,10 @@ export class ProductFavoriteComponent implements OnInit, OnDestroy {
   }
 
   toggleFavorite(): void {
-    if (this.isFavorite && this.favoriteId) {
-      this.favoritesService.removeFavorite(this.favoriteId).subscribe();
-    } else {
-      this.favoritesService.addFavorite(this.productId).subscribe();
-    }
+    // Check authentication before toggling
+    this.favoritesService.toggleFavorite(this.productId, this.isFavorite, this.favoriteId)
+      .subscribe({
+        error: (err) => console.error('Error toggling favorite:', err)
+      });
   }
 }
