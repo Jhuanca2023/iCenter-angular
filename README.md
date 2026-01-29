@@ -164,6 +164,7 @@ Este proyecto está bajo la **Apache License 2.0**. Consulta el archivo [LICENSE
 
 ### Vista de Cliente
 ![Home](./public/home1.png)
+![Destacados](./public/destacadoshome.png)
 ![Detalle de Producto](./public/detalleproducto.png)
 ![Carrito de Compras](./public/carrito-compras.png)
 ![Checkout](./public/checkout.png)
